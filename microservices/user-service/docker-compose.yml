@@ -9,8 +9,10 @@ services:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=gym-user-db;Port=5432;Database=user_service_db;Username=postgres;Password=postgres
     depends_on:
-      - gym-user-db
+      gym-user-db:
+        condition: service_healthy
     networks:
       - gym-network
 
@@ -19,7 +21,7 @@ services:
     container_name: gym-user-db
     restart: always
     environment:
-      POSTGRES_DB: userdb
+      POSTGRES_DB: user_service_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -28,6 +30,11 @@ services:
       - gym-user-db-data:/var/lib/postgresql/data
     networks:
       - gym-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   gym-network:
