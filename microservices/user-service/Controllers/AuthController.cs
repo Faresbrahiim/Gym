@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using user_service.Interfaces;
 using user_service.DTOs;
+using user_service.Models;
+
 namespace user_service.Controllers
 
 {
@@ -19,7 +21,12 @@ namespace user_service.Controllers
         [HttpPost("login/email")]
         public IActionResult LoginEmail([FromBody] LoginRequest request)
         {
-             var response = _authService.LoginWithEmail(request);
+             if(!ModelState.IsValid)
+             {
+                 return BadRequest(ModelState);
+             }
+
+            var response = _authService.LoginWithEmail(request);
              return Ok(response); 
         }
 

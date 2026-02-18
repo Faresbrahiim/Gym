@@ -1,18 +1,21 @@
-﻿using user_service.DTOs;
+﻿using user_service.Domain.Enums;
+using user_service.DTOs;
+using user_service.Models;
 
-namespace user_service.Services
+namespace user_service.Mappers
 {
     public static class UserMapper
     {
-        // later when we have a User entity, we can create a method like this to map from User to UserDto
-        public static UserDto ToDto(UserDto user)  // using UserDto for fake data
+        public static UserDto ToDto(User user)
         {
             return new UserDto
             {
                 Id = user.Id,
-                Name = user.Name,
+                Name = user.Profile != null
+                    ? $"{user.Profile.FirstName} {user.Profile.LastName}"
+                    : string.Empty,
                 Email = user.Email,
-                Role = user.Role
+                Role = ((UserRole)user.Role).ToString().ToUpper()
             };
         }
     }

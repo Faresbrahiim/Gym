@@ -1,44 +1,44 @@
-﻿using user_service.DTOs;
+﻿using user_service.Domain.Enums;
+using user_service.DTOs;
 using user_service.Interfaces;
+using user_service.Mappers;
 
 namespace user_service.Services
 {
     public class AuthService : IAuthService
     {
-        // Fake users
-        private readonly List<UserDto> _fakeUsers = new()
-        {
-            new UserDto { Id = 1, Name = "Ibrahim", Email = "ibrahim@test.com", Role = "USER" },
-            new UserDto { Id = 2, Name = "Alice", Email = "alice@test.com", Role = "USER" }
-        };
+        private readonly IUserRepository _userRepository;
+        private readonly ITokenService _tokenService;
 
+        public AuthService(IUserRepository userRepository, ITokenService tokenService)
+        {
+            _userRepository = userRepository;
+            _tokenService = tokenService;
+        }
         public LoginResponse LoginWithEmail(LoginRequest request)
         {
-            var user = _fakeUsers.FirstOrDefault(u => u.Email == request.Email);
+            var user = _userRepository.GetByEmail(request.Email);
+
             if (user == null)
                 throw new Exception("Email not found");
-
-            if (request.Password != "123456")
+            // todo : implement proper password hashing and verification
+            if (user.PasswordHash != request.Password)
                 throw new Exception("Invalid password");
 
             var userDto = UserMapper.ToDto(user);
-
-            var accessToken = "fake-access-token";
-            var refreshToken = "fake-refresh-token";
-
+            var accessToken = _tokenService.GenerateToken(userDto);
             return new LoginResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = refreshToken,
+                RefreshToken = "fake-refresh-token",
                 User = userDto
             };
         }
 
         public LoginResponse LoginWithGoogle(GoogleLoginRequest request)
         {
-            
-            return new LoginResponse
-            {};
+            // Will implement later
+            return new LoginResponse();
         }
     }
 }
