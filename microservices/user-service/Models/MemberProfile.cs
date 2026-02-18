@@ -1,4 +1,6 @@
-﻿namespace user_service.Models
+﻿using user_service.Domain.Enums;
+
+namespace user_service.Models
 {
    
 
@@ -16,7 +18,7 @@
 
         public string? FitnessGoal { get; set; }
 
-        public string? ExperienceLevel { get; set; }
+        public ExperienceLevel? ExperienceLevel { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
