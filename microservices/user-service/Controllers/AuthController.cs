@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using user_service.Interfaces;
-
+using user_service.DTOs;
 namespace user_service.Controllers
 
 {
@@ -16,12 +16,11 @@ namespace user_service.Controllers
             _authService = authService;
         }
 
-
         [HttpPost("login/email")]
-        public IActionResult LoginEmail()
+        public IActionResult LoginEmail([FromBody] LoginRequest request)
         {
-            // will implement email login logic here later
-            return Ok(Ok());
+             var response = _authService.LoginWithEmail(request);
+             return Ok(response); 
         }
 
         [HttpPost("login/google")]

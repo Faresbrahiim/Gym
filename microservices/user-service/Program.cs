@@ -1,4 +1,5 @@
 using user_service.Interfaces;
+using user_service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
