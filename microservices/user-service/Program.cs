@@ -1,4 +1,8 @@
+using user_service.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddControllers();
 
