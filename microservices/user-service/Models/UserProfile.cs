@@ -8,6 +8,9 @@
 
         public string LastName { get; set; } = null!;
 
+        public string? ProfilePictureUrl { get; set; }
+
+
         public string? Phone { get; set; }
 
         public DateTime CreatedAt { get; set; }
