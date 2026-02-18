@@ -23,6 +23,9 @@ namespace user_service.Data.Configurations
             builder.Property(p => p.Phone)
                 .HasMaxLength(20);
 
+            builder.Property(p => p.ProfilePictureUrl)
+                .HasMaxLength(500);
+
             builder.Property(p => p.CreatedAt)
                 .HasDefaultValueSql("NOW()")
                 .IsRequired();

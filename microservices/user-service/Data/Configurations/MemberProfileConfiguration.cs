@@ -19,7 +19,7 @@ namespace user_service.Data.Configurations
                 .HasMaxLength(255);
 
             builder.Property(p => p.ExperienceLevel)
-                .HasMaxLength(50);
+                .HasConversion<int>();
 
             builder.Property(p => p.CreatedAt)
                 .HasDefaultValueSql("NOW()")
