@@ -168,3 +168,10 @@ C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Microsoft.Id
 C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Microsoft.IdentityModel.Logging.dll
 C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Google.Apis.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Google.Apis.Auth.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Google.Apis.Core.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\System.Management.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\runtimes\win\lib\net7.0\System.Management.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

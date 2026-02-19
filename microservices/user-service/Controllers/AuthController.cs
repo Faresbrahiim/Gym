@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using user_service.Interfaces;
 using user_service.DTOs;
-using user_service.Models;
+
 
 namespace user_service.Controllers
 
@@ -23,7 +23,7 @@ namespace user_service.Controllers
         {
              if(!ModelState.IsValid)
              {
-                 return BadRequest(ModelState);
+                return UnprocessableEntity(request);
              }
 
             var response = _authService.LoginWithEmail(request);
@@ -31,11 +31,11 @@ namespace user_service.Controllers
         }
 
         [HttpPost("login/google")]
-        public IActionResult LoginGoogle()
+        public IActionResult LoginGoogle([FromBody] GoogleLoginRequest request)
         {
-            // will implement google login logic here later
-            return Ok(Ok());
+            var response = _authService.LoginWithGoogle(request);
+            return Ok(response);
         }
-     
+
     }
 }
