@@ -40,11 +40,6 @@ namespace user_service.Services
             var payload = GoogleAuthValidator.ValidateIdToken(request.Token)
                 ?? throw new UnauthorizedAccessException("Invalid Google token");
 
-            Console.WriteLine($"Email: {payload.Email}");
-            Console.WriteLine($"Name: {payload.Name}");
-            Console.WriteLine($"GivenName: {payload.GivenName}");
-            Console.WriteLine($"FamilyName: {payload.FamilyName}");
-            Console.WriteLine($"Picture: {payload.Picture}");
             if (!payload.EmailVerified)
                 throw new UnauthorizedAccessException("Google email not verified");
 
@@ -53,22 +48,14 @@ namespace user_service.Services
             if (user == null)
             {
                 user = UserMapper.FromGooglePayload(payload);
-                user = _userRepository.Create(user);
-                user = _userRepository.GetByEmail(payload.Email);
+                _userRepository.Create(user);
+                //user = _userRepository.GetByEmail(payload.Email);
             }
 
             user.LastLoginAt = DateTime.UtcNow;
             _userRepository.Update(user);
-            Console.WriteLine($"Profile null? {user.MemberProfile == null}");
-            Console.WriteLine($"FirstName: {user.Profile?.FirstName}");
-            Console.WriteLine($"LastName: {user.Profile?.LastName}");
-
-
-
+          
             var userDto = UserMapper.ToDto(user);
-            Console.WriteLine("####### user DTO ###########");
-            Console.WriteLine($"Name: {userDto.LastName}");
-            Console.WriteLine($"GivenName: {userDto.FirstName}");
            
             var accessToken = _tokenService.GenerateToken(userDto);
             var refreshToken = "fake-refresh-token"; //(nada)
