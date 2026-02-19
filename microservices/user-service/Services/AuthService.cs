@@ -70,6 +70,5 @@ namespace user_service.Services
             };
         }
 
-
     }
 }

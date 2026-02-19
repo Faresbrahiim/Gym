@@ -12,8 +12,8 @@ namespace user_service.Mappers
             return new UserDto
             {
                 Id = user.Id,
-                FirstName = user.Profile?.FirstName ?? "",
-                LastName = user.Profile?.LastName ?? "",
+                FirstName = user.Profile?.FirstName ?? "unknown",
+                LastName = user.Profile?.LastName ?? "unkown",
 
                 Email = user.Email,
                 Role = ((UserRole)user.Role).ToString().ToUpper()

@@ -26,11 +26,11 @@ namespace user_service.Repositories
         public User Create(User user)
         {
             _context.Users.Add(user);
-            _context.SaveChanges(); // generate User.Id
+            _context.SaveChanges(); 
 
             if (user.Profile != null)
             {
-                user.Profile.UserId = user.Id; // make sure FK is correct
+                user.Profile.UserId = user.Id; 
                 if (!_context.UserProfiles.Any(p => p.UserId == user.Id))
                     _context.UserProfiles.Add(user.Profile);
             }
