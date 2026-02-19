@@ -10,7 +10,9 @@ namespace user_service.Models
 
         public string Email { get; set; } = null!;
 
-        public string PasswordHash { get; set; } = null!;
+        public string? PasswordHash { get; set; }
+
+        public string Username { get; set; } = null!;
 
         public UserRole Role { get; set; }
 
@@ -28,6 +30,9 @@ namespace user_service.Models
         public MemberProfile? MemberProfile { get; set; }
 
         public CoachProfile? CoachProfile { get; set; }
+
+        public ICollection<ExternalLogin> ExternalLogins { get; set; } = new List<ExternalLogin>();
+
 
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
