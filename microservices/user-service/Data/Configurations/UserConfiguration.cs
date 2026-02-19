@@ -24,9 +24,11 @@ namespace user_service.Data.Configurations
                 .IsUnique();
 
             builder.Property(u => u.PasswordHash)
-                .IsRequired();
+     .IsRequired(false)
+     .HasColumnType("text");
 
-            
+
+
             builder.Property(u => u.Role)
                 
                 .IsRequired();
@@ -43,6 +45,13 @@ namespace user_service.Data.Configurations
             builder.Property(u => u.UpdatedAt)
                 .HasDefaultValueSql("NOW()")
                 .IsRequired();
+
+            builder.Property(u => u.Username)
+    .IsRequired()
+    .HasMaxLength(50);
+
+            builder.HasIndex(u => u.Username)
+                .IsUnique();
 
             builder.HasIndex(u => u.Role);
             builder.HasIndex(u => u.Status);

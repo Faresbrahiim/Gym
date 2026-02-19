@@ -19,6 +19,9 @@ namespace user_service.Data
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
         public DbSet<CoachAvailability> CoachAvailabilities => Set<CoachAvailability>();
 
+        public DbSet<ExternalLogin> ExternalLogins { get; set; } = null!;
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

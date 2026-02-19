@@ -25,6 +25,7 @@ services:
     networks:
       - gym-network
 
+ 
 
   gym-user-db:
     image: postgres:15
