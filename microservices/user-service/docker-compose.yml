@@ -8,8 +8,17 @@ services:
     ports:
       - "5000:8080"
     environment:
+      
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=gym-user-db;Port=5432;Database=user_service_db;Username=postgres;Password=postgres
+
+      
+      - ConnectionStrings__DefaultConnection=Host=gym-user-db;Port=5432;Database=user_service_db;Username=postgres;Password=${POSTGRES_PASSWORD}
+
+      
+      - BootstrapAdmin__Enabled=true
+      - BootstrapAdmin__Email=admin@gym.com
+      - BootstrapAdmin__Password=${BOOTSTRAP_ADMIN_PASSWORD}
+
     depends_on:
       gym-user-db:
         condition: service_healthy
@@ -18,6 +27,8 @@ services:
     volumes:
       - ./Keys:/app/Keys   
 
+ 
+
   gym-user-db:
     image: postgres:15
     container_name: gym-user-db
@@ -25,7 +36,7 @@ services:
     environment:
       POSTGRES_DB: user_service_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5433:5432"
     volumes:

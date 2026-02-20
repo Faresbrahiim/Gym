@@ -19,10 +19,34 @@ namespace user_service.Repositories
             var loweredEmail = email.ToLower();
             return _context.Users
                 .Include(u => u.Profile)
+                .Include(u => u.ExternalLogins)
                 .FirstOrDefault(u => u.Email.ToLower() == loweredEmail);
         }
 
-        /***************** create method for Google login *****************/
+      
+        public User GetById(Guid userId)
+        {
+            return _context.Users
+                .Include(u => u.Profile)
+                .Include(u => u.ExternalLogins)
+                .FirstOrDefault(u => u.Id == userId);
+        }
+
+      
+        public ExternalLogin? GetExternalLogin(string provider, string providerUserId)
+        {
+            return _context.ExternalLogins
+                .FirstOrDefault(e => e.Provider == provider && e.ProviderUserId == providerUserId);
+        }
+
+        
+        public void AddExternalLogin(ExternalLogin externalLogin)
+        {
+            _context.ExternalLogins.Add(externalLogin);
+            _context.SaveChanges();
+        }
+
+       
         public User Create(User user)
         {
             _context.Users.Add(user);
@@ -30,7 +54,7 @@ namespace user_service.Repositories
 
             if (user.Profile != null)
             {
-                user.Profile.UserId = user.Id; 
+                user.Profile.UserId = user.Id;
                 if (!_context.UserProfiles.Any(p => p.UserId == user.Id))
                     _context.UserProfiles.Add(user.Profile);
             }
@@ -39,15 +63,12 @@ namespace user_service.Repositories
             return user;
         }
 
-
-
-        /****************** updatte *****************/
+        // ✅ Update user
         public User Update(User user)
         {
             _context.Users.Update(user);
             _context.SaveChanges();
             return user;
         }
-
     }
 }

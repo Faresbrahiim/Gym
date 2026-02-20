@@ -14,7 +14,7 @@ namespace user_service.Mappers
                 Id = user.Id,
                 FirstName = user.Profile?.FirstName ?? "unknown",
                 LastName = user.Profile?.LastName ?? "unkown",
-
+                Username = user?.Username ?? "unkown",
                 Email = user.Email,
                 Role = ((UserRole)user.Role).ToString().ToUpper()
             };
@@ -27,6 +27,7 @@ namespace user_service.Mappers
             var user = new User
             {
                 Email = payload.Email,
+                Username = payload.Name, 
                 PasswordHash = "",
                 Role = UserRole.MEMBER,
                 Status = UserStatus.ACTIVE,
@@ -46,7 +47,6 @@ namespace user_service.Mappers
 
             return user;
         }
-
     }
 
 }

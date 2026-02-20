@@ -12,6 +12,7 @@ namespace user_service.DTOs
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
+        public string Username { get; set; }
     }
     // we can Add other user properties as needed
 }
