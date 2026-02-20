@@ -64,6 +64,7 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine("=== DATABASE MIGRATION FINISHED ===");
 
     // bootstrap seeding
+
     var bootstrapEnabled = configuration.GetValue<bool>("BootstrapAdmin:Enabled");
 
     if (bootstrapEnabled)

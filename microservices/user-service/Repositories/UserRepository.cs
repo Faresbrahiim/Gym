@@ -63,7 +63,6 @@ namespace user_service.Repositories
             return user;
         }
 
-        // ✅ Update user
         public User Update(User user)
         {
             _context.Users.Update(user);
