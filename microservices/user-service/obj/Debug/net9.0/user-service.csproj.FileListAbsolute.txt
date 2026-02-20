@@ -180,3 +180,6 @@ C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Isopoh.Crypt
 C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Konscious.Security.Cryptography.Argon2.dll
 C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Konscious.Security.Cryptography.Blake2.dll
 C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
