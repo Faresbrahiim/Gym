@@ -13,17 +13,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddControllers();
+var privateKeyText = Environment.GetEnvironmentVariable("JWT_PRIVATE_KEY")!;
+var publicKeyText = Environment.GetEnvironmentVariable("JWT_PUBLIC_KEY")!;
 
-// Database
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddSingleton<ITokenService>(sp =>
 {
-    var config = sp.GetRequiredService<IConfiguration>();
-    var privateKeyPath = config["Jwt:PrivateKeyPath"];
-    var issuer = config["Jwt:Issuer"];
-    var audience = config["Jwt:Audience"];
-    return new TokenService(privateKeyPath, issuer, audience);
+    var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")!;
+    var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")!;
+    return new TokenService(privateKeyText, publicKeyText, issuer, audience);
 });
+// Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(connectionString));

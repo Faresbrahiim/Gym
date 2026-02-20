@@ -18,7 +18,10 @@ services:
       - BootstrapAdmin__Enabled=true
       - BootstrapAdmin__Email=admin@gym.com
       - BootstrapAdmin__Password=${BOOTSTRAP_ADMIN_PASSWORD}
-
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}
+      - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
+      - JWT_ISSUER=${JWT_ISSUER}
+      - JWT_AUDIENCE=${JWT_AUDIENCE}
     depends_on:
       gym-user-db:
         condition: service_healthy
@@ -37,6 +40,7 @@ services:
       POSTGRES_DB: user_service_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      
     ports:
       - "5433:5432"
     volumes:
