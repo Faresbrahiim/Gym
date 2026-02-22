@@ -11,7 +11,6 @@
 
         public string Provider { get; set; } = null!;
         
-
         public string ProviderUserId { get; set; } = null!;
         
 

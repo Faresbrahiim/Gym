@@ -15,9 +15,6 @@ namespace user_service.Controllers
             _authService = authService;
         }
 
-        // =========================
-        // LOGIN EMAIL
-        // =========================
         [HttpPost("login/email")]
         public IActionResult LoginEmail([FromBody] LoginRequest request)
         {
@@ -28,9 +25,6 @@ namespace user_service.Controllers
             return Ok(response);
         }
 
-        // =========================
-        // LOGIN GOOGLE
-        // =========================
         [HttpPost("login/google")]
         public IActionResult LoginGoogle([FromBody] GoogleLoginRequest request)
         {
@@ -38,9 +32,7 @@ namespace user_service.Controllers
             return Ok(response);
         }
 
-        // =========================
-        // REQUEST PASSWORD RESET
-        // =========================
+  
         [HttpPost("password/request-reset")]
         public IActionResult RequestPasswordReset([FromBody] RequestPasswordResetDto dto)
         {
@@ -49,28 +41,17 @@ namespace user_service.Controllers
 
             _authService.RequestPasswordReset(dto);
 
-            // Always return generic message to prevent user enumeration
+            // reason: prevent user enumeration
             return Ok(new { message = "If email exists, a reset link has been sent." });
         }
 
-        // =========================
-        // RESET PASSWORD
-        // =========================
         [HttpPost("password/reset")]
         public IActionResult ResetPassword([FromBody] ResetPasswordDto dto)
         {
             if (!ModelState.IsValid)
                 return UnprocessableEntity(dto);
-
-            try
-            {
                 _authService.ResetPassword(dto);
                 return Ok(new { message = "Password updated successfully." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
+        }   
     }
 }

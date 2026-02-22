@@ -25,9 +25,6 @@ namespace user_service.Services
             _emailService = emailService;
         }
 
-        // =========================
-        // LOGIN WITH EMAIL
-        // =========================
         public LoginResponse LoginWithEmail(LoginRequest request)
         {
             var user = _userRepository.GetByEmail(request.Email);
@@ -35,7 +32,7 @@ namespace user_service.Services
             if (user == null)
                 throw new Exception("Email not found");
 
-            // ⚠️ TODO: replace with BCrypt verification
+            //  TODO: replace with BCrypt verification
             if (user.PasswordHash != request.Password)
                 throw new Exception("Invalid password");
 
@@ -53,9 +50,6 @@ namespace user_service.Services
             };
         }
 
-        // =========================
-        // LOGIN WITH GOOGLE
-        // =========================
         public LoginResponse LoginWithGoogle(GoogleLoginRequest request)
         {
             var payload = GoogleAuthValidator.ValidateIdToken(request.Token)
@@ -101,14 +95,11 @@ namespace user_service.Services
             };
         }
 
-        // =========================
-        // REQUEST PASSWORD RESET
-        // =========================
         public void RequestPasswordReset(RequestPasswordResetDto dto)
         {
             var user = _userRepository.GetByEmail(dto.Email);
 
-            // 🔒 Prevent user enumeration
+            //  Prevent user enumeration
             if (user == null)
                 return;
 
@@ -126,12 +117,19 @@ namespace user_service.Services
             _passwordResetTokenRepository.Create(resetToken);
 
             var resetLink = $"https://frontend-app/reset-password?token={rawToken}";
-            _emailService.SendPasswordResetEmail(user.Email, resetLink);
+            // check : docker logs for the reset link since we don't have a real email service yet
+            Console.WriteLine($"[DEBUG] Password reset link for {user.Email}: {resetLink}");
+            try
+            {
+                _emailService.SendPasswordResetEmail(user.Email, resetLink);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to send password reset email", ex);
+            }
         }
 
-        // =========================
-        // RESET PASSWORD
-        // =========================
+        // TODO :   verify password strength and hash passwords with BCrypt
         public void ResetPassword(ResetPasswordDto dto)
         {
             var tokenHash = TokenHelper.HashToken(dto.Token);

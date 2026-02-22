@@ -334,3 +334,6 @@ C:\Users\fatim\Gym\microservices\user-service\obj\Debug\net9.0\refint\user-servi
 C:\Users\fatim\Gym\microservices\user-service\obj\Debug\net9.0\user-service.pdb
 C:\Users\fatim\Gym\microservices\user-service\obj\Debug\net9.0\user-service.genruntimeconfig.cache
 C:\Users\fatim\Gym\microservices\user-service\obj\Debug\net9.0\ref\user-service.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\MailKit.dll
+C:\Users\PC\Desktop\Gym\microservices\user-service\bin\Debug\net9.0\MimeKit.dll
