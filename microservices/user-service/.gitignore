@@ -34,3 +34,7 @@ app/publish/
 # Secrets
 appsettings.Development.json
 appsettings.Local.json
+
+
+**/bin/
+**/obj/
