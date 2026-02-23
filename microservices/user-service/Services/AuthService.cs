@@ -1,7 +1,9 @@
-﻿using user_service.DTOs;
-using user_service.Interfaces;
-using user_service.Mappers;
-using user_service.Models;
+﻿using user_service.Application.Enums;
+using user_service.Application.DTOs;
+using user_service.Application.Interfaces;
+using user_service.Application.Mappers;
+using user_service.Application.Entities;
+
 
 
 namespace user_service.Services
@@ -10,11 +12,13 @@ namespace user_service.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public AuthService(IUserRepository userRepository, ITokenService tokenService)
+        public AuthService(IUserRepository userRepository, ITokenService tokenService, IPasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
+            _passwordHasher = passwordHasher;
         }
         public LoginResponse LoginWithEmail(LoginRequest request)
         {
@@ -22,12 +26,19 @@ namespace user_service.Services
 
             if (user == null)
                 throw new Exception("Email not found");
-            // todo : implement proper password hashing and verification
+            
             // todo : use code status codes instead of exceptions for better API responses
-            if (user.PasswordHash != request.Password)
+            if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
                 throw new Exception("Invalid password");
-            if (user.Status != Domain.Enums.UserStatus.ACTIVE)
+
+            if (user.Status != UserStatus.ACTIVE)
                 throw new Exception("User account is not active");
+
+            if (_passwordHasher.NeedsRehash(user.PasswordHash))
+            {
+                user.PasswordHash = _passwordHasher.Hash(request.Password);
+                _userRepository.Update(user);
+            }
 
             var userDto = UserMapper.ToDto(user);
             var accessToken = _tokenService.GenerateToken(userDto);
@@ -59,7 +70,7 @@ namespace user_service.Services
                 user = _userRepository.GetById(externalLogin.UserId);
 
                 // ❌ Only allow login if user is ACTIVE
-                if (user.Status != Domain.Enums.UserStatus.ACTIVE)
+                if (user.Status != UserStatus.ACTIVE)
                     throw new UnauthorizedAccessException("User account is not active");
             }
             else
@@ -79,7 +90,7 @@ namespace user_service.Services
                 _userRepository.AddExternalLogin(newExternalLogin);
 
                 // ❌ Only allow login if user is ACTIVE (optional: if you want new users to be ACTIVE by default)
-                if (user.Status != Domain.Enums.UserStatus.ACTIVE)
+                if (user.Status != UserStatus.ACTIVE)
                     throw new UnauthorizedAccessException("User account is not active");
             }
 

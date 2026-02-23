@@ -1,9 +1,9 @@
 ﻿using Google.Apis.Auth;
-using user_service.Domain.Enums;
-using user_service.DTOs;
-using user_service.Models;
+using user_service.Application.Enums;
+using user_service.Application.DTOs;
+using user_service.Application.Entities;
 
-namespace user_service.Mappers
+namespace user_service.Application.Mappers
 {
     public static class UserMapper
     {

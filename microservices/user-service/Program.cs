@@ -1,11 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using user_service.Application.Interfaces;
 using user_service.Authorization;
-using user_service.Data;
-using user_service.Interfaces;
-using user_service.Repositories;
+using user_service.Infrastructure.Data;
+using user_service.Infrastructure.Data.Seeding;
+using user_service.Infrastructure.Repositories;
+using user_service.Infrastructure.Security;
+using user_service.Middleware;
 using user_service.Services;
-using user_service.Data.Seeding;
-using user_service.Security;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,9 +31,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Authorization (custom extension)
+// Authorization(custom extension)
 builder.Services.AddCustomAuthorization();
-builder.Services.AddScoped<IPasswordHasher, Argon2PasswordHasher>();
+builder.Services.AddScoped<IPasswordHasher, VersionedArgon2PasswordHasher>();
 builder.Services.AddScoped<AdminSeeder>();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -45,6 +47,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

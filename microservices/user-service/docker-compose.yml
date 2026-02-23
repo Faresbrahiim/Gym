@@ -2,8 +2,8 @@ services:
 
   gym-user-service:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: user-service/Dockerfile
     container_name: gym-user-service
     ports:
       - "5000:8080"
