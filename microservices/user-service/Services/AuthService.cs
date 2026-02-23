@@ -230,5 +230,10 @@ namespace user_service.Services
                 User = userDto
             };
         }
+        public void Logout(Guid userId)
+        {
+            // Revoke all refresh tokens for this user
+            _refreshTokenRepository.RevokeAllTokens(userId);
+        }
     }
 }

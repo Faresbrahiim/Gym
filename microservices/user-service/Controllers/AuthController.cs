@@ -59,5 +59,20 @@ namespace user_service.Controllers
             var result = _authService.RefreshToken(dto.RefreshToken);
             return Ok(result);
         }
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+           
+         var userIdClaim = User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+             return Unauthorized(new { message = "Invalid token" });
+        }
+
+        _authService.Logout(userId);
+         return Ok(new { message = "Logged out successfully" });
+          
+        }
     }
 }
