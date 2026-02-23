@@ -6,7 +6,11 @@ namespace user_service.Interfaces
     {
         LoginResponse LoginWithEmail(LoginRequest request);
         LoginResponse LoginWithGoogle(GoogleLoginRequest request);
+
         Task<UserDto> RegisterAsync(RegisterRequest request);
+
+        void RequestPasswordReset(RequestPasswordResetDto dto);
+        void ResetPassword(ResetPasswordDto dto);
 
     }
 }
