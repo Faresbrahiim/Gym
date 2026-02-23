@@ -5,7 +5,6 @@ using System.Security.Cryptography;
 using user_service.Application.DTOs;
 using user_service.Application.Interfaces;
 
-
 namespace user_service.Infrastructure.Security
 {
     public class TokenService : ITokenService
@@ -14,7 +13,11 @@ namespace user_service.Infrastructure.Security
         private readonly string _issuer;
         private readonly string _audience;
 
-        public TokenService(string privateKeyText, string publicKeyText, string issuer, string audience)
+        public TokenService(
+            string privateKeyText,
+            string publicKeyText,
+            string issuer,
+            string audience)
         {
             _issuer = issuer;
             _audience = audience;

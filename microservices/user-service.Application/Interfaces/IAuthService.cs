@@ -6,5 +6,8 @@ namespace user_service.Application.Interfaces
     {
         LoginResponse LoginWithEmail(LoginRequest request);
         LoginResponse LoginWithGoogle(GoogleLoginRequest request);
+
+        void RequestPasswordReset(RequestPasswordResetDto dto);
+        void ResetPassword(ResetPasswordDto dto);
     }
 }
