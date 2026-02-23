@@ -2,7 +2,7 @@
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
-using user_service.Interfaces;
+using user_service.Application.Interfaces;
 
 public class EmailService : IEmailService
 {

@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using user_service.Authorization;
-using user_service.Domain.Enums;
-using user_service.Models;
+using user_service.Application.Enums;
+using user_service.Application.Entities;
 
 namespace user_service.Authorization
 {
