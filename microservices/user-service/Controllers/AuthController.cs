@@ -18,6 +18,13 @@ namespace user_service.Controllers
             _authService = authService;
         }
 
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var user = await _authService.RegisterAsync(request);
+            return Ok(user);
+        }
+
         [HttpPost("login/email")]
         public IActionResult LoginEmail([FromBody] LoginRequest request)
         {

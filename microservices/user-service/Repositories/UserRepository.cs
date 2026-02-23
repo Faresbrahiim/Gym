@@ -69,5 +69,11 @@ namespace user_service.Repositories
             _context.SaveChanges();
             return user;
         }
+
+        public User? GetByUsername(string username)
+        {
+            return _context.Users
+                .FirstOrDefault(u => u.Username == username);
+        }
     }
 }

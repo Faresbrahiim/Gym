@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddControllers();
 var privateKeyText = Environment.GetEnvironmentVariable("JWT_PRIVATE_KEY")!;
 var publicKeyText = Environment.GetEnvironmentVariable("JWT_PUBLIC_KEY")!;

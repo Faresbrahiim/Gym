@@ -1,7 +1,10 @@
-﻿using user_service.DTOs;
+﻿using user_service.Domain.Enums;
+using user_service.DTOs;
 using user_service.Interfaces;
 using user_service.Mappers;
 using user_service.Models;
+using user_service.Repositories;
+using user_service.Security;
 
 
 namespace user_service.Services
@@ -10,11 +13,14 @@ namespace user_service.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
-
-        public AuthService(IUserRepository userRepository, ITokenService tokenService)
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly IUserProfileRepository _userProfileRepository;
+        public AuthService(IUserRepository userRepository, ITokenService tokenService, IPasswordHasher passwordHasher , IUserProfileRepository userProfileRepository)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
+            _passwordHasher = passwordHasher;
+            _userProfileRepository = userProfileRepository;
         }
         public LoginResponse LoginWithEmail(LoginRequest request)
         {
@@ -99,6 +105,52 @@ namespace user_service.Services
                 User = userDto
             };
         }
+        public async Task<UserDto> RegisterAsync(RegisterRequest request)
+        {
+            // 1️⃣ Vérifier email
+            if (_userRepository.GetByEmail(request.Email) != null)
+                throw new Exception("Email already exists");
 
+            // 2️⃣ Vérifier username
+            if (_userRepository.GetByUsername(request.Username) != null)
+                throw new Exception("Username already exists");
+
+            // 3️⃣ Convertir le rôle
+            if (!Enum.TryParse<UserRole>(request.Role, true, out var role))
+                throw new Exception("Invalid role");
+
+            // 4️⃣ Hasher le mot de passe
+            var passwordHash = _passwordHasher.Hash(request.Password);
+
+            // 5️⃣ Créer User
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = request.Email,
+                Username = request.Username,
+                PasswordHash = passwordHash,
+                Role = Domain.Enums.UserRole.MEMBER,
+                Status = UserStatus.PENDING,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+                
+            };
+
+            // 6️⃣ Créer UserProfile
+            var profile = new UserProfile
+            {
+                UserId = user.Id,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // 7️⃣ Sauvegarde (transaction recommandée)
+            _userRepository.Create(user);
+            _userProfileRepository.Create(profile);
+
+            return UserMapper.ToDto(user);
+        }
     }
 }

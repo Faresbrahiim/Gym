@@ -10,7 +10,7 @@ namespace user_service.Interfaces
         void AddExternalLogin(ExternalLogin externalLogin);
         ExternalLogin? GetExternalLogin(string provider, string providerUserId);
         User GetById(Guid userId);
-
+        User? GetByUsername(string username);
 
     }
 }

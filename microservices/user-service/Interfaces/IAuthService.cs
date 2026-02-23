@@ -6,5 +6,7 @@ namespace user_service.Interfaces
     {
         LoginResponse LoginWithEmail(LoginRequest request);
         LoginResponse LoginWithGoogle(GoogleLoginRequest request);
+        Task<UserDto> RegisterAsync(RegisterRequest request);
+
     }
 }
