@@ -17,9 +17,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IPasswordHasher, VersionedArgon2PasswordHasher>();
+builder.Services.AddScoped<IRefreshTokenRepository , RefreshTokenRepository>();
 
 // Token service (singleton with environment keys)
 var privateKeyText = Environment.GetEnvironmentVariable("JWT_PRIVATE_KEY")!;

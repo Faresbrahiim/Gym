@@ -5,7 +5,9 @@ using user_service.Application.Interfaces;
 using user_service.Application.Mappers;
 using user_service.Domain.Exceptions;
 using user_service.Helpers;
+using user_service.Infrastructure.Repositories;
 using user_service.Interfaces;
+using user_service.Repositories;
 
 namespace user_service.Services
 {
@@ -16,19 +18,24 @@ namespace user_service.Services
         private readonly IPasswordHasher _passwordHasher;
         private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
         private readonly IEmailService _emailService;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
+
 
         public AuthService(
             IUserRepository userRepository,
             ITokenService tokenService,
             IPasswordHasher passwordHasher,
             IPasswordResetTokenRepository passwordResetTokenRepository,
-            IEmailService emailService)
+            IEmailService emailService,
+            IRefreshTokenRepository refreshTokenRepository
+            )
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
             _passwordResetTokenRepository = passwordResetTokenRepository;
             _emailService = emailService;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         public LoginResponse LoginWithEmail(LoginRequest request)
@@ -44,21 +51,32 @@ namespace user_service.Services
             if (user.Status != UserStatus.ACTIVE)
                 throw new InvalidCredentialsException();
 
-            if (_passwordHasher.NeedsRehash(user.PasswordHash))
-            {
-                user.PasswordHash = _passwordHasher.Hash(request.Password);
-            }
-
             user.LastLoginAt = DateTime.UtcNow;
             _userRepository.Update(user);
 
             var userDto = UserMapper.ToDto(user);
             var accessToken = _tokenService.GenerateToken(userDto);
 
+            // ? Create refresh token
+            var rawRefreshToken = TokenHelper.GenerateToken();
+            var refreshTokenHash = TokenHelper.HashToken(rawRefreshToken);
+
+            _refreshTokenRepository.Create(new RefreshToken
+            {
+                UserId = user.Id,
+                TokenHash = refreshTokenHash,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                CreatedAt = DateTime.UtcNow,
+                UserAgent = null,
+                IpAddress = null,
+                //    UserAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"],
+              //  IpAddress = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString()
+            });
+
             return new LoginResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = "fake-refresh-token",
+                RefreshToken = rawRefreshToken, // send RAW to client
                 User = userDto
             };
         }
@@ -93,11 +111,7 @@ namespace user_service.Services
                     ProviderUserId = payload.Subject,
                     CreatedAt = DateTime.UtcNow
                 };
-
                 _userRepository.AddExternalLogin(newExternalLogin);
-
-                if (user.Status != UserStatus.ACTIVE)
-                    throw new ExternalAuthException("User account is not active");
             }
 
             user.LastLoginAt = DateTime.UtcNow;
@@ -106,10 +120,22 @@ namespace user_service.Services
             var userDto = UserMapper.ToDto(user);
             var accessToken = _tokenService.GenerateToken(userDto);
 
+            //  Real refresh token
+            var rawRefreshToken = TokenHelper.GenerateToken();
+            var refreshTokenHash = TokenHelper.HashToken(rawRefreshToken);
+
+            _refreshTokenRepository.Create(new RefreshToken
+            {
+                UserId = user.Id,
+                TokenHash = refreshTokenHash,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                CreatedAt = DateTime.UtcNow
+            });
+
             return new LoginResponse
             {
                 AccessToken = accessToken,
-                RefreshToken = "fake-refresh-token",
+                RefreshToken = rawRefreshToken,
                 User = userDto
             };
         }
@@ -167,6 +193,42 @@ namespace user_service.Services
 
             _userRepository.Update(user);
             _passwordResetTokenRepository.Update(resetToken);
+        }
+        public LoginResponse RefreshToken(string refreshToken)
+        {
+            var hash = TokenHelper.HashToken(refreshToken);
+            var stored = _refreshTokenRepository.GetValidToken(hash);
+
+            if (stored == null)
+                throw new UnauthorizedAccessException("Invalid or expired refresh token");
+
+            var user = _userRepository.GetById(stored.UserId)
+                       ?? throw new UnauthorizedAccessException();
+
+            // Revoke old token
+            _refreshTokenRepository.Revoke(stored);
+
+            // Create new refresh token
+            var newRaw = TokenHelper.GenerateToken();
+            var newHash = TokenHelper.HashToken(newRaw);
+
+            _refreshTokenRepository.Create(new RefreshToken
+            {
+                UserId = user.Id,
+                TokenHash = newHash,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                CreatedAt = DateTime.UtcNow
+            });
+
+            var userDto = UserMapper.ToDto(user);
+            var newAccessToken = _tokenService.GenerateToken(userDto);
+
+            return new LoginResponse
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRaw,
+                User = userDto
+            };
         }
     }
 }

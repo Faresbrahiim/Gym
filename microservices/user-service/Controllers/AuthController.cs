@@ -52,6 +52,12 @@ namespace user_service.Controllers
                 return UnprocessableEntity(dto);
                 _authService.ResetPassword(dto);
                 return Ok(new { message = "Password updated successfully." });
-        }   
+        }
+        [HttpPost("refresh")]
+        public IActionResult Refresh([FromBody] RefreshRequestDto dto)
+        {
+            var result = _authService.RefreshToken(dto.RefreshToken);
+            return Ok(result);
+        }
     }
 }
