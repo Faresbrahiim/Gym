@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9 d17.14
+VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "user-service", "user-service.csproj", "{17FE68F7-A790-66A0-25A5-14B086A4E4DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "user-service.Application", "..\user-service.Application\user-service.Application.csproj", "{DC6F608A-4121-4535-BFB6-AED4E462BE42}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "user-service.Infrastructure", "..\user-service.Infrastructure\user-service.Infrastructure.csproj", "{AE0886B8-F3CB-43E6-8085-15771D32CF51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{17FE68F7-A790-66A0-25A5-14B086A4E4DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17FE68F7-A790-66A0-25A5-14B086A4E4DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17FE68F7-A790-66A0-25A5-14B086A4E4DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC6F608A-4121-4535-BFB6-AED4E462BE42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC6F608A-4121-4535-BFB6-AED4E462BE42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC6F608A-4121-4535-BFB6-AED4E462BE42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC6F608A-4121-4535-BFB6-AED4E462BE42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE0886B8-F3CB-43E6-8085-15771D32CF51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE0886B8-F3CB-43E6-8085-15771D32CF51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE0886B8-F3CB-43E6-8085-15771D32CF51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE0886B8-F3CB-43E6-8085-15771D32CF51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

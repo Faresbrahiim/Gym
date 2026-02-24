@@ -2,11 +2,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY *.csproj ./
-RUN dotnet restore
+# Copy everything from microservices root
+COPY . .
 
-COPY . ./
-RUN dotnet publish -c Release -o /app/publish
+# Restore using solution inside user-service folder
+RUN dotnet restore user-service/user-service.sln
+
+# Publish API project
+RUN dotnet publish user-service/user-service.csproj -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime

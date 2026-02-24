@@ -1,12 +1,16 @@
-﻿using user_service.Domain.Enums;
-using user_service.DTOs;
 using user_service.Interfaces;
-using user_service.Mappers;
-using user_service.Models;
 using user_service.Repositories;
-using user_service.Security;
+//using user_service.Security;
+
+using user_service.Application.DTOs;
+using user_service.Application.Entities;
+using user_service.Application.Enums;
+using user_service.Application.Interfaces;
+using user_service.Application.Mappers;
+
 using user_service.Domain.Exceptions;
 using user_service.Helpers;
+
 
 namespace user_service.Services
 {
@@ -19,7 +23,7 @@ namespace user_service.Services
         private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
         private readonly IEmailService _emailService;
 
-        // ✅ Single constructor for all DI
+        //  Single constructor for all DI
         public AuthService(
             IUserRepository userRepository,
             ITokenService tokenService,
@@ -43,12 +47,15 @@ namespace user_service.Services
         public LoginResponse LoginWithEmail(LoginRequest request)
         {
             var user = _userRepository.GetByEmail(request.Email);
-
-            if (user == null || user.PasswordHash != request.Password)
+            if (user == null)
                 throw new InvalidCredentialsException();
 
-            if (user.Status != UserStatus.ACTIVE)
+            //  Combine HEAD & develop logic
+            if (!_passwordHasher.Verify(request.Password, user.PasswordHash) || user.Status != UserStatus.ACTIVE)
                 throw new InvalidCredentialsException();
+
+            if (_passwordHasher.NeedsRehash(user.PasswordHash))
+                user.PasswordHash = _passwordHasher.Hash(request.Password);
 
             user.LastLoginAt = DateTime.UtcNow;
             _userRepository.Update(user);
@@ -78,7 +85,6 @@ namespace user_service.Services
             if (externalLogin != null)
             {
                 user = _userRepository.GetById(externalLogin.UserId);
-
                 if (user.Status != UserStatus.ACTIVE)
                     throw new ExternalAuthException("User account is not active");
             }
@@ -94,7 +100,6 @@ namespace user_service.Services
                     ProviderUserId = payload.Subject,
                     CreatedAt = DateTime.UtcNow
                 };
-
                 _userRepository.AddExternalLogin(newExternalLogin);
 
                 if (user.Status != UserStatus.ACTIVE)
@@ -123,8 +128,7 @@ namespace user_service.Services
             if (_userRepository.GetByUsername(request.Username) != null)
                 throw new Exception("Username already exists");
 
-            if (!Enum.TryParse<UserRole>(request.Role, true, out var role))
-                throw new Exception("Invalid role");
+           
 
             var passwordHash = _passwordHasher.Hash(request.Password);
 
@@ -195,11 +199,10 @@ namespace user_service.Services
                 throw new Exception("Invalid or expired reset token");
 
             var user = _userRepository.GetById(resetToken.UserId);
-
             if (user == null)
                 throw new Exception("User not found");
 
-            user.PasswordHash = dto.NewPassword;
+            user.PasswordHash = _passwordHasher.Hash(dto.NewPassword);
             user.UpdatedAt = DateTime.UtcNow;
 
             resetToken.UsedAt = DateTime.UtcNow;

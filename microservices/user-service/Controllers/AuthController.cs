@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using user_service.Interfaces;
-using user_service.DTOs;
+using user_service.Application.Interfaces;
+using user_service.Application.DTOs;
 
 namespace user_service.Controllers
 {
