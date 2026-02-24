@@ -139,7 +139,7 @@ namespace user_service.Services
                 Username = request.Username,
                 PasswordHash = passwordHash,
                 Role = UserRole.MEMBER,
-                Status = UserStatus.PENDING,
+                Status = UserStatus.ACTIVE,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
