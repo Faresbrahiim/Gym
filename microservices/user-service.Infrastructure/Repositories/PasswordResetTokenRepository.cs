@@ -1,13 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using user_service.Infrastructure.Data;
-using user_service.Interfaces;
 using user_service.Application.Entities;
+using user_service.Application.Interfaces;
 
 namespace user_service.Repositories
 {
     public class PasswordResetTokenRepository : IPasswordResetTokenRepository
     {
-
         private readonly UserDbContext _context;
 
         public PasswordResetTokenRepository(UserDbContext context)
@@ -15,26 +14,28 @@ namespace user_service.Repositories
             _context = context;
         }
 
-        public void Create(PasswordResetToken token)
+        public async Task Create(PasswordResetToken token, CancellationToken cancellationToken = default)
         {
-            _context.PasswordResetTokens.Add(token);
-            _context.SaveChanges();
+            await _context.PasswordResetTokens.AddAsync(token, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public PasswordResetToken? GetValidToken(string tokenHash)
+        public async Task<PasswordResetToken?> GetValidToken(string tokenHash, CancellationToken cancellationToken = default)
         {
-            return _context.PasswordResetTokens
+            return await _context.PasswordResetTokens
                 .Include(t => t.User)
-                .FirstOrDefault(t =>
+                .FirstOrDefaultAsync(t =>
                     t.TokenHash == tokenHash &&
                     t.UsedAt == null &&
-                    t.ExpiresAt > DateTime.UtcNow);
+                    t.ExpiresAt > DateTime.UtcNow,
+                    cancellationToken
+                );
         }
 
-        public void Update(PasswordResetToken token)
+        public async Task Update(PasswordResetToken token, CancellationToken cancellationToken = default)
         {
             _context.PasswordResetTokens.Update(token);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

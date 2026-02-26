@@ -4,13 +4,11 @@ namespace user_service.Application.Interfaces
 {
     public interface IAuthService
     {
-        LoginResponse LoginWithEmail(LoginRequest request);
-        LoginResponse LoginWithGoogle(GoogleLoginRequest request);
+        Task<LoginResponse> LoginWithEmail(LoginRequest request, CancellationToken cancellationToken = default);
+        Task<LoginResponse> LoginWithGoogle(GoogleLoginRequest request, CancellationToken cancellationToken = default);
+        Task<UserDto> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
 
-        Task<UserDto> RegisterAsync(RegisterRequest request);
-
-        void RequestPasswordReset(RequestPasswordResetDto dto);
-        void ResetPassword(ResetPasswordDto dto);
-
+        Task RequestPasswordReset(RequestPasswordResetDto dto, CancellationToken cancellationToken = default);
+        Task ResetPassword(ResetPasswordDto dto, CancellationToken cancellationToken = default);
     }
 }

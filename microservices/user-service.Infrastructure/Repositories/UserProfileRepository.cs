@@ -1,12 +1,10 @@
-﻿namespace user_service.Repositories
-{
-    
-    using user_service.Application.Entities;
-    using user_service.Application.Interfaces;
-    using user_service.Infrastructure.Data;
-    using Microsoft.EntityFrameworkCore;
-    using user_service.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using user_service.Application.Entities;
+using user_service.Application.Interfaces;
+using user_service.Infrastructure.Data;
 
+namespace user_service.Repositories
+{
     public class UserProfileRepository : IUserProfileRepository
     {
         private readonly UserDbContext _context;
@@ -16,22 +14,22 @@
             _context = context;
         }
 
-        public UserProfile? GetByUserId(Guid userId)
+        public async Task<UserProfile?> GetByUserId(Guid userId, CancellationToken cancellationToken = default)
         {
-            return _context.UserProfiles
-                .FirstOrDefault(p => p.UserId == userId);
+            return await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.UserId == userId, cancellationToken);
         }
 
-        public void Create(UserProfile profile)
+        public async Task Create(UserProfile profile, CancellationToken cancellationToken = default)
         {
-            _context.UserProfiles.Add(profile);
-            _context.SaveChanges();
+            await _context.UserProfiles.AddAsync(profile, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public void Update(UserProfile profile)
+        public async Task Update(UserProfile profile, CancellationToken cancellationToken = default)
         {
             _context.UserProfiles.Update(profile);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

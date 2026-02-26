@@ -14,66 +14,63 @@ namespace user_service.Infrastructure.Repositories
             _context = context;
         }
 
-        public User GetByEmail(string email)
+        public async Task<User?> GetByEmail(string email, CancellationToken cancellationToken = default)
         {
-            var loweredEmail = email.ToLower();
-            return _context.Users
+            return await _context.Users
+                .AsNoTracking()
                 .Include(u => u.Profile)
                 .Include(u => u.ExternalLogins)
-                .FirstOrDefault(u => u.Email.ToLower() == loweredEmail);
+                .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         }
 
-      
-        public User GetById(Guid userId)
+        public async Task<User?> GetById(Guid userId, CancellationToken cancellationToken = default)
         {
-            return _context.Users
+            return await _context.Users
+                //.AsNoTracking()
                 .Include(u => u.Profile)
                 .Include(u => u.ExternalLogins)
-                .FirstOrDefault(u => u.Id == userId);
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         }
 
-      
-        public ExternalLogin? GetExternalLogin(string provider, string providerUserId)
+        public async Task<ExternalLogin?> GetExternalLogin(string provider, string providerUserId, CancellationToken cancellationToken = default)
         {
-            return _context.ExternalLogins
-                .FirstOrDefault(e => e.Provider == provider && e.ProviderUserId == providerUserId);
+            return await _context.ExternalLogins
+                .AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Provider == provider && e.ProviderUserId == providerUserId, cancellationToken);
         }
 
-        
-        public void AddExternalLogin(ExternalLogin externalLogin)
+        public async Task AddExternalLogin(ExternalLogin externalLogin, CancellationToken cancellationToken = default)
         {
-            _context.ExternalLogins.Add(externalLogin);
-            _context.SaveChanges();
+            await _context.ExternalLogins.AddAsync(externalLogin, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
-       
-        public User Create(User user)
+        public async Task<User> Create(User user, CancellationToken cancellationToken = default)
         {
-            _context.Users.Add(user);
-            _context.SaveChanges(); 
+            await _context.Users.AddAsync(user, cancellationToken);
 
             if (user.Profile != null)
             {
                 user.Profile.UserId = user.Id;
-                if (!_context.UserProfiles.Any(p => p.UserId == user.Id))
-                    _context.UserProfiles.Add(user.Profile);
+                await _context.UserProfiles.AddAsync(user.Profile, cancellationToken);
             }
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
             return user;
         }
 
-        public User Update(User user)
+        public async Task<User> Update(User user, CancellationToken cancellationToken = default)
         {
             _context.Users.Update(user);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync(cancellationToken);
             return user;
         }
 
-        public User? GetByUsername(string username)
+        public async Task<User?> GetByUsername(string username, CancellationToken cancellationToken = default)
         {
-            return _context.Users
-                .FirstOrDefault(u => u.Username == username);
+            return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
         }
     }
 }

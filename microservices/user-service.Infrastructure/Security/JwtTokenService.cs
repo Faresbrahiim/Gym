@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using user_service.Application.DTOs;
 using user_service.Application.Interfaces;
+using user_service.Interfaces;
 
 namespace user_service.Infrastructure.Security
 {

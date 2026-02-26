@@ -1,10 +1,19 @@
 ﻿using user_service.Application.Entities;
-namespace user_service.Interfaces
+
+namespace user_service.Application.Interfaces
 {
     public interface IUserProfileRepository
     {
-        UserProfile? GetByUserId(Guid userId);
-        void Create(UserProfile profile);
-        void Update(UserProfile profile);
+        Task<UserProfile?> GetByUserId(
+            Guid userId,
+            CancellationToken cancellationToken = default);
+
+        Task Create(
+            UserProfile profile,
+            CancellationToken cancellationToken = default);
+
+        Task Update(
+            UserProfile profile,
+            CancellationToken cancellationToken = default);
     }
 }
