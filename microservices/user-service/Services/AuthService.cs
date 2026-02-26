@@ -1,5 +1,4 @@
 using user_service.Interfaces;
-using user_service.Repositories;
 using user_service.Application.DTOs;
 using user_service.Application.Entities;
 using user_service.Application.Enums;
