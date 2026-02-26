@@ -18,47 +18,51 @@ namespace user_service.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(request);
+
             var user = await _authService.RegisterAsync(request);
             return Ok(user);
         }
 
         [HttpPost("login/email")]
-        public IActionResult LoginEmail([FromBody] LoginRequest request)
+        public async Task<IActionResult> LoginEmail([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)
                 return UnprocessableEntity(request);
 
-            var response = _authService.LoginWithEmail(request);
+            var response = await _authService.LoginWithEmail(request);
             return Ok(response);
         }
 
         [HttpPost("login/google")]
-        public IActionResult LoginGoogle([FromBody] GoogleLoginRequest request)
+        public async Task<IActionResult> LoginGoogle([FromBody] GoogleLoginRequest request)
         {
-            var response = _authService.LoginWithGoogle(request);
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(request);
+
+            var response = await _authService.LoginWithGoogle(request);
             return Ok(response);
         }
 
-  
         [HttpPost("password/request-reset")]
-        public IActionResult RequestPasswordReset([FromBody] RequestPasswordResetDto dto)
+        public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetDto dto)
         {
             if (!ModelState.IsValid)
                 return UnprocessableEntity(dto);
 
-            _authService.RequestPasswordReset(dto);
-
-            // reason: prevent user enumeration
+            await _authService.RequestPasswordReset(dto);
             return Ok(new { message = "If email exists, a reset link has been sent." });
         }
 
         [HttpPost("password/reset")]
-        public IActionResult ResetPassword([FromBody] ResetPasswordDto dto)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             if (!ModelState.IsValid)
                 return UnprocessableEntity(dto);
-                _authService.ResetPassword(dto);
-                return Ok(new { message = "Password updated successfully." });
-        }   
+
+            await _authService.ResetPassword(dto);
+            return Ok(new { message = "Password updated successfully." });
+        }
     }
 }

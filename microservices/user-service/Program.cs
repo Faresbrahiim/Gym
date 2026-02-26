@@ -11,7 +11,6 @@ using user_service.Repositories;
 using user_service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Servicess
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
