@@ -21,7 +21,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-
+builder.Services.AddScoped<IGoogleAuthValidator, GoogleAuthValidator>();
 builder.Services.AddScoped<IPasswordHasher, VersionedArgon2PasswordHasher>();
 
 

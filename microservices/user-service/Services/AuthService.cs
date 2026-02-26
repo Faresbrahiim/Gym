@@ -17,7 +17,7 @@ namespace user_service.Services
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
         private readonly IEmailService _emailService;
-
+        private readonly IGoogleAuthValidator _googleAuthValidator;
         private readonly int _passwordResetExpiryMinutes;
 
         public AuthService(
@@ -26,7 +26,9 @@ namespace user_service.Services
             IPasswordHasher passwordHasher,
             IUserProfileRepository userProfileRepository,
             IPasswordResetTokenRepository passwordResetTokenRepository,
-            IEmailService emailService)
+            IEmailService emailService
+            ,
+            IGoogleAuthValidator googleAuthValidator)
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -38,7 +40,8 @@ namespace user_service.Services
             // Read from environment variables
             _passwordResetExpiryMinutes = int.TryParse(Environment.GetEnvironmentVariable("PASSWORD_RESET_TOKEN_EXPIRY_MINUTES"), out var minutes)
                 ? minutes
-                : 30; // fallback to 30 minutes
+                : 30; 
+            _googleAuthValidator = googleAuthValidator;
         }
 
         // -----------------------------
@@ -58,7 +61,7 @@ namespace user_service.Services
 
         public async Task<LoginResponse> LoginWithGoogle(GoogleLoginRequest request, CancellationToken cancellationToken = default)
         {
-            var payload = GoogleAuthValidator.ValidateIdToken(request.Token)
+            var payload = await _googleAuthValidator.ValidateIdToken(request.Token)
                 ?? throw new ExternalAuthException("Invalid Google token");
 
             if (!payload.EmailVerified)
