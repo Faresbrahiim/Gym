@@ -23,7 +23,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddScoped<IGoogleAuthValidator, GoogleAuthValidator>();
 builder.Services.AddScoped<IPasswordHasher, VersionedArgon2PasswordHasher>();
-
+builder.Services.AddScoped<IUserService, UserService>();
 
 var privateKeyText = Environment.GetEnvironmentVariable("JWT_PRIVATE_KEY")!;
 var publicKeyText = Environment.GetEnvironmentVariable("JWT_PUBLIC_KEY")!;
