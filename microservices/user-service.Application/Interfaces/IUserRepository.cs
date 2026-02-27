@@ -1,4 +1,7 @@
-﻿using user_service.Application.Entities;
+﻿using user_service.Application.Common;
+using user_service.Application.DTOs;
+using user_service.Application.Entities;
+using user_service.Application.Enums;
 
 namespace user_service.Application.Interfaces
 {
@@ -32,5 +35,11 @@ namespace user_service.Application.Interfaces
         Task<User> Update(
             User user,
             CancellationToken cancellationToken = default);
+        Task<PagedResult<UserListDto>> GetUsersForAdminAsync(
+            int page,
+            int pageSize,
+            string? search,
+            UserRole? role,
+            UserStatus? status);
     }
 }
