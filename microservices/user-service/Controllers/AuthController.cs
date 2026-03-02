@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using user_service.Application.Interfaces;
 using user_service.Application.DTOs;
+using user_service.Application.Interfaces;
+using user_service.Infrastructure.Repositories;
 
 namespace user_service.Controllers
 {
@@ -63,6 +64,19 @@ namespace user_service.Controllers
 
             await _authService.ResetPassword(dto);
             return Ok(new { message = "Password updated successfully." });
+        }
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            // Extract user ID from JWT claims
+            var userIdClaim = User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                return Unauthorized(new { message = "Invalid token" });
+
+            // Call AuthService
+            await _authService.Logout(userId);
+
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }
