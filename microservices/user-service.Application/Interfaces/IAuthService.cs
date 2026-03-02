@@ -6,6 +6,7 @@ namespace user_service.Application.Interfaces
     {
         Task<LoginResponse> LoginWithEmail(LoginRequest request, CancellationToken cancellationToken = default);
         Task<LoginResponse> LoginWithGoogle(GoogleLoginRequest request, CancellationToken cancellationToken = default);
+        Task Logout(Guid userId);
         Task<UserDto> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
 
         Task RequestPasswordReset(RequestPasswordResetDto dto, CancellationToken cancellationToken = default);
