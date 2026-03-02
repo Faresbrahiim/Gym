@@ -8,7 +8,5 @@ namespace user_service.Interfaces
         public PasswordResetToken? GetValidToken(string tokenHash);
         public void Update(PasswordResetToken token);
  
-
-
     }
 }

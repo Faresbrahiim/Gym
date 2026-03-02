@@ -1,0 +1,12 @@
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\bin\Debug\net9.0\user-service.Application.deps.json
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\bin\Debug\net9.0\user-service.Application.dll
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\bin\Debug\net9.0\user-service.Application.pdb
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\user-service.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\user-service.Application.AssemblyInfoInputs.cache
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\user-service.Application.AssemblyInfo.cs
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\user-service.Application.csproj.CoreCompileInputs.cache
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\user-service.Application.sourcelink.json
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\user-service.Application.dll
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\refint\user-service.Application.dll
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\user-service.Application.pdb
+C:\Users\NADA-PC\Gym\microservices\user-service.Application\obj\Debug\net9.0\ref\user-service.Application.dll

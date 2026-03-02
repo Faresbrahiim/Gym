@@ -9,5 +9,9 @@ namespace user_service.Application.Interfaces
 
         void RequestPasswordReset(RequestPasswordResetDto dto);
         void ResetPassword(ResetPasswordDto dto);
+        LoginResponse RefreshToken(string refreshToken);
+        void Logout(Guid userId);
+
+
     }
 }
