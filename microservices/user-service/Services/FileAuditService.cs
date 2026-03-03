@@ -25,7 +25,7 @@ namespace user_service.Loggings
             logEntry.Append($"[{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}] ");
             logEntry.Append($"Action: {action}; By: {performedBy}");
             if (!string.IsNullOrWhiteSpace(details))
-                logEntry.Append($"; Details: {details} ======== \n");
+                logEntry.Append($"; Details: {details}");
             logEntry.AppendLine();
 
             await File.AppendAllTextAsync(_logFilePath, logEntry.ToString());

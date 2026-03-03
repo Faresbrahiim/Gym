@@ -51,7 +51,6 @@ namespace user_service.Filters
                 return clone;
             }
 
-            // Handle lists
             if (obj is IEnumerable list && !(obj is string))
             {
                 var maskedList = new List<object>();
@@ -62,7 +61,7 @@ namespace user_service.Filters
                 return maskedList;
             }
 
-            // Handle objects with properties
+           
             var type = obj.GetType();
             if (type.IsClass && type != typeof(string))
             {
@@ -88,7 +87,6 @@ namespace user_service.Filters
                 return clone;
             }
 
-            // Primitive or string
             return obj;
         }
     }
