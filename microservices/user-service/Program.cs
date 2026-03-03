@@ -1,17 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using user_service.Application.Interfaces;
 using user_service.Authorization;
+using user_service.Filters;
 using user_service.Infrastructure.Data;
 using user_service.Infrastructure.Data.Seeding;
 using user_service.Infrastructure.Repositories;
 using user_service.Infrastructure.Security;
 using user_service.Interfaces;
+using user_service.Loggings;
 using user_service.Middleware;
 using user_service.Repositories;
 using user_service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Servicess
+builder.Services.AddScoped<IFileAuditService, FileAuditService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

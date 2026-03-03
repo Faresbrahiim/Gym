@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using user_service.Application.DTOs;
 using user_service.Application.Interfaces;
+using user_service.Filters;
 using user_service.Infrastructure.Repositories;
 
 namespace user_service.Controllers
@@ -17,6 +18,7 @@ namespace user_service.Controllers
         }
 
         [HttpPost("register")]
+        [Audit("RegisterUser")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid)
@@ -27,6 +29,7 @@ namespace user_service.Controllers
         }
 
         [HttpPost("login/email")]
+        [Audit("LoginWithEmail")]
         public async Task<IActionResult> LoginEmail([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)
@@ -37,6 +40,8 @@ namespace user_service.Controllers
         }
 
         [HttpPost("login/google")]
+        [Audit("LoginWithGoogle")]
+
         public async Task<IActionResult> LoginGoogle([FromBody] GoogleLoginRequest request)
         {
             if (!ModelState.IsValid)
@@ -47,6 +52,8 @@ namespace user_service.Controllers
         }
 
         [HttpPost("password/request-reset")]
+        [Audit("reuest-user-password")]
+
         public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetDto dto)
         {
             if (!ModelState.IsValid)
@@ -57,6 +64,8 @@ namespace user_service.Controllers
         }
 
         [HttpPost("password/reset")]
+        [Audit("reset-password")]
+
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             if (!ModelState.IsValid)
@@ -66,6 +75,7 @@ namespace user_service.Controllers
             return Ok(new { message = "Password updated successfully." });
         }
         [HttpPost("logout")]
+        [Audit("logout")]
         public async Task<IActionResult> Logout()
         {
             // Extract user ID from JWT claims

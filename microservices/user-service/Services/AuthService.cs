@@ -1,11 +1,12 @@
-﻿using user_service.Interfaces;
-using user_service.Application.DTOs;
+﻿using user_service.Application.DTOs;
 using user_service.Application.Entities;
 using user_service.Application.Enums;
 using user_service.Application.Interfaces;
 using user_service.Application.Mappers;
 using user_service.Domain.Exceptions;
 using user_service.Helpers;
+using user_service.Interfaces;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace user_service.Services
 {
     public class AuthService : IAuthService
@@ -17,8 +18,7 @@ namespace user_service.Services
         private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
         private readonly IEmailService _emailService;
         private readonly IGoogleAuthValidator _googleAuthValidator;
-
-        // ⭐ NEW
+        private readonly IFileAuditService _fileAuditService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         private readonly int _passwordResetExpiryMinutes;
@@ -31,7 +31,10 @@ namespace user_service.Services
             IPasswordResetTokenRepository passwordResetTokenRepository,
             IEmailService emailService,
             IGoogleAuthValidator googleAuthValidator,
-            IRefreshTokenRepository refreshTokenRepository)   // ⭐ ADDED
+            IRefreshTokenRepository refreshTokenRepository, 
+            IFileAuditService fileAuditService
+            )   
+          
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -40,14 +43,13 @@ namespace user_service.Services
             _passwordResetTokenRepository = passwordResetTokenRepository;
             _emailService = emailService;
             _googleAuthValidator = googleAuthValidator;
-
-            // ⭐ save the repo
             _refreshTokenRepository = refreshTokenRepository;
 
             _passwordResetExpiryMinutes =
                 int.TryParse(Environment.GetEnvironmentVariable("PASSWORD_RESET_TOKEN_EXPIRY_MINUTES"), out var minutes)
                 ? minutes
                 : 30;
+             _fileAuditService = fileAuditService;
         }
 
         // -----------------------------------------------------
@@ -60,7 +62,7 @@ namespace user_service.Services
 
             if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash) || user.Status != UserStatus.ACTIVE)
                 throw new UnauthorizedAccessException();
-
+          
             return await CompleteLoginAsync(user, request.Password, cancellationToken);
         }
 
@@ -105,7 +107,7 @@ namespace user_service.Services
         }
 
         // -----------------------------------------------------
-        // REGISTER (unchanged)
+        // REGISTER
         // -----------------------------------------------------
         public async Task<UserDto> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
         {
@@ -142,7 +144,11 @@ namespace user_service.Services
 
             await _userRepository.Create(user, cancellationToken);
             await _userProfileRepository.Create(profile, cancellationToken);
-
+            await _fileAuditService.LogAsync(
+            action: "RegisterUser",
+            performedBy: profile.User.Username,
+            details: "User registered successfully"
+            );
             return UserMapper.ToDto(user);
         }
 
@@ -170,6 +176,11 @@ namespace user_service.Services
 
             var resetLink = $"https://frontend-app/reset-password?token={rawToken}";
             await _emailService.SendPasswordResetEmail(user.Email, resetLink);
+            await _fileAuditService.LogAsync(
+         action: "request reset password  ",
+         performedBy: user.Username,
+         details: "link sent "
+        );
         }
 
         public async Task ResetPassword(ResetPasswordDto dto, CancellationToken cancellationToken = default)
@@ -188,9 +199,13 @@ namespace user_service.Services
             user.UpdatedAt = DateTime.UtcNow;
 
             resetToken.UsedAt = DateTime.UtcNow;
-
             await _userRepository.Update(user, cancellationToken);
             await _passwordResetTokenRepository.Update(resetToken, cancellationToken);
+            await _fileAuditService.LogAsync(
+            action: "reset password  ",
+            performedBy: user.Username,
+            details: "User reseted successfully"
+           );
         }
 
         // -----------------------------------------------------
@@ -226,7 +241,11 @@ namespace user_service.Services
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(7)
             }, cancellationToken);
-
+            await _fileAuditService.LogAsync(
+            action: "log in  ",
+            performedBy: user.Username,
+            details: "User logged successfully"
+            );
             return new LoginResponse
             {
                 AccessToken = accessToken,
@@ -276,6 +295,11 @@ namespace user_service.Services
         }
         public async Task Logout(Guid userId)
         {
+            await _fileAuditService.LogAsync(
+           action: "log out  ",
+           performedBy:  "get user name from db ",
+           details: "User logged successfully"
+           );
             // Revoke all refresh tokens for this user
             await _refreshTokenRepository.RevokeAllTokens(userId);
         }
