@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using user_service.Domain.Exceptions;
+using user_service.Application.Domain.Exceptions;
 
 namespace user_service.Middleware
 {

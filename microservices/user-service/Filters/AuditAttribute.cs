@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using user_service.Application.Interfaces;
-using user_service.Loggings;
+using user_service.Application.Loggings;
 
 namespace user_service.Filters
 {

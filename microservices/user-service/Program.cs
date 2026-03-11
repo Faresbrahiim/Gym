@@ -6,11 +6,11 @@ using user_service.Infrastructure.Data;
 using user_service.Infrastructure.Data.Seeding;
 using user_service.Infrastructure.Repositories;
 using user_service.Infrastructure.Security;
-using user_service.Interfaces;
-using user_service.Loggings;
+
+using user_service.Application.Loggings;
 using user_service.Middleware;
 using user_service.Repositories;
-using user_service.Services;
+using user_service.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Servicess
