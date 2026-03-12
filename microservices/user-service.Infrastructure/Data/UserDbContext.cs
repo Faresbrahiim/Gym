@@ -21,6 +21,8 @@ namespace user_service.Infrastructure.Data
 
         public DbSet<ExternalLogin> ExternalLogins { get; set; } = null!;
 
+        public DbSet<UserToken> UserTokens => Set<UserToken>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

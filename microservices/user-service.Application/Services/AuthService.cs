@@ -15,12 +15,12 @@ namespace user_service.Application.Services
         private readonly ITokenService _tokenService;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IUserProfileRepository _userProfileRepository;
-        private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
         private readonly IEmailService _emailService;
         private readonly IGoogleAuthValidator _googleAuthValidator;
         private readonly IFileAuditService _fileAuditService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordCredentialService _passwordCredentialService;
+        private readonly IUserTokenRepository _userTokenRepository;
 
         private readonly int _passwordResetExpiryMinutes;
 
@@ -33,8 +33,8 @@ namespace user_service.Application.Services
             IEmailService emailService,
             IGoogleAuthValidator googleAuthValidator,
             IRefreshTokenRepository refreshTokenRepository, 
-            IFileAuditService fileAuditService
-,
+            IFileAuditService fileAuditService,
+            IUserTokenRepository userTokenRepository,
             IPasswordCredentialService passwordCredentialService
             )
 
@@ -43,7 +43,6 @@ namespace user_service.Application.Services
             _tokenService = tokenService;
             _passwordHasher = passwordHasher;
             _userProfileRepository = userProfileRepository;
-            _passwordResetTokenRepository = passwordResetTokenRepository;
             _emailService = emailService;
             _googleAuthValidator = googleAuthValidator;
             _refreshTokenRepository = refreshTokenRepository;
@@ -54,6 +53,7 @@ namespace user_service.Application.Services
                 : 30;
             _fileAuditService = fileAuditService;
             _passwordCredentialService = passwordCredentialService;
+            _userTokenRepository = userTokenRepository;
         }
 
         // -----------------------------------------------------
@@ -168,15 +168,18 @@ namespace user_service.Application.Services
             var rawToken = TokenHelper.GenerateToken();
             var tokenHash = TokenHelper.HashToken(rawToken);
 
-            var resetToken = new PasswordResetToken
+            var token = new UserToken
             {
                 UserId = user.Id,
                 TokenHash = tokenHash,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(_passwordResetExpiryMinutes),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Type = UserTokenType.PASSWORD_RESET
             };
 
-            await _passwordResetTokenRepository.Create(resetToken, cancellationToken);
+            await _userTokenRepository.Create(token, cancellationToken);
+
+            
 
             var resetLink = $"https://frontend-app/reset-password?token={rawToken}";
             await _emailService.SendPasswordResetEmail(user.Email, resetLink);
