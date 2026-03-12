@@ -15,7 +15,7 @@ namespace user_service.Application.Services
     public class AdminService:IAdminService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
+        private readonly IUserTokenRepository _userTokenRepository;
         private readonly IEmailService _emailService;
         private readonly IFileAuditService _fileAuditService;
 
@@ -23,12 +23,13 @@ namespace user_service.Application.Services
           IUserRepository userRepository,
           IPasswordResetTokenRepository passwordResetTokenRepository,
           IEmailService emailService,
+          IUserTokenRepository userTokenRepository,
           IFileAuditService fileAuditService)
         {
             _userRepository = userRepository;
-            _passwordResetTokenRepository = passwordResetTokenRepository;
             _emailService = emailService;
             _fileAuditService = fileAuditService;
+            _userTokenRepository = userTokenRepository;
         }
         public async Task CreateMemberAsync(
             CreateMemberByAdminDto dto,
@@ -53,7 +54,7 @@ namespace user_service.Application.Services
             await InviteUserAsync(
                    dto.Email,
                    dto.Username,
-                   UserRole.MEMBER,
+                   UserRole.COACH,
                    performedBy,
                    cancellationToken
                );
@@ -92,15 +93,16 @@ namespace user_service.Application.Services
             var rawToken = TokenHelper.GenerateToken();
             var tokenHash = TokenHelper.HashToken(rawToken);
 
-            var invitationToken = new PasswordResetToken
+            var invitationToken = new UserToken
             {
                 UserId = user.Id,
                 TokenHash = tokenHash,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Type = UserTokenType.INVITATION
             };
 
-            await _passwordResetTokenRepository.Create(invitationToken, cancellationToken);
+            await _userTokenRepository.Create(invitationToken, cancellationToken);
 
             var invitationLink = $"https://frontend/setup-password?token={rawToken}";
 
