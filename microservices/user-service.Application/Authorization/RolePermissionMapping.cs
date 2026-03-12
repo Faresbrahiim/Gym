@@ -1,9 +1,8 @@
 ﻿using System.Security.Claims;
-using user_service.Authorization;
 using user_service.Application.Enums;
 using user_service.Application.Entities;
 
-namespace user_service.Authorization
+namespace user_service.Application.Authorization
 {
     public class RolePermissionMapping
     {
