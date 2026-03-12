@@ -1,9 +1,9 @@
-﻿namespace user_service.Application.Enums
-{
-   public enum UserStatus
+﻿    namespace user_service.Application.Enums
     {
-        PENDING,
-        ACTIVE,
-        SUSPENDED
+       public enum UserStatus
+        {
+            PENDING,
+            ACTIVE,
+            SUSPENDED
+        }
     }
-}

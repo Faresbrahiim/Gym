@@ -1,4 +1,6 @@
 ﻿
+using user_service.Application.Enums;
+
 namespace user_service.Application.DTOs
 {
     public class UserDto
@@ -7,7 +9,7 @@ namespace user_service.Application.DTOs
 
         public string Email { get; set; }
 
-        public string Role { get; set; }
+        public UserRole Role { get; set; }
 
         public string FirstName { get; set; }
 

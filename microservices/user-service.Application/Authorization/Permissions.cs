@@ -1,4 +1,4 @@
-﻿namespace user_service.Authorization
+﻿namespace user_service.Application.Authorization
 {
     public class Permissions
     {

@@ -4,7 +4,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using user_service.Application.DTOs;
 using user_service.Application.Interfaces;
-using user_service.Interfaces;
+using user_service.Application.Authorization;
+
 
 namespace user_service.Infrastructure.Security
 {
@@ -29,17 +30,24 @@ namespace user_service.Infrastructure.Security
 
         public string GenerateToken(UserDto user)
         {
+            var permissions = RolePermissionMapping.GetPermissions(user.Role);
             var credentials = new SigningCredentials(
                 new RsaSecurityKey(_privateKey),
                 SecurityAlgorithms.RsaSha256
             );
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("role", user.Role)
+                new Claim("role", user.Role.ToString())
+               
             };
+
+            foreach (var permission in permissions)
+            {
+                claims.Add(new Claim("permission", permission));
+            }
 
             var token = new JwtSecurityToken(
                 issuer: _issuer,

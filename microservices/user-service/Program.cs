@@ -11,6 +11,9 @@ using user_service.Application.Loggings;
 using user_service.Middleware;
 using user_service.Repositories;
 using user_service.Application.Services;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 // Servicess
@@ -18,6 +21,8 @@ builder.Services.AddScoped<IFileAuditService, FileAuditService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IPasswordCredentialService, PasswordCredentialService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddControllers();
@@ -42,7 +47,39 @@ builder.Services.AddSingleton<ITokenService>(sp =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(connectionString));
+builder.Services
+.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    var rsa = RSA.Create();
+    rsa.ImportFromPem(publicKeyText);
 
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new RsaSecurityKey(rsa),
+        RoleClaimType = "role"
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("JWT AUTH FAILED:");
+            Console.WriteLine(context.Exception);
+            return Task.CompletedTask;
+        },
+
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("JWT VALIDATED SUCCESSFULLY");
+            return Task.CompletedTask;
+        }
+    };
+});
 // Authorization
 builder.Services.AddCustomAuthorization();
 
