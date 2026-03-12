@@ -42,7 +42,7 @@ namespace user_service.Application.Services
                     UserRole.MEMBER,
                     performedBy,
                     cancellationToken
-                );
+             );
 
         }
 

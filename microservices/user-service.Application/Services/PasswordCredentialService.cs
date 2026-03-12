@@ -56,5 +56,38 @@ namespace user_service.Application.Services
 
             return user;
         }
+
+        public async Task<User> AcceptInvitationAsync(
+                    string rawToken,
+                    string password,
+                    CancellationToken cancellationToken = default
+            )
+        {
+            var tokenHash = TokenHelper.HashToken(rawToken);
+
+            var token = await _userTokenRepository.GetValidToken(
+                tokenHash,
+                UserTokenType.INVITATION,
+                cancellationToken);
+
+            if (token == null)
+                throw new InvalidTokenException();
+
+            var user = await _userRepository.GetById(token.UserId, cancellationToken);
+
+            if (user == null)
+                throw new UserNotFoundException(token.UserId);
+
+            user.PasswordHash = _passwordHasher.Hash(password);
+            user.Status = UserStatus.ACTIVE;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            token.UsedAt = DateTime.UtcNow;
+
+            await _userRepository.Update(user, cancellationToken);
+            await _userTokenRepository.Update(token, cancellationToken);
+
+            return user;
+        }
     }
 }

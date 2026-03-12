@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using user_service.Application.DTOs;
 using user_service.Application.Interfaces;
+using user_service.Application.Services;
 using user_service.Filters;
 using user_service.Infrastructure.Repositories;
 
@@ -11,10 +12,12 @@ namespace user_service.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IPasswordCredentialService _passwordCredentialService;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IPasswordCredentialService passwordCredentialService)
         {
             _authService = authService;
+            _passwordCredentialService = passwordCredentialService;
         }
 
         [HttpPost("register")]
@@ -87,6 +90,20 @@ namespace user_service.Controllers
             await _authService.Logout(userId);
 
             return Ok(new { message = "Logged out successfully" });
+        }
+
+        [HttpPost("accept-invitation")]
+        public async Task<IActionResult> AcceptInvitation(
+        [FromBody] AcceptInvitationDto dto,
+        CancellationToken cancellationToken
+        )
+        {
+            var user = await _passwordCredentialService.AcceptInvitationAsync(
+                dto.Token,
+                dto.Password,
+                cancellationToken);
+
+            return Ok(new { message = "Account activated successfully" });
         }
     }
 }

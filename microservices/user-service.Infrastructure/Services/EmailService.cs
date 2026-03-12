@@ -117,12 +117,69 @@ public class EmailService : IEmailService
 
         email.Body = new TextPart("html")
         {
-            Text = $@"
-        <h2>Welcome to Smart Gym</h2>
-        <p>An administrator created an account for you.</p>
-        <p>Click the button below to set your password and activate your account.</p>
-        <a href='{invitationLink}'>Activate Account</a>
-        <p>This link will expire soon.</p>"
+                Text = $@"
+                    <!DOCTYPE html>
+                    <html>
+                    <body style='margin:0; padding:0; font-family: Arial, sans-serif; background:#f4f6f8;'>
+
+                    <table width='100%' cellpadding='0' cellspacing='0'>
+                    <tr>
+                    <td align='center' style='padding:40px 0;'>
+
+                    <table width='600' style='background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 4px 12px rgba(0,0,0,0.1);'>
+
+                    <tr>
+                    <td align='center' style='font-size:28px; font-weight:bold; color:#0d6efd;'>
+                    🏋️ SMART GYM
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td style='padding-top:20px; font-size:22px; font-weight:bold; color:#333;'>
+                    You've been invited!
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td style='padding-top:15px; font-size:16px; color:#555; line-height:1.6;'>
+                    An administrator has created an account for you on <b>Smart Gym</b>.
+                    <br><br>
+                    To activate your account, please set your password using the button below.
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td align='center' style='padding:30px 0;'>
+                    <a href='{invitationLink}' 
+                    style='background:#0d6efd; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;'>
+                    Activate Account
+                    </a>
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td style='font-size:14px; color:#777;'>
+                    This invitation link will expire in <b>30 minutes</b>.
+                    If you did not expect this invitation, you can safely ignore this email.
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td style='padding-top:30px; font-size:12px; color:#aaa; text-align:center;'>
+                    © {DateTime.UtcNow.Year} Smart Gym
+                    <br/>
+                    Support: support@smartgym.com
+                    </td>
+                    </tr>
+
+                    </table>
+
+                    </td>
+                    </tr>
+                    </table>
+
+                    </body>
+                    </html>"
         };
 
         using var smtp = new SmtpClient();
