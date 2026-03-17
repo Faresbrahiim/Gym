@@ -14,13 +14,23 @@ namespace user_service.Application.Interfaces
 
         Task Update(UserToken token, CancellationToken cancellationToken = default);
 
-        Task<UserToken?> GetLatestInvitationToken(
+        //Task<UserToken?> GetLatestInvitationToken(
+        //Guid userId,
+        //CancellationToken cancellationToken = default);
+
+        //Task RevokeInvitationTokens(
+        //Guid userId,
+        //CancellationToken cancellationToken = default);
+
+        Task<UserToken?> GetLatestToken(
         Guid userId,
+        UserTokenType type,
         CancellationToken cancellationToken = default);
 
-        Task RevokeInvitationTokens(
-        Guid userId,
-        CancellationToken cancellationToken = default);
+        Task RevokeTokens(
+            Guid userId,
+            UserTokenType type,
+            CancellationToken cancellationToken = default);
     }
 
 }

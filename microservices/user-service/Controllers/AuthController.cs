@@ -137,5 +137,18 @@ namespace user_service.Controllers
                 message = "Email verified successfully."
             });
         }
+
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerification(
+        [FromBody] ResendVerificationDto dto,
+         CancellationToken cancellationToken)
+        {
+            await _authService.ResendEmailVerificationAsync(dto.email, cancellationToken);
+
+            return Ok(new
+            {
+                message = "If the account exists, a verification email has been sent."
+            });
+        }
     }
 }

@@ -302,6 +302,35 @@ namespace user_service.Application.Services
 
         public async Task ResendInvitationAsync(string email, CancellationToken cancellationToken = default)
         {
+                await ResendUserTokenAsync(
+             email,
+             UserTokenType.INVITATION,
+             "setup-password",
+             _emailService.SendInvitationEmail,
+             cancellationToken
+                );
+        }
+
+        public async Task ResendEmailVerificationAsync(
+            string email,
+            CancellationToken cancellationToken = default)
+        {
+            await ResendUserTokenAsync(
+                email,
+                UserTokenType.EMAIL_VERIFICATION,
+                "verify-email",
+                _emailService.SendEmailVerification,
+                cancellationToken
+            );
+        }
+
+        private async Task ResendUserTokenAsync(
+                string email,
+                UserTokenType tokenType,
+                string frontendPath,
+                Func<string, string, Task> sendEmail,
+                CancellationToken cancellationToken = default)
+        {
             email = email.Trim().ToLower();
 
             var user = await _userRepository.GetByEmail(email, cancellationToken);
@@ -310,7 +339,7 @@ namespace user_service.Application.Services
                 return;
 
             var lastToken = await _userTokenRepository
-                .GetLatestInvitationToken(user.Id, cancellationToken);
+                .GetLatestToken(user.Id, tokenType, cancellationToken);
 
             if (lastToken != null)
             {
@@ -320,19 +349,28 @@ namespace user_service.Application.Services
                     return;
             }
 
-            await _userTokenRepository.RevokeInvitationTokens(user.Id, cancellationToken);
+            await _userTokenRepository
+                .RevokeTokens(user.Id, tokenType, cancellationToken);
 
-            var rawToken = await _passwordCredentialService
-                .CreateInvitationTokenAsync(user.Id, cancellationToken);
+            string rawToken = tokenType switch
+            {
+                UserTokenType.INVITATION =>
+                    await _passwordCredentialService.CreateInvitationTokenAsync(user.Id, cancellationToken),
 
-            var invitationLink = $"https://frontend/setup-password?token={rawToken}";//temp link , front missing !
+                UserTokenType.EMAIL_VERIFICATION =>
+                    await _passwordCredentialService.CreateEmailVerificationTokenAsync(user.Id, cancellationToken),
 
-            await _emailService.SendInvitationEmail(user.Email, invitationLink);
+                _ => throw new InvalidOperationException("Unsupported token type")
+            };
+
+            var link = $"https://frontend-app/{frontendPath}?token={rawToken}";
+
+            await sendEmail(user.Email, link);
 
             await _fileAuditService.LogAsync(
-                action: "ResendInvitation",
+                action: $"Resend{tokenType}",
                 performedBy: user.Email,
-                details: $"Invitation resent to {user.Email}"
+                details: $"{tokenType} token resent to {user.Email}"
             );
         }
 

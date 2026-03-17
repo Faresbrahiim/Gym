@@ -43,33 +43,62 @@ namespace user_service.Repositories
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<UserToken?> GetLatestInvitationToken(
+        //public async Task<UserToken?> GetLatestInvitationToken(
+        //    Guid userId,
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    return await _context.UserTokens
+        //        .Where(t => t.UserId == userId && t.Type == UserTokenType.INVITATION)
+        //        .OrderByDescending(t => t.CreatedAt)
+        //        .FirstOrDefaultAsync(cancellationToken);
+
+        //}
+
+        //public async Task RevokeInvitationTokens(
+        //    Guid userId,
+        //    CancellationToken cancellationToken = default
+        //    )
+        //{
+        //    var tokens = await _context.UserTokens
+        //        .Where(t =>
+        //            t.UserId == userId &&
+        //            t.Type == UserTokenType.INVITATION &&
+        //            t.UsedAt == null)
+        //        .ToListAsync(cancellationToken);
+
+        //    foreach (var token in tokens)
+        //    {
+        //        token.UsedAt = DateTime.UtcNow;
+        //    }
+
+        //    await _context.SaveChangesAsync(cancellationToken);
+        //}
+
+        public async Task<UserToken?> GetLatestToken(
             Guid userId,
+            UserTokenType type,
             CancellationToken cancellationToken = default)
         {
             return await _context.UserTokens
-                .Where(t => t.UserId == userId && t.Type == UserTokenType.INVITATION)
+                .Where(t => t.UserId == userId && t.Type == type)
                 .OrderByDescending(t => t.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
-
         }
 
-        public async Task RevokeInvitationTokens(
+        public async Task RevokeTokens(
             Guid userId,
-            CancellationToken cancellationToken = default
-            )
+            UserTokenType type,
+            CancellationToken cancellationToken = default)
         {
             var tokens = await _context.UserTokens
                 .Where(t =>
                     t.UserId == userId &&
-                    t.Type == UserTokenType.INVITATION &&
+                    t.Type == type &&
                     t.UsedAt == null)
                 .ToListAsync(cancellationToken);
 
             foreach (var token in tokens)
-            {
                 token.UsedAt = DateTime.UtcNow;
-            }
 
             await _context.SaveChangesAsync(cancellationToken);
         }
