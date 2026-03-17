@@ -30,9 +30,10 @@ namespace user_service.Filters
 
                 var maskedArgs = MaskSensitiveProperties(context.ActionArguments);
 
-                var details = System.Text.Json.JsonSerializer.Serialize(maskedArgs);
+                //var details = System.Text.Json.JsonSerializer.Serialize(maskedArgs); -> this line is cuasing trouble , because some ASP objects cannot be serialized
 
-                await auditService.LogAsync(_actionName, username, details);
+                //await auditService.LogAsync(_actionName, username, details);
+                await auditService.LogAsync(_actionName, username);
             }
         }
 

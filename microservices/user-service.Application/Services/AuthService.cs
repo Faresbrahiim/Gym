@@ -132,7 +132,7 @@ namespace user_service.Application.Services
                 Username = request.Username,
                 PasswordHash = passwordHash,
                 Role = UserRole.MEMBER,
-                Status = UserStatus.ACTIVE,
+                Status = UserStatus.PENDING,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -148,6 +148,14 @@ namespace user_service.Application.Services
 
             await _userRepository.Create(user, cancellationToken);
             await _userProfileRepository.Create(profile, cancellationToken);
+
+            var rawToken = await _passwordCredentialService
+                .CreateEmailVerificationTokenAsync(user.Id, cancellationToken);
+
+            var verificationLink = $"https://frontend-app/verify-email?token={rawToken}";
+
+            await _emailService.SendEmailVerification(user.Email, verificationLink);
+
             await _fileAuditService.LogAsync(
             action: "RegisterUser",
             performedBy: profile.User.Username,
@@ -281,9 +289,11 @@ namespace user_service.Application.Services
         }
         public async Task Logout(Guid userId)
         {
+            var user = await _userRepository.GetById(userId);
+
             await _fileAuditService.LogAsync(
            action: "log out  ",
-           performedBy:  "get user name from db ",
+          performedBy: user?.Username ?? "Unknown",
            details: "User logged successfully"
            );
             // Revoke all refresh tokens for this user

@@ -23,5 +23,16 @@ namespace user_service.Application.Interfaces
                 Guid userId,
                 int expiryMinutes,
                 CancellationToken cancellationToken = default);
+
+        Task<string> CreateEmailVerificationTokenAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default
+            );
+
+        Task<User> VerifyEmailAsync(
+        string rawToken,
+        CancellationToken cancellationToken = default
+            );
     }
+
 }

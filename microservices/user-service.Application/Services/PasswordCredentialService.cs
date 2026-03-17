@@ -79,13 +79,8 @@ namespace user_service.Application.Services
                 throw new UserNotFoundException(token.UserId);
 
             user.PasswordHash = _passwordHasher.Hash(password);
-            user.Status = UserStatus.ACTIVE;
-            user.UpdatedAt = DateTime.UtcNow;
+            await ActivateUserAsync(user, token, cancellationToken);
 
-            token.UsedAt = DateTime.UtcNow;
-
-            await _userRepository.Update(user, cancellationToken);
-            await _userTokenRepository.Update(token, cancellationToken);
 
             return user;
         }
@@ -94,27 +89,44 @@ namespace user_service.Application.Services
         Guid userId,
         CancellationToken cancellationToken = default)
         {
-            var rawToken = TokenHelper.GenerateToken();
-            var tokenHash = TokenHelper.HashToken(rawToken);
-
-            var token = new UserToken
-            {
-                UserId = userId,
-                TokenHash = tokenHash,
-                Type = UserTokenType.INVITATION,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
-            };
-
-            await _userTokenRepository.Create(token, cancellationToken);
-
-            return rawToken;
+            return await CreateTokenAsync(
+            userId,
+            UserTokenType.INVITATION,
+            30,
+            cancellationToken
+            );
         }
 
         public async Task<string> CreatePasswordResetTokenAsync(
         Guid userId,
         int expiryMinutes,
         CancellationToken cancellationToken = default)
+        {
+            return await CreateTokenAsync(
+            userId,
+            UserTokenType.PASSWORD_RESET,
+            expiryMinutes,
+            cancellationToken
+            );
+        }
+
+        public async Task<string> CreateEmailVerificationTokenAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default
+            )
+        {
+            return await CreateTokenAsync(
+                userId,
+                UserTokenType.EMAIL_VERIFICATION,
+                30,
+                cancellationToken);
+        }
+
+        private async Task<string> CreateTokenAsync(
+            Guid userId,
+            UserTokenType type,
+            int expiryMinutes,
+            CancellationToken cancellationToken = default)
         {
             var rawToken = TokenHelper.GenerateToken();
             var tokenHash = TokenHelper.HashToken(rawToken);
@@ -123,7 +135,7 @@ namespace user_service.Application.Services
             {
                 UserId = userId,
                 TokenHash = tokenHash,
-                Type = UserTokenType.PASSWORD_RESET,
+                Type = type,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
             };
@@ -131,6 +143,45 @@ namespace user_service.Application.Services
             await _userTokenRepository.Create(token, cancellationToken);
 
             return rawToken;
+        }
+
+        public async Task<User> VerifyEmailAsync(
+        string rawToken,
+        CancellationToken cancellationToken = default
+            )
+        {
+            var tokenHash = TokenHelper.HashToken(rawToken);
+
+            var token = await _userTokenRepository.GetValidToken(
+                tokenHash,
+                UserTokenType.EMAIL_VERIFICATION,
+                cancellationToken);
+
+            if (token == null)
+                throw new InvalidTokenException();
+
+            var user = await _userRepository.GetById(token.UserId, cancellationToken);
+
+            if (user == null)
+                throw new UserNotFoundException(token.UserId);
+            await ActivateUserAsync(user, token, cancellationToken);
+
+            return user;
+        }
+
+        private async Task ActivateUserAsync(
+            User user,
+            UserToken token,
+            CancellationToken cancellationToken
+            )
+        {
+            user.Status = UserStatus.ACTIVE;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            token.UsedAt = DateTime.UtcNow;
+
+            await _userRepository.Update(user, cancellationToken);
+            await _userTokenRepository.Update(token, cancellationToken);
         }
     }
 }

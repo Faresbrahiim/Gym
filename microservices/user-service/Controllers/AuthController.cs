@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 using user_service.Application.DTOs;
 using user_service.Application.Interfaces;
 using user_service.Application.Services;
@@ -13,21 +14,25 @@ namespace user_service.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IPasswordCredentialService _passwordCredentialService;
+        private readonly IEmailService _emailService;
 
-        public AuthController(IAuthService authService, IPasswordCredentialService passwordCredentialService)
+        public AuthController(IAuthService authService, IPasswordCredentialService passwordCredentialService, IEmailService emailService)
         {
             _authService = authService;
             _passwordCredentialService = passwordCredentialService;
+            _emailService = emailService; ;
+
         }
 
         [HttpPost("register")]
         [Audit("RegisterUser")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
                 return UnprocessableEntity(request);
 
             var user = await _authService.RegisterAsync(request);
+
             return Ok(user);
         }
 
@@ -114,6 +119,22 @@ namespace user_service.Controllers
             return Ok(new
             {
                 message = "If the invitation exists, a new email has been sent."
+            });
+        }
+
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail(
+        [FromBody] VerifyEmailDto dto,
+        CancellationToken cancellationToken
+            )
+        {
+            await _passwordCredentialService.VerifyEmailAsync(
+                dto.Token,
+                cancellationToken);
+
+            return Ok(new
+            {
+                message = "Email verified successfully."
             });
         }
     }

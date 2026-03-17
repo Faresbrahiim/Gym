@@ -198,4 +198,90 @@ public class EmailService : IEmailService
         await smtp.SendAsync(email);
         await smtp.DisconnectAsync(true);
     }
+
+    public async Task SendEmailVerification(string toEmail, string verificationLink)
+    {
+        var email = new MimeMessage();
+        email.From.Add(MailboxAddress.Parse(_config["Email:SmtpUser"]));
+        email.To.Add(MailboxAddress.Parse(toEmail));
+        email.Subject = "Verify your email";
+
+        email.Body = new TextPart("html")
+        {
+            Text = $@"
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='UTF-8'>
+  <title>Email Verification</title>
+</head>
+<body style='margin:0; padding:0; font-family: Arial, sans-serif; background:#f4f6f8;'>
+
+  <table width='100%' cellpadding='0' cellspacing='0'>
+    <tr>
+      <td align='center' style='padding:40px 0;'>
+        <table width='600' style='background:#ffffff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); padding:30px;'>
+
+          <tr>
+            <td align='center' style='font-size:28px; font-weight:bold; color:#0d6efd;'>
+              🏋️ SMART GYM
+            </td>
+          </tr>
+
+          <tr>
+            <td style='padding-top:20px; font-size:22px; font-weight:bold; color:#333;'>
+              Verify your email
+            </td>
+          </tr>
+
+          <tr>
+            <td style='padding-top:15px; font-size:16px; color:#555; line-height:1.5;'>
+              Welcome to Smart Gym. Please confirm your email address by clicking the button below.
+            </td>
+          </tr>
+
+          <tr>
+            <td align='center' style='padding:30px 0;'>
+              <a href='{verificationLink}' 
+                 style='background:#0d6efd; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; font-weight:bold; display:inline-block;'>
+                 Verify Email
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td style='font-size:14px; color:#777;'>
+              If you did not create this account, please ignore this email.
+            </td>
+          </tr>
+
+          <tr>
+            <td style='padding-top:30px; font-size:12px; color:#aaa; text-align:center;'>
+              © {DateTime.UtcNow.Year} SMART GYM
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>"
+        };
+
+        using var smtp = new SmtpClient();
+
+        await smtp.ConnectAsync(
+            _config["Email:SmtpHost"],
+            int.Parse(_config["Email:SmtpPort"]),
+            SecureSocketOptions.StartTls);
+
+        await smtp.AuthenticateAsync(
+            _config["Email:SmtpUser"],
+            _config["Email:SmtpPass"]);
+
+        await smtp.SendAsync(email);
+        await smtp.DisconnectAsync(true);
+    }
 }
