@@ -32,5 +32,8 @@ namespace user_service.Application.Interfaces
         Task<User> Update(
             User user,
             CancellationToken cancellationToken = default);
+        Task<User?> GetFullById(
+        Guid userId,
+        CancellationToken cancellationToken = default);
     }
 }

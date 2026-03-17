@@ -1,0 +1,8 @@
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.csproj.AssemblyReference.cache
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.AssemblyInfoInputs.cache
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.AssemblyInfo.cs
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.csproj.CoreCompileInputs.cache
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.sourcelink.json

@@ -132,7 +132,7 @@ namespace user_service.Application.Services
                 Username = request.Username,
                 PasswordHash = passwordHash,
                 Role = UserRole.MEMBER,
-                Status = UserStatus.PENDING,
+                Status = UserStatus.ACTIVE, // LATER CHANGE TO PENDING AND REQUIRE EMAIL VERIFICATION
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

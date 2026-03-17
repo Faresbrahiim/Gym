@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Threading;
 using user_service.Application.DTOs;
 using user_service.Application.Interfaces;
 using user_service.Application.Services;
 using user_service.Filters;
 using user_service.Infrastructure.Repositories;
-
 namespace user_service.Controllers
 {
     [Route("api/auth")]
@@ -86,12 +87,11 @@ namespace user_service.Controllers
         [Audit("logout")]
         public async Task<IActionResult> Logout()
         {
-            // Extract user ID from JWT claims
-            var userIdClaim = User.FindFirst("sub")?.Value;  
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized(new { message = "Invalid token" });
-
-            // Call AuthService
+            // it will logged out by deleting the refresh token from database, so the access token will be expired after 15 minutes and user need to login again to get new access token
             await _authService.Logout(userId);
 
             return Ok(new { message = "Logged out successfully" });

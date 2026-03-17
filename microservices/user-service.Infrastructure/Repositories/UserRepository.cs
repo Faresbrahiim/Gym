@@ -72,5 +72,15 @@ namespace user_service.Infrastructure.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
         }
+        public async Task<User?> GetFullById(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .Include(u => u.Profile)
+                .Include(u => u.MemberProfile)
+                .Include(u => u.CoachProfile)
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        }
     }
 }
