@@ -13,5 +13,14 @@ namespace user_service.Application.Interfaces
             CancellationToken cancellationToken = default);
 
         Task Update(UserToken token, CancellationToken cancellationToken = default);
+
+        Task<UserToken?> GetLatestInvitationToken(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+        Task RevokeInvitationTokens(
+        Guid userId,
+        CancellationToken cancellationToken = default);
     }
+
 }

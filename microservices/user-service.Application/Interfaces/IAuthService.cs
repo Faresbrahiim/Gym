@@ -11,5 +11,7 @@ namespace user_service.Application.Interfaces
 
         Task RequestPasswordReset(RequestPasswordResetDto dto, CancellationToken cancellationToken = default);
         Task ResetPassword(ResetPasswordDto dto, CancellationToken cancellationToken = default);
+
+        Task ResendInvitationAsync(string email , CancellationToken cancellationToken = default);
     }
 }

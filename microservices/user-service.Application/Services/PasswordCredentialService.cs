@@ -89,5 +89,48 @@ namespace user_service.Application.Services
 
             return user;
         }
+
+        public async Task<string> CreateInvitationTokenAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+        {
+            var rawToken = TokenHelper.GenerateToken();
+            var tokenHash = TokenHelper.HashToken(rawToken);
+
+            var token = new UserToken
+            {
+                UserId = userId,
+                TokenHash = tokenHash,
+                Type = UserTokenType.INVITATION,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(30)
+            };
+
+            await _userTokenRepository.Create(token, cancellationToken);
+
+            return rawToken;
+        }
+
+        public async Task<string> CreatePasswordResetTokenAsync(
+        Guid userId,
+        int expiryMinutes,
+        CancellationToken cancellationToken = default)
+        {
+            var rawToken = TokenHelper.GenerateToken();
+            var tokenHash = TokenHelper.HashToken(rawToken);
+
+            var token = new UserToken
+            {
+                UserId = userId,
+                TokenHash = tokenHash,
+                Type = UserTokenType.PASSWORD_RESET,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+            };
+
+            await _userTokenRepository.Create(token, cancellationToken);
+
+            return rawToken;
+        }
     }
 }

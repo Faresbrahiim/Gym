@@ -82,7 +82,7 @@ namespace user_service.Controllers
         public async Task<IActionResult> Logout()
         {
             // Extract user ID from JWT claims
-            var userIdClaim = User.FindFirst("sub")?.Value;
+            var userIdClaim = User.FindFirst("sub")?.Value;  
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized(new { message = "Invalid token" });
 
@@ -104,6 +104,17 @@ namespace user_service.Controllers
                 cancellationToken);
 
             return Ok(new { message = "Account activated successfully" });
+        }
+
+        [HttpPost("resend-invitation")]
+        public async Task <IActionResult> resendinvitation([FromBody] ResendInvitationDto invitationDto ,CancellationToken cancellationToken)
+        {
+            await _authService.ResendInvitationAsync(invitationDto.email, cancellationToken);
+
+            return Ok(new
+            {
+                message = "If the invitation exists, a new email has been sent."
+            });
         }
     }
 }

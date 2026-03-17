@@ -165,21 +165,11 @@ namespace user_service.Application.Services
             var user = await _userRepository.GetByEmail(email, cancellationToken);
             if (user == null) return;
 
-            var rawToken = TokenHelper.GenerateToken();
-            var tokenHash = TokenHelper.HashToken(rawToken);
-
-            var token = new UserToken
-            {
-                UserId = user.Id,
-                TokenHash = tokenHash,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(_passwordResetExpiryMinutes),
-                CreatedAt = DateTime.UtcNow,
-                Type = UserTokenType.PASSWORD_RESET
-            };
-
-            await _userTokenRepository.Create(token, cancellationToken);
-
-            
+            var rawToken = await _passwordCredentialService
+                .CreatePasswordResetTokenAsync(
+                    user.Id,
+                    _passwordResetExpiryMinutes,
+                    cancellationToken);
 
             var resetLink = $"https://frontend-app/reset-password?token={rawToken}";
             await _emailService.SendPasswordResetEmail(user.Email, resetLink);
@@ -298,6 +288,42 @@ namespace user_service.Application.Services
            );
             // Revoke all refresh tokens for this user
             await _refreshTokenRepository.RevokeAllTokens(userId);
+        }
+
+        public async Task ResendInvitationAsync(string email, CancellationToken cancellationToken = default)
+        {
+            email = email.Trim().ToLower();
+
+            var user = await _userRepository.GetByEmail(email, cancellationToken);
+
+            if (user == null || user.Status != UserStatus.PENDING)
+                return;
+
+            var lastToken = await _userTokenRepository
+                .GetLatestInvitationToken(user.Id, cancellationToken);
+
+            if (lastToken != null)
+            {
+                var secondsSinceLast = (DateTime.UtcNow - lastToken.CreatedAt).TotalSeconds;
+
+                if (secondsSinceLast < 60)
+                    return;
+            }
+
+            await _userTokenRepository.RevokeInvitationTokens(user.Id, cancellationToken);
+
+            var rawToken = await _passwordCredentialService
+                .CreateInvitationTokenAsync(user.Id, cancellationToken);
+
+            var invitationLink = $"https://frontend/setup-password?token={rawToken}";//temp link , front missing !
+
+            await _emailService.SendInvitationEmail(user.Email, invitationLink);
+
+            await _fileAuditService.LogAsync(
+                action: "ResendInvitation",
+                performedBy: user.Email,
+                details: $"Invitation resent to {user.Email}"
+            );
         }
 
     }

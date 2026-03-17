@@ -18,11 +18,13 @@ namespace user_service.Application.Services
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IEmailService _emailService;
         private readonly IFileAuditService _fileAuditService;
+        private readonly IPasswordCredentialService _passwordCredentialService;
 
         public AdminService(
           IUserRepository userRepository,
           IPasswordResetTokenRepository passwordResetTokenRepository,
           IEmailService emailService,
+          IPasswordCredentialService passwordCredentialService,
           IUserTokenRepository userTokenRepository,
           IFileAuditService fileAuditService)
         {
@@ -30,6 +32,7 @@ namespace user_service.Application.Services
             _emailService = emailService;
             _fileAuditService = fileAuditService;
             _userTokenRepository = userTokenRepository;
+            _passwordCredentialService = passwordCredentialService;
         }
         public async Task CreateMemberAsync(
             CreateMemberByAdminDto dto,
@@ -90,19 +93,8 @@ namespace user_service.Application.Services
 
             await _userRepository.Create(user, cancellationToken);
 
-            var rawToken = TokenHelper.GenerateToken();
-            var tokenHash = TokenHelper.HashToken(rawToken);
-
-            var invitationToken = new UserToken
-            {
-                UserId = user.Id,
-                TokenHash = tokenHash,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-                CreatedAt = DateTime.UtcNow,
-                Type = UserTokenType.INVITATION
-            };
-
-            await _userTokenRepository.Create(invitationToken, cancellationToken);
+            var rawToken = await _passwordCredentialService
+                    .CreateInvitationTokenAsync(user.Id, cancellationToken);
 
             var invitationLink = $"https://frontend/setup-password?token={rawToken}";
 

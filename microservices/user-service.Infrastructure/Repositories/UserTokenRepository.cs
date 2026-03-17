@@ -42,5 +42,37 @@ namespace user_service.Repositories
             _context.UserTokens.Update(token);
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<UserToken?> GetLatestInvitationToken(
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.UserTokens
+                .Where(t => t.UserId == userId && t.Type == UserTokenType.INVITATION)
+                .OrderByDescending(t => t.CreatedAt)
+                .FirstOrDefaultAsync(cancellationToken);
+
+        }
+
+        public async Task RevokeInvitationTokens(
+            Guid userId,
+            CancellationToken cancellationToken = default
+            )
+        {
+            var tokens = await _context.UserTokens
+                .Where(t =>
+                    t.UserId == userId &&
+                    t.Type == UserTokenType.INVITATION &&
+                    t.UsedAt == null)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in tokens)
+            {
+                token.UsedAt = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
     }
 }
