@@ -1,5 +1,28 @@
+# .NET
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+# Visual Studio
 .vs/
 *.user
 *.suo
-*.cache
-*.pdb
+
+# Logs
+*.log
+Logs/
+
+# Environment files
+.env
+.env.*
+
+# Node (Angular later)
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
