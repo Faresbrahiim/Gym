@@ -19,6 +19,8 @@ namespace user_service.Application.Interfaces
         public Task Logout(string refreshToken);
 
         public Task LogoutAll(Guid userId);
+        public Task<List<SessionDto>> GetActiveSessions(Guid userId);
+
 
     }
 }

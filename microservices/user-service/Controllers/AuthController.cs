@@ -172,5 +172,18 @@ namespace user_service.Controllers
             await _authService.Logout(request.RefreshToken);
             return Ok(new { message = "Logged out successfully" });
         }
+        [Authorize]
+        [HttpGet("sessions")]
+        public async Task<IActionResult> GetSessions()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            var sessions = await _authService.GetActiveSessions(userId);
+
+            return Ok(sessions);
+        }
     }
 }

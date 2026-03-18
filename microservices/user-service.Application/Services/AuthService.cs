@@ -390,5 +390,16 @@ namespace user_service.Application.Services
         {
             await _refreshTokenRepository.RevokeAllTokens(userId);
         }
+        public async Task<List<SessionDto>> GetActiveSessions(Guid userId)
+        {
+            var tokens = await _refreshTokenRepository.GetActiveTokens(userId);
+
+            return tokens.Select(t => new SessionDto
+            {
+                CreatedAt = t.CreatedAt,
+                IpAddress = t.IpAddress,
+                UserAgent = t.UserAgent
+            }).ToList();
+        }
     }
 }

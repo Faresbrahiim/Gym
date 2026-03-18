@@ -51,5 +51,14 @@ namespace user_service.Infrastructure.Repositories
             _context.RefreshTokens.UpdateRange(tokens);
             await _context.SaveChangesAsync(cancellationToken);
         }
+        public async Task<List<RefreshToken>> GetActiveTokens(Guid userId)
+        {
+            return await _context.RefreshTokens
+                .Where(t =>
+                    t.UserId == userId &&
+                    t.RevokedAt == null &&
+                    t.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync();
+        }
     }
 }
