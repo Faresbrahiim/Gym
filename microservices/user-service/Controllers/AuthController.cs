@@ -192,7 +192,6 @@ namespace user_service.Controllers
         public async Task<IActionResult> RevokeSession(Guid tokenId)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
 
