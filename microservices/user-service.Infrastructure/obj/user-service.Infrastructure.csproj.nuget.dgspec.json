@@ -53,6 +53,10 @@
             "Google.Apis.Auth": {
               "target": "Package",
               "version": "[1.73.0, )"
+            },
+            "Microsoft.AspNetCore.Http": {
+              "target": "Package",
+              "version": "[2.3.9, )"
             }
           },
           "imports": [

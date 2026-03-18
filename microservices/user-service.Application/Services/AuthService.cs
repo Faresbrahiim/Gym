@@ -5,8 +5,8 @@ using user_service.Application.Interfaces;
 using user_service.Application.Mappers;
 using user_service.Application.Domain.Exceptions;
 using user_service.Helpers;
+using Microsoft.AspNetCore.Http;
 
-using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace user_service.Application.Services
 {
     public class AuthService : IAuthService
@@ -21,6 +21,7 @@ namespace user_service.Application.Services
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordCredentialService _passwordCredentialService;
         private readonly IUserTokenRepository _userTokenRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         private readonly int _passwordResetExpiryMinutes;
 
@@ -35,7 +36,8 @@ namespace user_service.Application.Services
             IRefreshTokenRepository refreshTokenRepository, 
             IFileAuditService fileAuditService,
             IUserTokenRepository userTokenRepository,
-            IPasswordCredentialService passwordCredentialService
+            IPasswordCredentialService passwordCredentialService,
+            IHttpContextAccessor httpContextAccessor
             )
 
         {
@@ -54,6 +56,7 @@ namespace user_service.Application.Services
             _fileAuditService = fileAuditService;
             _passwordCredentialService = passwordCredentialService;
             _userTokenRepository = userTokenRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // -----------------------------------------------------
@@ -227,13 +230,17 @@ namespace user_service.Application.Services
             // ⭐ REAL refresh token
             var rawRefresh = TokenHelper.GenerateToken();
             var hash = TokenHelper.HashToken(rawRefresh);
-
+            var httpContext = _httpContextAccessor.HttpContext;
+            var ip = httpContext?.Connection.RemoteIpAddress?.ToString();
+            var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
             await _refreshTokenRepository.Create(new RefreshToken
             {
                 UserId = user.Id,
                 TokenHash = hash,
                 CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                UserAgent = userAgent,
+                IpAddress = ip
             }, cancellationToken);
             await _fileAuditService.LogAsync(
             action: "log in  ",
@@ -255,6 +262,10 @@ namespace user_service.Application.Services
         {
             var hash = TokenHelper.HashToken(refreshToken);
             var stored = await _refreshTokenRepository.GetValidToken(hash, cancellationToken);
+            var httpContext = _httpContextAccessor.HttpContext;
+
+            var ip = httpContext?.Connection.RemoteIpAddress?.ToString();
+            var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
 
             if (stored == null)
                 throw new UnauthorizedAccessException("Invalid refresh token");
@@ -274,7 +285,9 @@ namespace user_service.Application.Services
                 UserId = user.Id,
                 TokenHash = newHash,
                 CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7)
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                UserAgent = userAgent,
+                IpAddress = ip
             }, cancellationToken);
 
             var userDto = UserMapper.ToDto(user);
@@ -287,17 +300,17 @@ namespace user_service.Application.Services
                 User = userDto
             };
         }
-        public async Task Logout(Guid userId)
+        public async Task Logout(string refreshToken)
         {
-            var user = await _userRepository.GetById(userId);
+            var hash = TokenHelper.HashToken(refreshToken);
 
-            await _fileAuditService.LogAsync(
-           action: "log out  ",
-          performedBy: user?.Username ?? "Unknown",
-           details: "User logged successfully"
-           );
-            // Revoke all refresh tokens for this user
-            await _refreshTokenRepository.RevokeAllTokens(userId);
+            var stored = await _refreshTokenRepository
+                .GetValidToken(hash);
+
+            if (stored == null)
+                return;
+
+            await _refreshTokenRepository.Revoke(stored);
         }
 
         public async Task ResendInvitationAsync(string email, CancellationToken cancellationToken = default)
@@ -373,6 +386,9 @@ namespace user_service.Application.Services
                 details: $"{tokenType} token resent to {user.Email}"
             );
         }
-
+        public async Task LogoutAll(Guid userId)
+        {
+            await _refreshTokenRepository.RevokeAllTokens(userId);
+        }
     }
 }

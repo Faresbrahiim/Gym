@@ -6,7 +6,7 @@ namespace user_service.Application.Interfaces
     {
         Task<LoginResponse> LoginWithEmail(LoginRequest request, CancellationToken cancellationToken = default);
         Task<LoginResponse> LoginWithGoogle(GoogleLoginRequest request, CancellationToken cancellationToken = default);
-        Task Logout(Guid userId);
+        //Task Logout(Guid userId);
         Task<UserDto> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
 
         Task RequestPasswordReset(RequestPasswordResetDto dto, CancellationToken cancellationToken = default);
@@ -16,6 +16,9 @@ namespace user_service.Application.Interfaces
 
         Task<LoginResponse> RefreshToken(string refreshToken, CancellationToken cancellationToken);
         Task ResendEmailVerificationAsync(string email, CancellationToken cancellationToken = default);
+        public Task Logout(string refreshToken);
+
+        public Task LogoutAll(Guid userId);
 
     }
 }

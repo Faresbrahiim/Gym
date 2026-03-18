@@ -1,4 +1,5 @@
 ﻿using Google.Apis.Auth.OAuth2.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -84,16 +85,18 @@ namespace user_service.Controllers
             await _authService.ResetPassword(dto);
             return Ok(new { message = "Password updated successfully." });
         }
-        [HttpPost("logout")]
+
+        [Authorize]
+        [HttpPost("logout-all")]
         [Audit("logout")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> LogoutAll()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized(new { message = "Invalid token" });
             // it will logged out by deleting the refresh token from database, so the access token will be expired after 15 minutes and user need to login again to get new access token
-            await _authService.Logout(userId);
+            await _authService.LogoutAll(userId);
 
             return Ok(new { message = "Logged out successfully" });
         }
@@ -161,6 +164,13 @@ namespace user_service.Controllers
             {
                 message = "If the account exists, a verification email has been sent."
             });
+        }
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+        {
+            await _authService.Logout(request.RefreshToken);
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }

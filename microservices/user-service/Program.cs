@@ -36,7 +36,7 @@ builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
-
+builder.Services.AddHttpContextAccessor();
 #endregion
 
 #region JWT CONFIGURATION
