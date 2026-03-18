@@ -185,5 +185,19 @@ namespace user_service.Controllers
 
             return Ok(sessions);
         }
+
+        [Authorize]
+        [HttpPost("sessions/{tokenId}/revoke")]
+        public async Task<IActionResult> RevokeSession(Guid tokenId)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            await _authService.RevokeSession(userId, tokenId);
+
+            return Ok(new { message = "Session revoked." });
+        }
     }
 }

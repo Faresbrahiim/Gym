@@ -21,6 +21,9 @@ namespace user_service.Application.Interfaces
         public Task LogoutAll(Guid userId);
         public Task<List<SessionDto>> GetActiveSessions(Guid userId);
 
+        public  Task RevokeSession(Guid userId, Guid tokenId);
+
+
 
     }
 }

@@ -13,5 +13,6 @@ namespace user_service.Application.Interfaces
         Task RevokeAllTokens(Guid userId, CancellationToken cancellationToken = default);
         Task<List<RefreshToken>> GetActiveTokens(Guid userId);
 
+        Task<RefreshToken?> GetById(Guid userId, Guid tokenId);
     }
 }

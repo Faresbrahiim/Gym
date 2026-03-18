@@ -150,7 +150,6 @@ C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\staticwebass
 C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\staticwebassets.build.json.cache
 C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\staticwebassets.development.json
 C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\staticwebassets.build.endpoints.json
-C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-ser.B91C3E7D.Up2Date
 C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\user-service.dll
 C:\Users\PC\Desktop\Gym\microservices\user-service\obj\Debug\net9.0\refint\user-service.dll

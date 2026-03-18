@@ -235,6 +235,7 @@ namespace user_service.Application.Services
             var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
             await _refreshTokenRepository.Create(new RefreshToken
             {
+                Id = Guid.NewGuid(),
                 UserId = user.Id,
                 TokenHash = hash,
                 CreatedAt = DateTime.UtcNow,
@@ -282,7 +283,7 @@ namespace user_service.Application.Services
 
             await _refreshTokenRepository.Create(new RefreshToken
             {
-                UserId = user.Id,
+                Id = user.Id,
                 TokenHash = newHash,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
@@ -396,10 +397,21 @@ namespace user_service.Application.Services
 
             return tokens.Select(t => new SessionDto
             {
+                TokenId = t.Id,
                 CreatedAt = t.CreatedAt,
                 IpAddress = t.IpAddress,
                 UserAgent = t.UserAgent
             }).ToList();
+        }
+
+        public async Task RevokeSession(Guid userId, Guid tokenId)
+        {
+            var token = await _refreshTokenRepository.GetById(userId, tokenId);
+
+            if (token == null)
+                return;
+
+            await _refreshTokenRepository.Revoke(token);
         }
     }
 }

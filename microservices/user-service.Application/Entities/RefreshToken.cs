@@ -4,7 +4,7 @@
     {
         public Guid Id { get; set; }
 
-        public Guid UserId { get; set; }
+        public Guid UserId { get; set; } 
 
         public string TokenHash { get; set; } = null!;
 
@@ -17,6 +17,8 @@
         public string? UserAgent { get; set; }
 
         public string? IpAddress { get; set; }
+
+
 
         // Navigation
         public User User { get; set; } = null!;

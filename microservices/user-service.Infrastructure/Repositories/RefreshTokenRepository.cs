@@ -60,5 +60,15 @@ namespace user_service.Infrastructure.Repositories
                     t.ExpiresAt > DateTime.UtcNow)
                 .ToListAsync();
         }
+
+        public async Task<RefreshToken?> GetById(Guid userId, Guid tokenId)
+        {
+            return await _context.RefreshTokens
+                .FirstOrDefaultAsync(t =>
+                    t.Id == tokenId &&
+                    t.UserId == userId &&
+                    t.RevokedAt == null &&
+                    t.ExpiresAt > DateTime.UtcNow);
+        }
     }
 }
