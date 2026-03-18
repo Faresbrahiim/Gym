@@ -172,6 +172,7 @@ namespace user_service.Controllers
             await _authService.Logout(request.RefreshToken);
             return Ok(new { message = "Logged out successfully" });
         }
+
         [Authorize]
         [HttpGet("sessions")]
         public async Task<IActionResult> GetSessions()
