@@ -9,6 +9,7 @@ using user_service.Application.Interfaces;
 using user_service.Application.Services;
 using user_service.Filters;
 using user_service.Infrastructure.Repositories;
+using user_service.Infrastructure.Services;
 namespace user_service.Controllers
 {
     [Route("api/auth")]
@@ -18,12 +19,17 @@ namespace user_service.Controllers
         private readonly IAuthService _authService;
         private readonly IPasswordCredentialService _passwordCredentialService;
         private readonly IEmailService _emailService;
+        private readonly ITwoFactorService _twoFactorService;
 
-        public AuthController(IAuthService authService, IPasswordCredentialService passwordCredentialService, IEmailService emailService)
+        public AuthController(IAuthService authService
+            , IPasswordCredentialService passwordCredentialService
+            , IEmailService emailService,
+            ITwoFactorService twoFactorService)
         {
             _authService = authService;
             _passwordCredentialService = passwordCredentialService;
             _emailService = emailService; ;
+            _twoFactorService = twoFactorService;
 
         }
 
@@ -192,12 +198,49 @@ namespace user_service.Controllers
         public async Task<IActionResult> RevokeSession(Guid tokenId)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
 
             await _authService.RevokeSession(userId, tokenId);
 
             return Ok(new { message = "Session revoked." });
+        }
+
+        [Authorize]
+        [HttpPost("2fa/setup")]
+        public async Task<IActionResult> Setup2FA()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                throw new Exception("User ID not found in token");
+
+            var result = await _twoFactorService.GenerateSetupAsync(Guid.Parse(userId));
+
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPost("2fa/confirm")]
+        public async Task<IActionResult> ConfirmTwoFactor([FromBody] ConfirmTwoFactorDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+                throw new Exception("User ID not found in token");
+
+            await _twoFactorService.ConfirmSetupAsync(Guid.Parse(userId), dto.Code);
+
+            return Ok(new { message = "Two-factor authentication enabled." });
+        }
+
+        [HttpPost("2fa/verify")]
+        public async Task<IActionResult> VerifyTwoFactor([FromBody] VerifyTwoFactorDto dto)
+        {
+            var result = await _authService.VerifyTwoFactorLogin(dto.UserId, dto.Code);
+
+            return Ok(result);
         }
     }
 }

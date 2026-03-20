@@ -33,6 +33,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGoogleAuthValidator, GoogleAuthValidator>();
 builder.Services.AddScoped<IPasswordHasher, VersionedArgon2PasswordHasher>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
