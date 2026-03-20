@@ -12,6 +12,7 @@ namespace user_service.Application.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ITwoFactorService _twoFactorService;
         private readonly ITokenService _tokenService;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IUserProfileRepository _userProfileRepository;
@@ -33,12 +34,12 @@ namespace user_service.Application.Services
             IPasswordResetTokenRepository passwordResetTokenRepository,
             IEmailService emailService,
             IGoogleAuthValidator googleAuthValidator,
-            IRefreshTokenRepository refreshTokenRepository, 
+            IRefreshTokenRepository refreshTokenRepository,
             IFileAuditService fileAuditService,
             IUserTokenRepository userTokenRepository,
-            IPasswordCredentialService passwordCredentialService,
-            IHttpContextAccessor httpContextAccessor
-            )
+IPasswordCredentialService passwordCredentialService,
+IHttpContextAccessor httpContextAccessor,
+ITwoFactorService twoFactorService)
 
         {
             _userRepository = userRepository;
@@ -57,6 +58,7 @@ namespace user_service.Application.Services
             _passwordCredentialService = passwordCredentialService;
             _userTokenRepository = userTokenRepository;
             _httpContextAccessor = httpContextAccessor;
+            _twoFactorService = twoFactorService;
         }
 
         // -----------------------------------------------------
@@ -69,7 +71,16 @@ namespace user_service.Application.Services
 
             if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash) || user.Status != UserStatus.ACTIVE)
                 throw new UnauthorizedAccessException();
-          
+
+            if (user.TwoFactorEnabled)
+            {
+                return new LoginResponse
+                {
+                    RequiresTwoFactor = true,
+                    UserId = user.Id
+                };
+            }
+
             return await CompleteLoginAsync(user, request.Password, cancellationToken);
         }
 
@@ -110,6 +121,15 @@ namespace user_service.Application.Services
                 }, cancellationToken);
             }
 
+            if (user.TwoFactorEnabled)
+            {
+                return new LoginResponse
+                {
+                    RequiresTwoFactor = true,
+                    UserId = user.Id
+                };
+            }
+
             return await CompleteLoginAsync(user, null, cancellationToken);
         }
 
@@ -135,7 +155,7 @@ namespace user_service.Application.Services
                 Username = request.Username,
                 PasswordHash = passwordHash,
                 Role = UserRole.MEMBER,
-                Status = UserStatus.ACTIVE, // LATER CHANGE TO PENDING AND REQUIRE EMAIL VERIFICATION
+                Status = UserStatus.PENDING, // LATER CHANGE TO PENDING AND REQUIRE EMAIL VERIFICATION
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -250,10 +270,11 @@ namespace user_service.Application.Services
             );
             return new LoginResponse
             {
+                RequiresTwoFactor = false,
                 AccessToken = accessToken,
                 RefreshToken = rawRefresh,
-                User = userDto
-            };
+                UserId = user.Id
+            }; ;
         }
 
         // -----------------------------------------------------
@@ -296,9 +317,10 @@ namespace user_service.Application.Services
 
             return new LoginResponse
             {
+                RequiresTwoFactor = false,
                 AccessToken = newAccess,
                 RefreshToken = newRaw,
-                User = userDto
+                UserId = user.Id
             };
         }
         public async Task Logout(string refreshToken)
@@ -316,13 +338,13 @@ namespace user_service.Application.Services
 
         public async Task ResendInvitationAsync(string email, CancellationToken cancellationToken = default)
         {
-                await ResendUserTokenAsync(
-             email,
-             UserTokenType.INVITATION,
-             "setup-password",
-             _emailService.SendInvitationEmail,
-             cancellationToken
-                );
+            await ResendUserTokenAsync(
+         email,
+         UserTokenType.INVITATION,
+         "setup-password",
+         _emailService.SendInvitationEmail,
+         cancellationToken
+            );
         }
 
         public async Task ResendEmailVerificationAsync(
@@ -391,6 +413,7 @@ namespace user_service.Application.Services
         {
             await _refreshTokenRepository.RevokeAllTokens(userId);
         }
+
         public async Task<List<SessionDto>> GetActiveSessions(Guid userId)
         {
             var tokens = await _refreshTokenRepository.GetActiveTokens(userId);
@@ -413,5 +436,20 @@ namespace user_service.Application.Services
 
             await _refreshTokenRepository.Revoke(token);
         }
+
+        public async Task<LoginResponse> VerifyTwoFactorLogin(Guid userId, string code, CancellationToken cancellationToken = default)
+        {
+            var user = await _userRepository.GetById(userId, cancellationToken);
+
+            if (user == null)
+                throw new UnauthorizedAccessException();
+
+            var valid = await _twoFactorService.VerifyCodeAsync(user, code);
+
+            if (!valid)
+                throw new UnauthorizedAccessException("Invalid 2FA code");
+
+            return await CompleteLoginAsync(user, null, cancellationToken);
+        }
     }
-}
+    }

@@ -38,6 +38,10 @@ namespace user_service.Application.Entities
         public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 
         public ICollection<CoachAvailability> CoachAvailabilities { get; set; } = new List<CoachAvailability>();
+
+        public bool TwoFactorEnabled { get; set; } = false;
+
+        public string? TwoFactorSecret { get; set; }
     }
 }
 

@@ -6,24 +6,26 @@ namespace user_service.Application.Interfaces
     {
         Task<LoginResponse> LoginWithEmail(LoginRequest request, CancellationToken cancellationToken = default);
         Task<LoginResponse> LoginWithGoogle(GoogleLoginRequest request, CancellationToken cancellationToken = default);
-        //Task Logout(Guid userId);
+
         Task<UserDto> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default);
 
         Task RequestPasswordReset(RequestPasswordResetDto dto, CancellationToken cancellationToken = default);
         Task ResetPassword(ResetPasswordDto dto, CancellationToken cancellationToken = default);
 
-        Task ResendInvitationAsync(string email , CancellationToken cancellationToken = default);
+        Task ResendInvitationAsync(string email, CancellationToken cancellationToken = default);
 
         Task<LoginResponse> RefreshToken(string refreshToken, CancellationToken cancellationToken);
+
         Task ResendEmailVerificationAsync(string email, CancellationToken cancellationToken = default);
-        public Task Logout(string refreshToken);
 
-        public Task LogoutAll(Guid userId);
-        public Task<List<SessionDto>> GetActiveSessions(Guid userId);
+        Task Logout(string refreshToken);
 
-        public  Task RevokeSession(Guid userId, Guid tokenId);
+        Task LogoutAll(Guid userId);
 
+        Task<List<SessionDto>> GetActiveSessions(Guid userId);
 
+        Task RevokeSession(Guid userId, Guid tokenId);
 
+        Task<LoginResponse> VerifyTwoFactorLogin(Guid userId, string code, CancellationToken cancellationToken = default);
     }
 }
