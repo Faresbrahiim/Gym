@@ -39,6 +39,8 @@ namespace user_service.Application.Entities
 
         public ICollection<CoachAvailability> CoachAvailabilities { get; set; } = new List<CoachAvailability>();
 
+        public ICollection<RecoveryCode> RecoveryCodes { get; set; } = new List<RecoveryCode>();
+
         public bool TwoFactorEnabled { get; set; } = false;
 
         public string? TwoFactorSecret { get; set; }

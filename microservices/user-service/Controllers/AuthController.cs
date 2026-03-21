@@ -230,9 +230,13 @@ namespace user_service.Controllers
             if (userId == null)
                 throw new Exception("User ID not found in token");
 
-            await _twoFactorService.ConfirmSetupAsync(Guid.Parse(userId), dto.Code);
+            var codes = await _twoFactorService.ConfirmSetupAsync(Guid.Parse(userId), dto.Code);
 
-            return Ok(new { message = "Two-factor authentication enabled." });
+            return Ok(new
+            {
+                message = "Two-factor authentication enabled.",
+                recoveryCodes = codes
+            });
         }
 
         [HttpPost("2fa/verify")]

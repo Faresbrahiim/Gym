@@ -10,7 +10,7 @@ namespace user_service.Application.Interfaces
     public interface ITwoFactorService
     {
         Task<TwoFactorSetupDto> GenerateSetupAsync(Guid userId);
-        Task ConfirmSetupAsync(Guid userId, string code);
+        Task<List<string>>  ConfirmSetupAsync(Guid userId, string code);
 
         //Task<bool> VerifyTwoFactorCodeAsync(Guid userId, string code);
 

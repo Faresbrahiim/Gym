@@ -3,20 +3,24 @@ using QRCoder;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using user_service.Application.Entities;
 using user_service.Application.Interfaces;
+using user_service.Helpers;
 
 namespace user_service.Infrastructure.Services
 {
     public class TwoFactorService:ITwoFactorService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRecoveryCodeRepository _recoveryCodeRepository;
 
-        public TwoFactorService(IUserRepository userRepository)
+        public TwoFactorService(IUserRepository userRepository , IRecoveryCodeRepository recoveryCodeRepository)
         {
             _userRepository = userRepository;
+            _recoveryCodeRepository = recoveryCodeRepository;
         }
 
         public async Task<TwoFactorSetupDto> GenerateSetupAsync(Guid userId)
@@ -54,7 +58,7 @@ namespace user_service.Infrastructure.Services
             };
         }
 
-        public async Task ConfirmSetupAsync(Guid userId, string code)
+        public async Task<List<string>> ConfirmSetupAsync(Guid userId, string code)
         {
             var user = await _userRepository.GetById(userId);
 
@@ -74,8 +78,11 @@ namespace user_service.Infrastructure.Services
                 throw new Exception("Invalid 2FA code");
 
             user.TwoFactorEnabled = true;
-
             await _userRepository.Update(user);
+
+            var recoveryCodes = await GenerateAndStoreRecoveryCodes(userId);
+
+            return recoveryCodes;
         }
 
         
@@ -89,11 +96,44 @@ namespace user_service.Infrastructure.Services
 
             var totp = new Totp(secretBytes);
 
-            return totp.VerifyTotp(
+            return  totp.VerifyTotp(
                 code,
                 out long timeStepMatched,
                 VerificationWindow.RfcSpecifiedNetworkDelay
             );
+        }
+
+        private List<string> GenerateRecoveryCodes(int count = 10)
+        {
+            var codes = new List<string>();
+
+            for (int i = 0; i < count; i++)
+            {
+                var code = RandomNumberGenerator.GetInt32(10000000, 99999999).ToString();
+                codes.Add(code);
+            }
+
+            return codes;
+        }
+
+        public async Task<List<string>> GenerateAndStoreRecoveryCodes(Guid userId)
+        {
+            var rawCodes = GenerateRecoveryCodes();
+
+            var entities = rawCodes.Select(code => new RecoveryCode
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                CodeHash = TokenHelper.HashToken(code),
+                CreatedAt = DateTime.UtcNow,
+                Used = false
+            }).ToList();
+
+            await _recoveryCodeRepository.InvalidateAll(userId);
+
+            await _recoveryCodeRepository.CreateMany(entities);
+
+            return rawCodes;
         }
     }
 }

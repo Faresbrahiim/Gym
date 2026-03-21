@@ -23,6 +23,7 @@ namespace user_service.Application.Services
         private readonly IPasswordCredentialService _passwordCredentialService;
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRecoveryCodeRepository _recoveryCodeRepository;
 
         private readonly int _passwordResetExpiryMinutes;
 
@@ -37,10 +38,11 @@ namespace user_service.Application.Services
             IRefreshTokenRepository refreshTokenRepository,
             IFileAuditService fileAuditService,
             IUserTokenRepository userTokenRepository,
-IPasswordCredentialService passwordCredentialService,
-IHttpContextAccessor httpContextAccessor,
-ITwoFactorService twoFactorService)
-
+            IPasswordCredentialService passwordCredentialService,
+            IHttpContextAccessor httpContextAccessor,
+            ITwoFactorService twoFactorService,
+            IRecoveryCodeRepository recoveryCodeRepository)
+            
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -49,6 +51,7 @@ ITwoFactorService twoFactorService)
             _emailService = emailService;
             _googleAuthValidator = googleAuthValidator;
             _refreshTokenRepository = refreshTokenRepository;
+            
 
             _passwordResetExpiryMinutes =
                 int.TryParse(Environment.GetEnvironmentVariable("PASSWORD_RESET_TOKEN_EXPIRY_MINUTES"), out var minutes)
@@ -59,6 +62,8 @@ ITwoFactorService twoFactorService)
             _userTokenRepository = userTokenRepository;
             _httpContextAccessor = httpContextAccessor;
             _twoFactorService = twoFactorService;
+            _recoveryCodeRepository = recoveryCodeRepository;
+            
         }
 
         // -----------------------------------------------------
@@ -447,7 +452,16 @@ ITwoFactorService twoFactorService)
             var valid = await _twoFactorService.VerifyCodeAsync(user, code);
 
             if (!valid)
-                throw new UnauthorizedAccessException("Invalid 2FA code");
+            {
+                var hash = TokenHelper.HashToken(code);
+
+                var recovery = await _recoveryCodeRepository.GetValidCode(userId, hash);
+
+                if (recovery == null)
+                    throw new UnauthorizedAccessException("Invalid 2FA code");
+
+                await _recoveryCodeRepository.MarkUsed(recovery);
+            }
 
             return await CompleteLoginAsync(user, null, cancellationToken);
         }
