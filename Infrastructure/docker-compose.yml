@@ -2,14 +2,19 @@ services:
 
   gym-user-service:
     build:
-      context: ..
+      context: ../microservices
       dockerfile: user-service/Dockerfile
+
     container_name: gym-user-service
+
+    env_file:
+      - ../microservices/user-service/.env
+
     ports:
       - "5000:8080"
+
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-
       ConnectionStrings__DefaultConnection: Host=gym-user-db;Port=5432;Database=user_service_db;Username=postgres;Password=${POSTGRES_PASSWORD}
 
       BootstrapAdmin__Enabled: "true"
@@ -29,34 +34,53 @@ services:
     depends_on:
       gym-user-db:
         condition: service_healthy
+
     networks:
       - gym-network
+
     volumes:
-      - ./Keys:/app/Keys
-      - ./Logs:/app/Logs   
+      - ../microservices/user-service/Keys:/app/Keys
+      - ../microservices/user-service/Logs:/app/Logs
+
+
+
   gym-user-db:
     image: postgres:15
+
     container_name: gym-user-db
+
+    env_file:
+      - ../microservices/user-service/.env
+
     restart: always
+
     environment:
       POSTGRES_DB: user_service_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
     ports:
       - "5433:5432"
+
     volumes:
       - gym-user-db-data:/var/lib/postgresql/data
+
     networks:
       - gym-network
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+
+
 networks:
   gym-network:
     driver: bridge
+
+
 
 volumes:
   gym-user-db-data:
