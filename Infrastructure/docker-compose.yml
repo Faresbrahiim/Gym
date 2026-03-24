@@ -1,4 +1,30 @@
+version: "3.9"
+
 services:
+  # ==============================
+  # .NET User Service + Postgres
+  # ==============================
+  gym-user-db:
+    image: postgres:15
+    container_name: gym-user-db
+    env_file:
+      - ../microservices/user-service/.env
+    restart: always
+    environment:
+      POSTGRES_DB: user_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - gym-user-db-data:/var/lib/postgresql/data
+    networks:
+      - gym-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   gym-user-service:
     build:
@@ -32,20 +58,20 @@ services:
       - ../microservices/user-service/Keys:/app/Keys
       - ../microservices/user-service/Logs:/app/Logs
 
-  gym-user-db:
+  # ==============================
+  # Spring Boot Membership Service + Postgres
+  # ==============================
+  membership-db:
     image: postgres:15
-    container_name: gym-user-db
-    env_file:
-      - ../microservices/user-service/.env
-    restart: always
+    container_name: membership-db
     environment:
-      POSTGRES_DB: user_service_db
+      POSTGRES_DB: membership_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: postgres_password
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
-      - gym-user-db-data:/var/lib/postgresql/data
+      - membership-db-data:/var/lib/postgresql/data
     networks:
       - gym-network
     healthcheck:
@@ -63,12 +89,22 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: default
+      SPRING_DATASOURCE_URL: jdbc:postgresql://membership-db:5432/membership_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres_password
+    depends_on:
+      membership-db:
+        condition: service_healthy
     networks:
       - gym-network
 
+# ==============================
+# Networks and Volumes
+# ==============================
 networks:
   gym-network:
     driver: bridge
 
 volumes:
   gym-user-db-data:
+  membership-db-data:
