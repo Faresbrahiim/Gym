@@ -1,0 +1,11 @@
+<header class="text-center {{headerClass}}">
+  <a routerLink="/home">
+    <img src="/assets/img/logo-black.svg" class="img-fluid" alt="Logo">
+  </a>
+</header>
+<div class="shadow-card">
+  <ng-content></ng-content>
+</div>
+<div class="bottom-text text-center">
+  <ng-content select="[card-footer]"></ng-content>
+</div>

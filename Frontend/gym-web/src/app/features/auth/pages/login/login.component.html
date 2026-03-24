@@ -1,0 +1,150 @@
+<!-- Main Wrapper -->
+<div class="main-wrapper authendication-pages">
+
+  <!-- Page Content -->
+  <div class="content">
+    <div class="container wrapper no-padding">
+      <div class="row no-margin vph-100">
+
+        <div class="col-12 col-sm-12 col-lg-6 no-padding">
+          <app-auth-banner
+            modifierClass="login"
+            buttonText="Login User & Coach"
+            description="Log in right away for our advanced sports software solutions, created to address issues in regular sporting events and activities.">
+          </app-auth-banner>
+        </div>
+
+        <div class="col-12 col-sm-12 col-lg-6 no-padding">
+          <div class="dull-pg">
+            <div class="row no-margin vph-100 d-flex align-items-center justify-content-center">
+              <div class="col-sm-10 col-md-10 col-lg-10 mx-auto">
+
+                <app-auth-card>
+
+                  <h2>Welcome Back</h2>
+                  <p>Login into your account</p>
+
+                  <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active d-flex align-items-center" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab" aria-controls="user" aria-selected="true">
+                        <span class="d-flex justify-content-center align-items-center"></span>I am a User
+                      </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link d-flex align-items-center" id="coach-tab" data-bs-toggle="tab" data-bs-target="#coach" type="button" role="tab" aria-controls="coach" aria-selected="false">
+                        <span class="d-flex justify-content-center align-items-center"></span>I am a Coach
+                      </button>
+                    </li>
+                  </ul>
+                  <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="user" role="tabpanel" aria-labelledby="user-tab">
+                      <!-- Login Form -->
+                      <form>
+                        <div class="form-group">
+                          <div class="group-img">
+                            <i class="feather-user"></i>
+                            <input type="text" class="form-control" placeholder="Email / Username">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div class="pass-group group-img">
+                            <i class="toggle-password" [class.feather-eye]="showUserPassword" [class.feather-eye-off]="!showUserPassword" (click)="toggleUserPassword()"></i>
+                            <input [type]="showUserPassword ? 'text' : 'password'" class="form-control pass-input" placeholder="Password">
+                          </div>
+                        </div>
+                        <div class="form-group d-sm-flex align-items-center justify-content-between">
+                          <div class="form-check form-switch d-flex align-items-center justify-content-start">
+                            <input class="form-check-input" type="checkbox" id="user-pass">
+                            <label class="form-check-label" for="user-pass">Remember Password</label>
+                          </div>
+                          <span><a routerLink="/forgot-password" class="forgot-pass">Forgot Password</a></span>
+                        </div>
+                        <button class="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block" type="submit">Sign In<i class="feather-arrow-right-circle ms-2"></i></button>
+                        <div class="form-group">
+                          <div class="login-options text-center">
+                            <span class="text">Or continue with</span>
+                          </div>
+                        </div>
+                        <div class="form-group mb-0">
+                          <ul class="social-login d-flex justify-content-center align-items-center">
+                            <li class="text-center">
+                              <button type="button" class="btn btn-social d-flex align-items-center justify-content-center">
+                                <img src="/assets/img/icons/google.svg" class="img-fluid" alt="Google">
+                                <span>Google</span>
+                              </button>
+                            </li>
+                            <li class="text-center">
+                              <button type="button" class="btn btn-social d-flex align-items-center justify-content-center">
+                                <img src="/assets/img/icons/facebook.svg" class="img-fluid" alt="Facebook">
+                                <span>Facebook</span>
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </form>
+                      <!-- /Login Form -->
+                    </div>
+                    <div class="tab-pane fade" id="coach" role="tabpanel" aria-labelledby="coach-tab">
+                      <!-- Login Form -->
+                      <form>
+                        <div class="form-group">
+                          <div class="group-img">
+                            <i class="feather-user"></i>
+                            <input type="text" class="form-control" placeholder="Email / Username">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div class="pass-group group-img">
+                            <i class="toggle-password" [class.feather-eye]="showCoachPassword" [class.feather-eye-off]="!showCoachPassword" (click)="toggleCoachPassword()"></i>
+                            <input [type]="showCoachPassword ? 'text' : 'password'" class="form-control pass-input" placeholder="Password">
+                          </div>
+                        </div>
+                        <div class="form-group d-sm-flex align-items-center justify-content-between">
+                          <div class="form-check form-switch d-flex align-items-center justify-content-start">
+                            <input class="form-check-input" type="checkbox" id="user-login">
+                            <label class="form-check-label" for="user-login">Remember Password</label>
+                          </div>
+                          <span><a routerLink="/forgot-password" class="forgot-pass">Forgot Password</a></span>
+                        </div>
+                        <button class="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block" type="submit">Sign In<i class="feather-arrow-right-circle ms-2"></i></button>
+                        <div class="form-group">
+                          <div class="login-options text-center">
+                            <span class="text">Or continue with</span>
+                          </div>
+                        </div>
+                        <div class="form-group mb-0">
+                          <ul class="social-login d-flex justify-content-center align-items-center">
+                            <li class="text-center">
+                              <button type="button" class="btn btn-social d-flex align-items-center justify-content-center">
+                                <img src="/assets/img/icons/google.svg" class="img-fluid" alt="Google">
+                                <span>Google</span>
+                              </button>
+                            </li>
+                            <li class="text-center">
+                              <button type="button" class="btn btn-social d-flex align-items-center justify-content-center">
+                                <img src="/assets/img/icons/facebook.svg" class="img-fluid" alt="Facebook">
+                                <span>Facebook</span>
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </form>
+                      <!-- /Login Form -->
+                    </div>
+                  </div>
+
+                  <p card-footer>Don't have an account? <a routerLink="/register">Sign up!</a></p>
+
+                </app-auth-card>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- /Page Content -->
+</div>
+<!-- /Main Wrapper -->
