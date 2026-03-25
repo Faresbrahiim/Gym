@@ -2,8 +2,10 @@ package com.gym.membershipservice.application.entity;
 
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "subscriptions", indexes = {
@@ -14,11 +16,12 @@ import java.time.LocalDateTime;
 public class Subscription {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private UUID userId;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "plan_id", nullable = false)
@@ -33,10 +36,10 @@ public class Subscription {
     private LocalDateTime pausedAt;
 
     // Getters & Setters
-    public Long getId() { return id; }
+    public UUID getId() { return id; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
 
     public Plan getPlan() { return plan; }
     public void setPlan(Plan plan) { this.plan = plan; }

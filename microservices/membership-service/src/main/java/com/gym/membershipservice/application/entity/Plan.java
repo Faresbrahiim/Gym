@@ -2,8 +2,11 @@ package com.gym.membershipservice.application.entity;
 
 import com.gym.membershipservice.application.enums.PlanStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.UuidGenerator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "plans", indexes = {
@@ -12,8 +15,9 @@ import java.util.List;
 public class Plan {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String name;
@@ -30,12 +34,12 @@ public class Plan {
     @Column(nullable = false)
     private PlanStatus status = PlanStatus.ACTIVE;
 
-    // Optional but useful
     @OneToMany(mappedBy = "plan")
+    @JsonIgnore
     private List<Subscription> subscriptions;
 
     // Getters & Setters
-    public Long getId() { return id; }
+    public UUID getId() { return id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

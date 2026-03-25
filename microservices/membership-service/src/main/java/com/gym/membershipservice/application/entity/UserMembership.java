@@ -2,6 +2,9 @@ package com.gym.membershipservice.application.entity;
 
 import com.gym.membershipservice.application.enums.MembershipStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.UuidGenerator;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_memberships", indexes = {
@@ -10,21 +13,22 @@ import jakarta.persistence.*;
 public class UserMembership {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue
+    @UuidGenerator
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private UUID userId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MembershipStatus status = MembershipStatus.ACTIVE;
 
     // Getters & Setters
-    public Long getId() { return id; }
+    public UUID getId() { return id; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
 
     public MembershipStatus getStatus() { return status; }
     public void setStatus(MembershipStatus status) { this.status = status; }
