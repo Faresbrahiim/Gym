@@ -1,37 +1,39 @@
 package com.gym.membershipservice.application.entity;
 
+import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
-import com.gym.membershipservice.application.enums.SubscriptionStatus;
-
 @Entity
-@Table(name = "subscriptions")
+@Table(name = "subscriptions", indexes = {
+        @Index(name = "idx_user_id", columnList = "user_id"),
+        @Index(name = "idx_status", columnList = "status"),
+        @Index(name = "idx_plan_id", columnList = "plan_id")
+})
 public class Subscription {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId; // link to the user
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    @ManyToOne
-    @JoinColumn(name = "plan_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private SubscriptionStatus status;
 
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private LocalDateTime pausedAt;
 
-    // Constructors
-    public Subscription() {}
-
-    // Getters and Setters
+    // Getters & Setters
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }

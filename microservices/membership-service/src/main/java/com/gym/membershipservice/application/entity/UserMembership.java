@@ -1,22 +1,31 @@
-// UserMembership.java
 package com.gym.membershipservice.application.entity;
 
 import com.gym.membershipservice.application.enums.MembershipStatus;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user_memberships")
+@Table(name = "user_memberships", indexes = {
+        @Index(name = "idx_user_membership_user_id", columnList = "user_id")
+})
 public class UserMembership {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId; // reference to User-Service user
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MembershipStatus status = MembershipStatus.ACTIVE;
 
-    // additional fields if needed (like remainingDays)
+    // Getters & Setters
+    public Long getId() { return id; }
 
-    // getters & setters
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
+
+    public MembershipStatus getStatus() { return status; }
+    public void setStatus(MembershipStatus status) { this.status = status; }
 }
