@@ -6,7 +6,7 @@ import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.application.dto.PlanResponseDTO;
 import com.gym.membershipservice.api.mapper.PlanMapper;
 import org.springframework.stereotype.Service;
-
+import com.gym.membershipservice.application.dto.PlanRequestDTO;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,5 +34,13 @@ public class PlanService {
     public List<PlanResponseDTO> getActivePlans() {
         List<Plan> plans = repository.findByStatus(PlanStatus.ACTIVE);
         return PlanMapper.toDTOList(plans);
+    }
+
+    public PlanResponseDTO createPlan(PlanRequestDTO dto) {
+        Plan plan = PlanMapper.toEntity(dto);
+
+        Plan saved = repository.save(plan);
+
+        return PlanMapper.toDTO(saved);
     }
 }
