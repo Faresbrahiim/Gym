@@ -34,7 +34,7 @@ public class PlanMapper {
         plan.setPrice(dto.getPrice());
         plan.setDurationInDays(dto.getDurationInDays());
 
-        // 🔥 important
+        //  important
         plan.setStatus(PlanStatus.ACTIVE);
 
         return plan;

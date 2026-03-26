@@ -1,7 +1,7 @@
-package com.gym.membershipservice.interfaces.controller;
+package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.application.entity.Subscription;
-import com.gym.membershipservice.application.service.SubscriptionService;
+import com.gym.membershipservice.application.service.SubscriptionServiceImpl;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,9 +11,9 @@ import java.util.UUID;
 @RequestMapping("/subscriptions")
 public class SubscriptionController {
 
-    private final SubscriptionService service;
+    private final SubscriptionServiceImpl service;
 
-    public SubscriptionController(SubscriptionService service) {
+    public SubscriptionController(SubscriptionServiceImpl service) {
         this.service = service;
     }
 

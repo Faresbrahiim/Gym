@@ -72,7 +72,7 @@ builder.Services
 
         IssuerSigningKey = new RsaSecurityKey(rsa),
 
-        // 🔥 IMPORTANT FOR LOGOUT
+        // IMPORTANT FOR LOGOUT
         NameClaimType = JwtRegisteredClaimNames.Sub,
         RoleClaimType = "role"
     };
