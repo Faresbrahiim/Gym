@@ -306,17 +306,57 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     // =========================
-    // NOT IMPLEMENTED
+    // UPGRADE DOWNGRADE
     // =========================
 
     @Transactional
-    public Subscription upgradeSubscription(UUID subscriptionId) {
-        throw new UnsupportedOperationException("Upgrade logic not implemented yet");
+    public Subscription upgradeSubscription(UUID subscriptionId, UUID newPlanId) {
+        Subscription sub = getSubscriptionById(subscriptionId);
+
+        Plan newPlan = planRepository.findById(newPlanId)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+
+        if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) <= 0) {
+            throw new RuntimeException("New plan must be more expensive than current plan for upgrade");
+        }
+
+        SubscriptionStatus previous = sub.getStatus();
+
+        sub.setPlan(newPlan);
+        sub.setStartDate(LocalDateTime.now());
+        sub.setEndDate(LocalDateTime.now().plusDays(newPlan.getDurationInDays()));
+
+        Subscription saved = subscriptionRepository.save(sub);
+
+        historyService.recordChange(saved, previous, previous,
+                null, "Upgraded to plan: " + newPlan.getName());
+
+        return saved;
     }
 
     @Transactional
-    public Subscription downgradeSubscription(UUID subscriptionId) {
-        throw new UnsupportedOperationException("Downgrade logic not implemented yet");
+    public Subscription downgradeSubscription(UUID subscriptionId, UUID newPlanId) {
+        Subscription sub = getSubscriptionById(subscriptionId);
+
+        Plan newPlan = planRepository.findById(newPlanId)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+
+        if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) >= 0) {
+            throw new RuntimeException("New plan must be cheaper than current plan for downgrade");
+        }
+
+        SubscriptionStatus previous = sub.getStatus();
+
+        sub.setPlan(newPlan);
+        sub.setStartDate(LocalDateTime.now());
+        sub.setEndDate(LocalDateTime.now().plusDays(newPlan.getDurationInDays()));
+
+        Subscription saved = subscriptionRepository.save(sub);
+
+        historyService.recordChange(saved, previous, previous,
+                null, "Downgraded to plan: " + newPlan.getName());
+
+        return saved;
     }
 
     // =========================

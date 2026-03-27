@@ -15,8 +15,8 @@ public interface SubscriptionService {
     Subscription pauseSubscription(UUID subscriptionId);
     Subscription resumeSubscription(UUID subscriptionId);
     Subscription renewSubscription(UUID subscriptionId);
-    Subscription upgradeSubscription(UUID subscriptionId);
-    Subscription downgradeSubscription(UUID subscriptionId);
+    public Subscription upgradeSubscription(UUID subscriptionId, UUID newPlanId) ;
+    public Subscription downgradeSubscription(UUID subscriptionId, UUID newPlanId) ;
     Subscription changePlan(UUID subscriptionId, UUID newPlanId);
      List<SubscriptionHistory> getSubscriptionHistory(@PathVariable UUID subscriptionId) ;
      Subscription approvePause(UUID subscriptionId) ;

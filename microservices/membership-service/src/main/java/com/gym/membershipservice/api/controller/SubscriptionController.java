@@ -92,15 +92,21 @@ public class SubscriptionController {
     @Operation(summary = "Upgrade subscription", description = "Upgrade subscription to a higher plan (logic in service)")
     @Parameter(name = "subscriptionId", description = "UUID of the subscription", required = true)
     @PostMapping("/{subscriptionId}/upgrade")
-    public Subscription upgradeSubscription(@PathVariable UUID subscriptionId) {
-        return subscriptionService.upgradeSubscription(subscriptionId);
+    public Subscription upgradeSubscription(
+            @PathVariable UUID subscriptionId,
+            @RequestParam UUID newPlanId) {
+        return subscriptionService.upgradeSubscription(subscriptionId, newPlanId);
     }
+
+
 
     @Operation(summary = "Downgrade subscription", description = "Downgrade subscription to a lower plan (logic in service)")
     @Parameter(name = "subscriptionId", description = "UUID of the subscription", required = true)
     @PostMapping("/{subscriptionId}/downgrade")
-    public Subscription downgradeSubscription(@PathVariable UUID subscriptionId) {
-        return subscriptionService.downgradeSubscription(subscriptionId);
+    public Subscription downgradeSubscription(
+            @PathVariable UUID subscriptionId,
+            @RequestParam UUID newPlanId) {
+        return subscriptionService.downgradeSubscription(subscriptionId, newPlanId);
     }
 
     @Operation(summary = "Change subscription plan", description = "Change the plan of an ACTIVE subscription")
