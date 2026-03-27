@@ -56,4 +56,6 @@ public class PlanController {
     public PlanResponseDTO enablePlan(@PathVariable UUID planId) {
         return service.enablePlan(planId);
     }
+
+
 }

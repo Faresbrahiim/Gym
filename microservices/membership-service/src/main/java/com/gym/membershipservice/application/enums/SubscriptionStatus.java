@@ -6,5 +6,7 @@ public enum SubscriptionStatus {
     PAUSED,
     EXPIRED,
     UPGRADED,
-    DOWNGRADED
+    DOWNGRADED,
+    PAUSE_REQUESTED,
+    CANCEL_REQUESTED
 }
