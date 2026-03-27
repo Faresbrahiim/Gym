@@ -24,6 +24,12 @@
                   <h2>Welcome Back</h2>
                   <p>Login into your account</p>
 
+                  @if (errorMessage()) {
+                    <div class="alert alert-danger" role="alert">
+                      {{ errorMessage() }}
+                    </div>
+                  }
+
                   <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
                       <button class="nav-link active d-flex align-items-center" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab" aria-controls="user" aria-selected="true">
@@ -80,8 +86,12 @@
                           <span><a routerLink="/forgot-password" class="forgot-pass">Forgot Password</a></span>
                         </div>
 
-                        <button class="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block" type="submit">
-                          Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                        <button class="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block" type="submit" [disabled]="isLoading()">
+                          @if (isLoading()) {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          } @else {
+                            Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                          }
                         </button>
 
                         <div class="form-group">
@@ -151,8 +161,12 @@
                           <span><a routerLink="/forgot-password" class="forgot-pass">Forgot Password</a></span>
                         </div>
 
-                        <button class="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block" type="submit">
-                          Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                        <button class="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block" type="submit" [disabled]="isLoading()">
+                          @if (isLoading()) {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                          } @else {
+                            Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                          }
                         </button>
 
                         <div class="form-group">
