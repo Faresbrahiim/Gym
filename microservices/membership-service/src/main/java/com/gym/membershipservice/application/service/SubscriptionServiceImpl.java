@@ -11,10 +11,10 @@ import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-
 
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
@@ -34,6 +34,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // =========================
     // BASIC METHODS
     // =========================
+
     public List<Subscription> getUserSubscriptions(UUID userId) {
         return subscriptionRepository.findByUserId(userId);
     }
@@ -42,12 +43,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription sub = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
 
+        // Auto-expire logic
         if (sub.getEndDate() != null &&
                 sub.getEndDate().isBefore(LocalDateTime.now()) &&
                 sub.getStatus() == SubscriptionStatus.ACTIVE) {
 
             sub.setStatus(SubscriptionStatus.EXPIRED);
-            subscriptionRepository.save(sub);
+            return subscriptionRepository.save(sub);
         }
 
         return sub;
@@ -67,22 +69,29 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new RuntimeException("Cannot subscribe to inactive plan");
         }
 
+        validatePlanDuration(plan);
+
+        LocalDateTime now = LocalDateTime.now();
+
         Subscription subscription = new Subscription();
         subscription.setUserId(userId);
         subscription.setPlan(plan);
         subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setStartDate(LocalDateTime.now());
-        subscription.setEndDate(LocalDateTime.now().plusDays(plan.getDurationInDays()));
+        subscription.setStartDate(now);
+        subscription.setEndDate(now.plusDays(plan.getDurationInDays()));
 
         Subscription saved = subscriptionRepository.save(subscription);
 
-        historyService.recordChange(saved, null, SubscriptionStatus.ACTIVE, null, "Created");
+        historyService.recordChange(saved, null,
+                SubscriptionStatus.ACTIVE, null, "Created");
 
         return saved;
     }
+
     // =========================
     // CANCEL
     // =========================
+
     @Transactional
     public Subscription cancelSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -92,8 +101,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        if (sub.getStartDate().plusDays(2).isBefore(now)) {
-            throw new RuntimeException("Cannot cancel subscription after 1 day of start");
+
+        if (sub.getStartDate() != null &&
+                sub.getStartDate().plusDays(2).isBefore(now)) {
+            throw new RuntimeException("Cannot cancel after 2 days of start");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -103,33 +114,40 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         Subscription saved = subscriptionRepository.save(sub);
 
-        historyService.recordChange(saved, previous, SubscriptionStatus.CANCELLED, null, "Cancelled");
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.CANCELLED, null, "Cancelled");
 
         return saved;
     }
 
     // =========================
-    // PAUSE
+    // PAUSE REQUEST
     // =========================
+
     @Transactional
     public Subscription pauseSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
 
         if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
-            throw new RuntimeException("Only ACTIVE subscriptions can request a pause");
+            throw new RuntimeException("Only ACTIVE subscriptions can request pause");
         }
 
         SubscriptionStatus previous = sub.getStatus();
 
-        // Instead of pausing immediately, mark as requested
         sub.setStatus(SubscriptionStatus.PAUSE_REQUESTED);
 
         Subscription saved = subscriptionRepository.save(sub);
 
-        historyService.recordChange(saved, previous, SubscriptionStatus.PAUSE_REQUESTED, null, "Pause requested, waiting admin approval");
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.PAUSE_REQUESTED, null,
+                "Pause requested (waiting admin approval)");
 
         return saved;
     }
+
+    // =========================
+    // APPROVE PAUSE
+    // =========================
 
     @Transactional
     public Subscription approvePause(UUID subscriptionId) {
@@ -146,11 +164,38 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         Subscription saved = subscriptionRepository.save(sub);
 
-        historyService.recordChange(saved, previous, SubscriptionStatus.PAUSED, null, "Pause approved by admin");
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.PAUSED, null,
+                "Pause approved");
 
         return saved;
     }
 
+    // =========================
+    // REJECT PAUSE
+    // =========================
+
+    @Transactional
+    public Subscription rejectPause(UUID subscriptionId) {
+        Subscription sub = getSubscriptionById(subscriptionId);
+
+        if (sub.getStatus() != SubscriptionStatus.PAUSE_REQUESTED) {
+            throw new RuntimeException("No pause request to reject");
+        }
+
+        SubscriptionStatus previous = sub.getStatus();
+
+        sub.setStatus(SubscriptionStatus.ACTIVE);
+        sub.setPausedAt(null);
+
+        Subscription saved = subscriptionRepository.save(sub);
+
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.ACTIVE, null,
+                "Pause rejected");
+
+        return saved;
+    }
 
     // =========================
     // RESUME
@@ -171,7 +216,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         Subscription saved = subscriptionRepository.save(sub);
 
-        historyService.recordChange(sub, previous, SubscriptionStatus.ACTIVE, null, "Resumed");
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.ACTIVE, null, "Resumed");
 
         return saved;
     }
@@ -188,13 +234,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new RuntimeException("Cannot renew cancelled subscription");
         }
 
-        SubscriptionStatus previous = sub.getStatus();
-
         Plan plan = sub.getPlan();
+        validatePlanDuration(plan);
 
+        SubscriptionStatus previous = sub.getStatus();
         LocalDateTime now = LocalDateTime.now();
 
-        if (sub.getEndDate().isAfter(now)) {
+        if (sub.getEndDate() != null && sub.getEndDate().isAfter(now)) {
             sub.setEndDate(sub.getEndDate().plusDays(plan.getDurationInDays()));
         } else {
             sub.setStartDate(now);
@@ -205,7 +251,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         Subscription saved = subscriptionRepository.save(sub);
 
-        historyService.recordChange(sub, previous, SubscriptionStatus.ACTIVE, null, "Renewed");
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.ACTIVE, null, "Renewed");
 
         return saved;
     }
@@ -225,66 +272,60 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Plan newPlan = planRepository.findById(newPlanId)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
-        if (newPlan.getStatus().name().equals("INACTIVE")) {
+        if (newPlan.getStatus() == PlanStatus.INACTIVE) {
             throw new RuntimeException("Cannot switch to inactive plan");
         }
 
+        validatePlanDuration(newPlan);
+
         SubscriptionStatus previous = sub.getStatus();
 
+        String oldPlan = sub.getPlan().getName();
+        String newPlanName = newPlan.getName();
+
+        LocalDateTime now = LocalDateTime.now();
+
         sub.setPlan(newPlan);
-        sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(LocalDateTime.now().plusDays(newPlan.getDurationInDays()));
+        sub.setStartDate(now);
+        sub.setEndDate(now.plusDays(newPlan.getDurationInDays()));
 
         Subscription saved = subscriptionRepository.save(sub);
 
-        historyService.recordChange(saved, previous, previous, null, "Plan changed from X to Y");
+        historyService.recordChange(saved, previous, previous, null,
+                "Plan changed from " + oldPlan + " to " + newPlanName);
 
         return saved;
     }
 
-    @Override
-    @Transactional
-    public Subscription upgradeSubscription(UUID subscriptionId) {
-        Subscription sub = getSubscriptionById(subscriptionId);
-        // Implement your logic: maybe switch to higher tier plan
-        throw new UnsupportedOperationException("Upgrade logic not implemented yet");
-    }
+    // =========================
+    // HISTORY
+    // =========================
 
-    @Override
-    @Transactional
-    public Subscription downgradeSubscription(UUID subscriptionId) {
-        Subscription sub = getSubscriptionById(subscriptionId);
-        // Implement your logic: maybe switch to lower tier plan
-        throw new UnsupportedOperationException("Downgrade logic not implemented yet");
-    }
-
-    @Override
     public List<SubscriptionHistory> getSubscriptionHistory(UUID subscriptionId) {
-        // Use your historyService to fetch
         return historyService.getHistory(subscriptionId);
     }
 
+    // =========================
+    // NOT IMPLEMENTED
+    // =========================
+
     @Transactional
-    @Override
-    public Subscription rejectPause(UUID subscriptionId) {
-        Subscription sub = getSubscriptionById(subscriptionId);
-
-        if (sub.getStatus() != SubscriptionStatus.PAUSE_REQUESTED) {
-            throw new RuntimeException("No pause request to reject");
-        }
-
-        SubscriptionStatus previous = sub.getStatus();
-
-        // Revert to previous status, usually ACTIVE
-        sub.setStatus(SubscriptionStatus.ACTIVE);
-        sub.setPausedAt(null);
-
-        Subscription saved = subscriptionRepository.save(sub);
-
-        historyService.recordChange(saved, previous, SubscriptionStatus.ACTIVE, null,
-                "Pause request rejected by admin");
-
-        return saved;
+    public Subscription upgradeSubscription(UUID subscriptionId) {
+        throw new UnsupportedOperationException("Upgrade logic not implemented yet");
     }
 
+    @Transactional
+    public Subscription downgradeSubscription(UUID subscriptionId) {
+        throw new UnsupportedOperationException("Downgrade logic not implemented yet");
+    }
+
+    // =========================
+    // HELPER
+    // =========================
+
+    private void validatePlanDuration(Plan plan) {
+        if (plan.getDurationInDays() == null || plan.getDurationInDays() <= 0) {
+            throw new RuntimeException("Invalid plan duration");
+        }
+    }
 }
