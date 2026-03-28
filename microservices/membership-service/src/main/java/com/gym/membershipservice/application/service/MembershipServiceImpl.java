@@ -1,66 +1,71 @@
 package com.gym.membershipservice.application.service;
 
+import com.gym.membershipservice.application.dto.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
+import com.gym.membershipservice.application.port.out.MembershipService;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-
+// NOTE : permissions are hardcoded
 @Service
-public class MembershipService {
+public class MembershipServiceImpl implements MembershipService {
 
     private final SubscriptionRepository subscriptionRepository;
 
-    // --- Constructor-based DI ---
-    public MembershipService(SubscriptionRepository subscriptionRepository) {
+    public MembershipServiceImpl(SubscriptionRepository subscriptionRepository) {
         this.subscriptionRepository = subscriptionRepository;
     }
 
-    // --- Get the user's current subscription status ---
+    @Override
     public SubscriptionStatus getUserStatus(UUID userId) {
         return subscriptionRepository
-                .findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .findTopByUserIdOrderByStartDateDesc(userId)
                 .map(Subscription::getStatus)
-                .orElse(null); // no active subscription
+                .orElse(SubscriptionStatus.EXPIRED);
     }
 
-    // --- Get the user's active subscription ---
-    public Subscription getActiveSubscription(UUID userId) {
-        return subscriptionRepository
-                .findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
-                .orElseThrow(() -> new RuntimeException("No active subscription found for user " + userId));
+    @Override
+    public SubscriptionResponseDTO getActiveSubscription(UUID userId) {
+        Subscription sub = subscriptionRepository
+                .findTopByUserIdOrderByStartDateDesc(userId)
+                .orElseThrow(() -> new RuntimeException("No subscription found for user: " + userId));
+
+        Plan plan = sub.getPlan(); // Plan info
+
+        return new SubscriptionResponseDTO(
+                sub.getId(),
+                sub.getUserId(),
+                plan.getId(),
+                plan.getName(),
+                sub.getStatus(),
+                sub.getStartDate(),
+                sub.getEndDate(),
+                sub.getFreezeStartDate(),
+                sub.getFreezeEndDate()
+        );
     }
 
-    // --- Get user permissions based on subscription plan ---
+    @Override
     public List<String> getPermissions(UUID userId) {
-        Subscription sub = getActiveSubscription(userId);
+        Subscription sub = subscriptionRepository
+                .findTopByUserIdOrderByStartDateDesc(userId)
+                .orElseThrow(() -> new RuntimeException("No subscription found for user: " + userId));
 
-        // If not ACTIVE, return empty
-        if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
-            return List.of();
-        }
+        if (sub.getStatus() != SubscriptionStatus.ACTIVE) return List.of();
 
-        // Example permissions by plan name (you can expand later)
-        return switch (sub.getPlan().getName()) {
-            case "PREMIUM" -> List.of("ACCESS_GYM", "BOOK_CLASSES", "SPA_ACCESS");
-            case "STANDARD" -> List.of("ACCESS_GYM", "BOOK_CLASSES");
-            default -> List.of("ACCESS_GYM");
-        };
+        return List.of("ACCESS_GYM", "BOOK_CLASSES");
     }
 
-    // --- Validate membership for a specific action ---
+    @Override
     public boolean validateMembership(UUID userId, String action) {
-        if (!subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)) {
-            return false;
-        }
+        Subscription sub = subscriptionRepository
+                .findTopByUserIdOrderByStartDateDesc(userId)
+                .orElseThrow(() -> new RuntimeException("No subscription found for user: " + userId));
 
-        return switch (action) {
-            case "ENTER_GYM" -> true;
-            case "BOOK_CLASS" -> getPermissions(userId).contains("BOOK_CLASSES");
-            case "SPA_ACCESS" -> getPermissions(userId).contains("SPA_ACCESS");
-            default -> false;
-        };
+        return sub.getStatus() == SubscriptionStatus.ACTIVE && action.equals("ENTER_GYM");
     }
 }

@@ -76,4 +76,6 @@ public class Subscription {
     public void setPreviousStatusBeforeFreeze(SubscriptionStatus previousStatusBeforeFreeze) {
         this.previousStatusBeforeFreeze = previousStatusBeforeFreeze;
     }
+
+
 }

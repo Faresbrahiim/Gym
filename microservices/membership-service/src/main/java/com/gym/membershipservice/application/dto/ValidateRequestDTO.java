@@ -1,4 +1,7 @@
 package com.gym.membershipservice.application.dto;
 
-public class ValidateRequest {
+public class ValidateRequestDTO {
+    private String userId;
+    private String action;
+
 }

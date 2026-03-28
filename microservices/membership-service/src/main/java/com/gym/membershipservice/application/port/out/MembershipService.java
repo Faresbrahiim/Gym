@@ -1,4 +1,18 @@
 package com.gym.membershipservice.application.port.out;
 
+import com.gym.membershipservice.application.dto.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.enums.SubscriptionStatus;
+
+import java.util.List;
+import java.util.UUID;
+
 public interface MembershipService {
+
+    SubscriptionStatus getUserStatus(UUID userId);
+
+    SubscriptionResponseDTO getActiveSubscription(UUID userId);
+
+    List<String> getPermissions(UUID userId);
+
+    boolean validateMembership(UUID userId, String action);
 }
