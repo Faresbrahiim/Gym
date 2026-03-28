@@ -11,5 +11,4 @@ public class MembershipServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(MembershipServiceApplication.class, args);
     }
-
 }

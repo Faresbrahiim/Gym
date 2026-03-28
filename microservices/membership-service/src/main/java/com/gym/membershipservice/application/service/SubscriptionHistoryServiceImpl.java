@@ -40,7 +40,6 @@ public class SubscriptionHistoryServiceImpl implements SubscriptionHistoryServic
 
     @Override
     public List<SubscriptionHistory> getHistory(UUID subscriptionId) {
-        // Corrected repository method
         return repository.findBySubscription_Id(subscriptionId);
     }
 }

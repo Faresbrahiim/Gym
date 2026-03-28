@@ -23,6 +23,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final PlanRepository planRepository;
     private final SubscriptionHistoryService historyService;
 
+    private LocalDateTime freezeStartDate;
+    private LocalDateTime freezeEndDate;
+
     public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository,
                                    PlanRepository planRepository,
                                    SubscriptionHistoryService historyService) {
@@ -35,14 +38,21 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // BASIC METHODS
     // =========================
 
+    @Override
     public List<Subscription> getUserSubscriptions(UUID userId) {
         return subscriptionRepository.findByUserId(userId);
     }
 
+    @Override
+    public List<Subscription> getAllSubscriptions() {
+        return subscriptionRepository.findAll();
+    }
+
+    @Override
     public Subscription getSubscriptionById(UUID subscriptionId) {
         Subscription sub = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new RuntimeException("Subscription not found"));
-
+        System.out.println("from get sub" + sub);
         // Auto-expire logic
         if (sub.getEndDate() != null &&
                 sub.getEndDate().isBefore(LocalDateTime.now()) &&
@@ -56,11 +66,17 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     // =========================
-    // CREATE
+    // CREATE (ONLY CHANGE HERE)
     // =========================
 
+    @Override
     @Transactional
     public Subscription createSubscription(UUID userId, UUID planId) {
+
+        //  PREVENT MULTIPLE ACTIVE SUBSCRIPTIONS
+        if (subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)) {
+            throw new RuntimeException("User already has an active subscription");
+        }
 
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
@@ -92,6 +108,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // CANCEL
     // =========================
 
+    @Override
     @Transactional
     public Subscription cancelSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -124,6 +141,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // PAUSE REQUEST
     // =========================
 
+    @Override
     @Transactional
     public Subscription pauseSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -149,6 +167,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // APPROVE PAUSE
     // =========================
 
+    @Override
     @Transactional
     public Subscription approvePause(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -175,6 +194,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // REJECT PAUSE
     // =========================
 
+    @Override
     @Transactional
     public Subscription rejectPause(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -201,6 +221,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // RESUME
     // =========================
 
+    @Override
     @Transactional
     public Subscription resumeSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -226,6 +247,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // RENEW
     // =========================
 
+    @Override
     @Transactional
     public Subscription renewSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -261,6 +283,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // CHANGE PLAN
     // =========================
 
+    @Override
     @Transactional
     public Subscription changePlan(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -301,14 +324,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // HISTORY
     // =========================
 
+    @Override
     public List<SubscriptionHistory> getSubscriptionHistory(UUID subscriptionId) {
         return historyService.getHistory(subscriptionId);
     }
 
     // =========================
-    // UPGRADE DOWNGRADE
+    // UPGRADE / DOWNGRADE
     // =========================
 
+    @Override
     @Transactional
     public Subscription upgradeSubscription(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -317,7 +342,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
         if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) <= 0) {
-            throw new RuntimeException("New plan must be more expensive than current plan for upgrade");
+            throw new RuntimeException("New plan must be more expensive");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -329,11 +354,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription saved = subscriptionRepository.save(sub);
 
         historyService.recordChange(saved, previous, previous,
-                null, "Upgraded to plan: " + newPlan.getName());
+                null, "Upgraded to " + newPlan.getName());
 
         return saved;
     }
 
+    @Override
     @Transactional
     public Subscription downgradeSubscription(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = getSubscriptionById(subscriptionId);
@@ -342,7 +368,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
         if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) >= 0) {
-            throw new RuntimeException("New plan must be cheaper than current plan for downgrade");
+            throw new RuntimeException("New plan must be cheaper");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -354,11 +380,107 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription saved = subscriptionRepository.save(sub);
 
         historyService.recordChange(saved, previous, previous,
-                null, "Downgraded to plan: " + newPlan.getName());
+                null, "Downgraded to " + newPlan.getName());
 
         return saved;
     }
 
+    // =========================
+    // ADMIN
+    // =========================
+
+    @Override
+    @Transactional
+    public Subscription extendSubscription(UUID subscriptionId, int extraDays) {
+
+        if (extraDays <= 0) {
+            throw new RuntimeException("Extra days must be > 0");
+        }
+
+        Subscription sub = getSubscriptionById(subscriptionId);
+
+        if (sub.getStatus() == SubscriptionStatus.CANCELLED) {
+            throw new RuntimeException("Cannot extend cancelled subscription");
+        }
+
+        SubscriptionStatus previous = sub.getStatus();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (sub.getEndDate() != null && sub.getEndDate().isAfter(now)) {
+            sub.setEndDate(sub.getEndDate().plusDays(extraDays));
+        } else {
+            sub.setStartDate(now);
+            sub.setEndDate(now.plusDays(extraDays));
+            sub.setStatus(SubscriptionStatus.ACTIVE);
+        }
+
+        Subscription saved = subscriptionRepository.save(sub);
+
+        historyService.recordChange(saved, previous,
+                sub.getStatus(), null,
+                "Extended by " + extraDays + " days");
+
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public Subscription activateSubscription(UUID subscriptionId) {
+
+        Subscription sub = getSubscriptionById(subscriptionId);
+
+        if (sub.getStatus() == SubscriptionStatus.ACTIVE) {
+            throw new RuntimeException("Already active");
+        }
+
+        SubscriptionStatus previous = sub.getStatus();
+
+        sub.setStatus(SubscriptionStatus.ACTIVE);
+
+        if (sub.getEndDate() == null || sub.getEndDate().isBefore(LocalDateTime.now())) {
+            Plan plan = sub.getPlan();
+            validatePlanDuration(plan);
+
+            LocalDateTime now = LocalDateTime.now();
+            sub.setStartDate(now);
+            sub.setEndDate(now.plusDays(plan.getDurationInDays()));
+        }
+
+        Subscription saved = subscriptionRepository.save(sub);
+
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.ACTIVE, null,
+                "Activated by admin");
+
+        return saved;
+    }
+    @Override
+    @Transactional
+    public Subscription freezeSubscription(UUID subscriptionId, LocalDateTime freezeEnd) {
+        Subscription sub = getSubscriptionById(subscriptionId);
+        System.out.println(sub + "here");
+        if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
+            throw new RuntimeException("Only ACTIVE subscriptions can be frozen");
+        }
+
+        if (freezeEnd.isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Freeze end must be in the future");
+        }
+
+        SubscriptionStatus previous = sub.getStatus();
+        sub.setPreviousStatusBeforeFreeze(previous); // store old status
+        sub.setStatus(SubscriptionStatus.FROZEN);
+        sub.setFreezeStartDate(LocalDateTime.now());
+        sub.setFreezeEndDate(freezeEnd);
+
+        Subscription saved = subscriptionRepository.save(sub);
+
+        historyService.recordChange(saved, previous,
+                SubscriptionStatus.FROZEN, null,
+                "Subscription frozen until " + freezeEnd);
+
+        return saved;
+    }
     // =========================
     // HELPER
     // =========================

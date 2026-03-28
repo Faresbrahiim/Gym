@@ -2,12 +2,14 @@ package com.gym.membershipservice.application.port.out;
 
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
-import org.springframework.web.bind.annotation.PathVariable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 public interface SubscriptionService {
+
+    // ===== USER =====
     List<Subscription> getUserSubscriptions(UUID userId);
     Subscription getSubscriptionById(UUID subscriptionId);
     Subscription createSubscription(UUID userId, UUID planId);
@@ -15,11 +17,19 @@ public interface SubscriptionService {
     Subscription pauseSubscription(UUID subscriptionId);
     Subscription resumeSubscription(UUID subscriptionId);
     Subscription renewSubscription(UUID subscriptionId);
-    public Subscription upgradeSubscription(UUID subscriptionId, UUID newPlanId) ;
-    public Subscription downgradeSubscription(UUID subscriptionId, UUID newPlanId) ;
+    Subscription upgradeSubscription(UUID subscriptionId, UUID newPlanId);
+    Subscription downgradeSubscription(UUID subscriptionId, UUID newPlanId);
     Subscription changePlan(UUID subscriptionId, UUID newPlanId);
-     List<SubscriptionHistory> getSubscriptionHistory(@PathVariable UUID subscriptionId) ;
-     Subscription approvePause(UUID subscriptionId) ;
-    Subscription rejectPause(UUID subscriptionId); // optional if you want admin to reject
 
-    }
+
+    // ===== ADMIN =====
+    List<Subscription> getAllSubscriptions();
+    Subscription extendSubscription(UUID subscriptionId, int extraDays);
+    Subscription activateSubscription(UUID subscriptionId);
+    Subscription approvePause(UUID subscriptionId);
+    Subscription rejectPause(UUID subscriptionId);
+    List<SubscriptionHistory> getSubscriptionHistory(UUID subscriptionId);
+    Subscription freezeSubscription(UUID subscriptionId, LocalDateTime freezeEnd);
+//    void checkAndActivateFrozenSubscriptions();
+
+}

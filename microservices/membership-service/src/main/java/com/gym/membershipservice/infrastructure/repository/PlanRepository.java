@@ -5,12 +5,9 @@ import com.gym.membershipservice.application.enums.PlanStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface PlanRepository extends JpaRepository<Plan, UUID> {
 
     List<Plan> findByStatus(PlanStatus status);
-    Optional<Plan> findTopByPriceGreaterThanAndStatus(Double price, PlanStatus status);
-    Optional<Plan> findTopByPriceLessThanAndStatusOrderByPriceDesc(Double price, PlanStatus status);
 }
