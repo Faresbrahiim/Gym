@@ -9,7 +9,6 @@ import com.gym.membershipservice.api.mapper.PlanMapper;
 import org.springframework.stereotype.Service;
 import com.gym.membershipservice.application.dto.PlanRequestDTO;
 import  com.gym.membershipservice.application.port.out.PlanService;
-import  com.gym.membershipservice.application.dto.PlanUpdateRequestDTO;
 import java.util.List;
 import java.util.UUID;
 

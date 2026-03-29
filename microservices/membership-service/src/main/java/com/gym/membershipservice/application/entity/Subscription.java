@@ -7,6 +7,7 @@ import org.hibernate.annotations.UuidGenerator;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+
 @Entity
 @Table(name = "subscriptions", indexes = {
         @Index(name = "idx_user_id", columnList = "user_id"),
@@ -35,7 +36,15 @@ public class Subscription {
     private LocalDateTime endDate;
     private LocalDateTime pausedAt;
 
+    // ===== NEW FIELDS FOR FREEZE =====
+    private LocalDateTime freezeStartDate;
+    private LocalDateTime freezeEndDate;
+    @Enumerated(EnumType.STRING)
+    private SubscriptionStatus previousStatusBeforeFreeze;
+
+    // =========================
     // Getters & Setters
+    // =========================
     public UUID getId() { return id; }
 
     public UUID getUserId() { return userId; }
@@ -55,4 +64,16 @@ public class Subscription {
 
     public LocalDateTime getPausedAt() { return pausedAt; }
     public void setPausedAt(LocalDateTime pausedAt) { this.pausedAt = pausedAt; }
+
+    // ===== Getters & Setters for freeze =====
+    public LocalDateTime getFreezeStartDate() { return freezeStartDate; }
+    public void setFreezeStartDate(LocalDateTime freezeStartDate) { this.freezeStartDate = freezeStartDate; }
+
+    public LocalDateTime getFreezeEndDate() { return freezeEndDate; }
+    public void setFreezeEndDate(LocalDateTime freezeEndDate) { this.freezeEndDate = freezeEndDate; }
+
+    public SubscriptionStatus getPreviousStatusBeforeFreeze() { return previousStatusBeforeFreeze; }
+    public void setPreviousStatusBeforeFreeze(SubscriptionStatus previousStatusBeforeFreeze) {
+        this.previousStatusBeforeFreeze = previousStatusBeforeFreeze;
+    }
 }
