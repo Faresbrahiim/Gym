@@ -1,0 +1,59 @@
+<!-- Main Wrapper -->
+<div class="main-wrapper authendication-pages">
+
+  <!-- Page Content -->
+  <div class="content">
+    <div class="container wrapper no-padding">
+      <div class="row no-margin vph-100 d-flex align-items-center justify-content-center">
+        <div class="col-sm-10 col-md-8 col-lg-5 mx-auto">
+
+          <app-auth-card>
+
+            <div class="text-center py-4">
+
+              <!-- Loading State -->
+              @if (isLoading()) {
+                <div class="mb-3">
+                  <span class="spinner-border" style="width: 3rem; height: 3rem;" role="status" aria-hidden="true"></span>
+                </div>
+                <h4 class="mb-2">Verifying your email...</h4>
+                <p class="text-muted">Please wait a moment.</p>
+              }
+
+              <!-- Success State -->
+              @if (verificationSuccess()) {
+                <div class="mb-3">
+                  <i class="feather-check-circle" style="font-size: 3rem; color: #28a745;"></i>
+                </div>
+                <h4 class="mb-2">Email Verified!</h4>
+                <p class="text-muted mb-1">Your email has been verified successfully.</p>
+                <p class="text-muted mb-4">You can now sign in to your account.</p>
+                <button class="btn btn-secondary register-btn w-100" (click)="goToLogin()">
+                  Go to Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                </button>
+              }
+
+              <!-- Error State -->
+              @if (errorMessage()) {
+                <div class="mb-3">
+                  <i class="feather-x-circle" style="font-size: 3rem; color: #dc3545;"></i>
+                </div>
+                <h4 class="mb-2">Verification Failed</h4>
+                <p class="text-muted mb-4">{{ errorMessage() }}</p>
+                <button class="btn btn-secondary register-btn w-100" (click)="goToLogin()">
+                  Back to Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                </button>
+              }
+
+            </div>
+
+          </app-auth-card>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Page Content -->
+
+</div>
+<!-- /Main Wrapper -->

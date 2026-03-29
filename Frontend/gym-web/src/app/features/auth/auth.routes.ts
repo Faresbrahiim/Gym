@@ -25,5 +25,10 @@ export const authRoutes: Routes = [
     canActivate: [publicGuard],
     loadComponent: () =>
       import('./pages/change-password/change-password.component').then(m => m.ChangePasswordComponent)
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./pages/verify-email/verify-email.component').then(m => m.VerifyEmailComponent)
   }
 ];

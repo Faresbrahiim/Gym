@@ -3,6 +3,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthBannerComponent } from '../../../../shared/components/auth-banner/auth-banner.component';
 import { AuthCardComponent } from '../../../../shared/components/auth-card/auth-card.component';
+import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
 import { emailValidators } from '../../../../shared/validators/email.validator';
 import { AuthService } from '../../services/auth.service';
 import { TokenService } from '../../../../core/auth/token.service';
@@ -11,7 +12,7 @@ import { LoginRequest } from '../../../../shared/models/auth/login-request.model
 @Component({
   standalone: true,
   selector: 'app-login',
-  imports: [RouterLink, ReactiveFormsModule, AuthBannerComponent, AuthCardComponent],
+  imports: [RouterLink, ReactiveFormsModule, AuthBannerComponent, AuthCardComponent, LoadingButtonComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
