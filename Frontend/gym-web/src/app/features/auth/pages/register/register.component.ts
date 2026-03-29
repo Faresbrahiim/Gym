@@ -1,61 +1,74 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthBannerComponent } from '../../../../shared/components/auth-banner/auth-banner.component';
 import { AuthCardComponent } from '../../../../shared/components/auth-card/auth-card.component';
+import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
+import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
 import { emailValidators } from '../../../../shared/validators/email.validator';
 import { strongPasswordValidators, passwordMatchValidator } from '../../../../shared/validators/password.validator';
-import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
+import { AuthService } from '../../services/auth.service';
+import { RegisterRequest } from '../../../../shared/models/auth/register-request.model';
 
 @Component({
   standalone: true,
   selector: 'app-register',
-  imports: [RouterLink, ReactiveFormsModule, AuthBannerComponent, AuthCardComponent, PasswordRulesComponent],
+  imports: [RouterLink, ReactiveFormsModule, AuthBannerComponent, AuthCardComponent, LoadingButtonComponent, PasswordRulesComponent],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
 
-  showUserPassword = false;
-  showUserConfirmPassword = false;
-  showCoachPassword = false;
-  showCoachConfirmPassword = false;
+  showPassword        = false;
+  showConfirmPassword = false;
 
-  userRegisterForm: FormGroup;
-  coachRegisterForm: FormGroup;
+  isLoading           = signal(false);
+  errorMessage        = signal<string | null>(null);
+  registrationSuccess = signal(false);
 
-  constructor(private fb: FormBuilder) {
-    this.userRegisterForm = this.fb.group({
-      email:           ['', emailValidators],
-      password:        ['', strongPasswordValidators],
-      confirmPassword: ['', Validators.required]
-    }, { validators: passwordMatchValidator });
+  registerForm: FormGroup;
 
-    this.coachRegisterForm = this.fb.group({
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+    this.registerForm = this.fb.group({
+      firstName:       ['', Validators.required],
+      lastName:        ['', Validators.required],
+      username:        ['', Validators.required],
       email:           ['', emailValidators],
       password:        ['', strongPasswordValidators],
       confirmPassword: ['', Validators.required]
     }, { validators: passwordMatchValidator });
   }
 
-  toggleUserPassword(): void        { this.showUserPassword        = !this.showUserPassword;        }
-  toggleUserConfirmPassword(): void { this.showUserConfirmPassword  = !this.showUserConfirmPassword; }
-  toggleCoachPassword(): void       { this.showCoachPassword       = !this.showCoachPassword;       }
-  toggleCoachConfirmPassword(): void { this.showCoachConfirmPassword = !this.showCoachConfirmPassword; }
+  togglePassword():        void { this.showPassword        = !this.showPassword;        }
+  toggleConfirmPassword(): void { this.showConfirmPassword = !this.showConfirmPassword; }
 
-  onUserRegisterSubmit(): void {
-    if (this.userRegisterForm.invalid) {
-      this.userRegisterForm.markAllAsTouched();
+  onSubmit(): void {
+    if (this.isLoading()) return;
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
       return;
     }
-    // Service call will be wired in next phase
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    const { confirmPassword, ...payload } = this.registerForm.value;
+
+    this.authService.register(payload as RegisterRequest).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.registrationSuccess.set(true);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(err?.status === 409
+          ? 'Email or username already exists.'
+          : 'Registration failed. Please try again.');
+      }
+    });
   }
 
-  onCoachRegisterSubmit(): void {
-    if (this.coachRegisterForm.invalid) {
-      this.coachRegisterForm.markAllAsTouched();
-      return;
-    }
-    // Service call will be wired in next phase
+  goToLogin(): void {
+    this.router.navigate(['/login']);
   }
 }
