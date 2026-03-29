@@ -180,7 +180,7 @@ namespace user_service.Application.Services
             var rawToken = await _passwordCredentialService
                 .CreateEmailVerificationTokenAsync(user.Id, cancellationToken);
 
-            var verificationLink = $"https://frontend-app/verify-email?token={rawToken}";
+            var verificationLink = $"http://localhost:4200/verify-email?token={Uri.EscapeDataString(rawToken)}";
 
             await _emailService.SendEmailVerification(user.Email, verificationLink);
 
