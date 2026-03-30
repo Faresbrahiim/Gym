@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace user_service.Helpers
+namespace user_service.Application.Helpers
 {
     public class TokenHelper
     {

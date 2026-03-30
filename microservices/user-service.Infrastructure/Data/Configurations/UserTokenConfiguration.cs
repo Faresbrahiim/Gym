@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using user_service.Application.Entities;
+using user_service.Application.Domain.Entities;
 
 public class UserTokenConfiguration : IEntityTypeConfiguration<UserToken>
 {

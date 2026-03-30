@@ -1,7 +1,8 @@
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using user_service.Application.Interfaces;
+using user_service.Application.Contracts.Repositories;
+using user_service.Application.Contracts.Services;
 
 namespace user_service.Infrastructure.Services;
 
