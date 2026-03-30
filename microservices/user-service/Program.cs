@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 #region SERVICES
 
+builder.Services.AddSingleton<IEventPublisher, KafkaEventPublisher>();
 builder.Services.AddScoped<IFileAuditService, FileAuditService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

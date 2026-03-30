@@ -1,6 +1,7 @@
 ﻿using user_service.Application.DTOs;
 using user_service.Application.Entities;
 using user_service.Application.Enums;
+using user_service.Application.Events;
 using user_service.Application.Interfaces;
 using user_service.Application.Mappers;
 using user_service.Application.Domain.Exceptions;
@@ -24,6 +25,7 @@ namespace user_service.Application.Services
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRecoveryCodeRepository _recoveryCodeRepository;
+        private readonly IEventPublisher _eventPublisher;
 
         private readonly int _passwordResetExpiryMinutes;
 
@@ -41,8 +43,9 @@ namespace user_service.Application.Services
             IPasswordCredentialService passwordCredentialService,
             IHttpContextAccessor httpContextAccessor,
             ITwoFactorService twoFactorService,
-            IRecoveryCodeRepository recoveryCodeRepository)
-            
+            IRecoveryCodeRepository recoveryCodeRepository,
+            IEventPublisher eventPublisher)
+
         {
             _userRepository = userRepository;
             _tokenService = tokenService;
@@ -63,7 +66,7 @@ namespace user_service.Application.Services
             _httpContextAccessor = httpContextAccessor;
             _twoFactorService = twoFactorService;
             _recoveryCodeRepository = recoveryCodeRepository;
-            
+            _eventPublisher = eventPublisher;
         }
 
         // -----------------------------------------------------
@@ -124,6 +127,11 @@ namespace user_service.Application.Services
                     ProviderUserId = payload.Subject,
                     CreatedAt = DateTime.UtcNow
                 }, cancellationToken);
+
+                await _eventPublisher.PublishAsync(
+                    "auth.user.activated",
+                    new UserActivatedEvent { UserId = user.Id, Email = user.Email, Role = user.Role.ToString() },
+                    cancellationToken);
             }
 
             if (user.TwoFactorEnabled)
@@ -186,9 +194,15 @@ namespace user_service.Application.Services
 
             await _fileAuditService.LogAsync(
             action: "RegisterUser",
-            performedBy: profile.User.Username,
+            performedBy: profile.User?.Username ?? user.Username,
             details: "User registered successfully"
             );
+
+            await _eventPublisher.PublishAsync(
+                "auth.user.registered",
+                new UserRegisteredEvent { UserId = user.Id, Email = user.Email },
+                cancellationToken);
+
             return UserMapper.ToDto(user);
         }
 

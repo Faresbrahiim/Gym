@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using user_service.Application.Domain.Exceptions;
 using user_service.Application.Entities;
 using user_service.Application.Enums;
+using user_service.Application.Events;
 using user_service.Application.Interfaces;
 using user_service.Helpers;
 
@@ -14,19 +15,21 @@ namespace user_service.Application.Services
     public class PasswordCredentialService:IPasswordCredentialService
     {
         private readonly IUserRepository _userRepository;
-        
         private readonly IUserTokenRepository _userTokenRepository;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IEventPublisher _eventPublisher;
 
         public PasswordCredentialService(
             IUserTokenRepository userTokenRepository,
             IUserRepository userRepository,
             IPasswordResetTokenRepository passwordResetTokenRepository,
-            IPasswordHasher passwordHasher)
+            IPasswordHasher passwordHasher,
+            IEventPublisher eventPublisher)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _userTokenRepository = userTokenRepository;
+            _eventPublisher = eventPublisher;
         }
 
         public async Task<User> SetPasswordWithTokenAsync(string token, string newPassword, CancellationToken cancellationToken = default)
@@ -182,6 +185,11 @@ namespace user_service.Application.Services
 
             await _userRepository.Update(user, cancellationToken);
             await _userTokenRepository.Update(token, cancellationToken);
+
+            await _eventPublisher.PublishAsync(
+                "auth.user.activated",
+                new UserActivatedEvent { UserId = user.Id, Email = user.Email, Role = user.Role.ToString() },
+                cancellationToken);
         }
     }
 }
