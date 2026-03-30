@@ -1,7 +1,7 @@
 ﻿using Google.Apis.Auth;
-using user_service.Application.Enums;
+using user_service.Application.Domain.Enums;
 using user_service.Application.DTOs;
-using user_service.Application.Entities;
+using user_service.Application.Domain.Entities;
 
 namespace user_service.Application.Mappers
 {

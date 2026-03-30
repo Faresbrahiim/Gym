@@ -6,9 +6,10 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using user_service.Application.Entities;
-using user_service.Application.Interfaces;
-using user_service.Helpers;
+using user_service.Application.Domain.Entities;
+using user_service.Application.Contracts.Repositories;
+using user_service.Application.Contracts.Services;
+using user_service.Application.Helpers;
 
 namespace user_service.Infrastructure.Services
 {

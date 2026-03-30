@@ -5,8 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
-using user_service.Application.Interfaces;
-using user_service.Application.Loggings;
+using user_service.Application.Contracts.Repositories;
+using user_service.Application.Contracts.Services;
 
 namespace user_service.Filters
 {

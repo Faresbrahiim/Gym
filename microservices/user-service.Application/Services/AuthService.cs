@@ -1,11 +1,12 @@
 ﻿using user_service.Application.DTOs;
-using user_service.Application.Entities;
-using user_service.Application.Enums;
-using user_service.Application.Events;
-using user_service.Application.Interfaces;
+using user_service.Application.Domain.Entities;
+using user_service.Application.Domain.Enums;
+using user_service.Application.Domain.Events;
+using user_service.Application.Contracts.Repositories;
+using user_service.Application.Contracts.Services;
 using user_service.Application.Mappers;
 using user_service.Application.Domain.Exceptions;
-using user_service.Helpers;
+using user_service.Application.Helpers;
 using Microsoft.AspNetCore.Http;
 
 namespace user_service.Application.Services
