@@ -1,62 +1,65 @@
 <?php
-
 namespace App\Controller;
 
+use App\Mapper\ProductMapper;
+use App\Service\ProductServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Attribute\Route;
-use App\Service\ProductService;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Uid\Uuid;
 
 #[Route('/api/store/products')]
 final class ProductController extends AbstractController
 {
-    // 1. Define a private property to hold the service
-    private ProductService $productService;
+    public function __construct(
+        private readonly ProductServiceInterface $productService,
+        private readonly ProductMapper $productMapper
+    ) {}
 
-    // 2. Inject it via the constructor
-    public function __construct(ProductService $productService)
-    {
-        $this->productService = $productService;
-    }
-
-    #[Route('/', name: 'app_product_list', methods: ['GET'])]
+    #[Route('', name: 'app_product_list', methods: ['GET'])]
     public function list(): JsonResponse
     {
         $products = $this->productService->getAllProducts();
 
-        if (!$products) {
-            // You could return an empty array with a 200 OK
-            return $this->json([], Response::HTTP_OK);
-            
-        }
-
-        return $this->json($products);
+        // Single Responsibility: Mapper handles the transformation
+        return $this->json(
+            $this->productMapper->mapCollection($products), 
+            Response::HTTP_OK
+        );
     }
+
     #[Route('/search', name: 'app_product_search', methods: ['GET'])]
     public function search(Request $request): JsonResponse
     {
         $query = $request->query->get('productName', '');
         
         if (empty($query)) {
-            return $this->json(['error' => 'Search query is required'], 400);
+            return $this->json(['error' => 'Search query is required'], Response::HTTP_BAD_REQUEST);
         }
 
         $products = $this->productService->searchProducts($query);
         
-        return $this->json($products);
+        return $this->json($this->productMapper->mapCollection($products));
     }
 
-    // URL: GET /api/store/products/5
     #[Route('/{productId}', name: 'app_product_show', methods: ['GET'])]
-    public function show(int $productId): JsonResponse
+    public function show(string $productId): JsonResponse
     {
-        $product = $this->productService->getProduct($productId);
-
-        if (!$product) {
-            throw $this->createNotFoundException('Product not found');
+        try {
+            $uuid = Uuid::fromString($productId);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => 'Invalid UUID format'], Response::HTTP_BAD_REQUEST);
         }
 
-        return $this->json($product);
+        $product = $this->productService->getProduct($uuid);
+
+        if (!$product) {
+            return $this->json(['error' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Dependency Inversion: Using the injected mapper
+        return $this->json($this->productMapper->mapToResponseDto($product));
     }
 }
