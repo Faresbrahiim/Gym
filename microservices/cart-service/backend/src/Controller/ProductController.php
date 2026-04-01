@@ -15,7 +15,6 @@ final class ProductController extends AbstractController
 {
     public function __construct(
         private readonly ProductServiceInterface $productService,
-        private readonly ProductMapper $productMapper
     ) {}
 
     #[Route('', name: 'app_product_list', methods: ['GET'])]
@@ -25,7 +24,7 @@ final class ProductController extends AbstractController
 
         // Single Responsibility: Mapper handles the transformation
         return $this->json(
-            $this->productMapper->mapCollection($products), 
+            ProductMapper::mapCollection($products), 
             Response::HTTP_OK
         );
     }
@@ -41,7 +40,7 @@ final class ProductController extends AbstractController
 
         $products = $this->productService->searchProducts($query);
         
-        return $this->json($this->productMapper->mapCollection($products));
+        return $this->json(ProductMapper::mapCollection($products));
     }
 
     #[Route('/{productId}', name: 'app_product_show', methods: ['GET'])]
@@ -60,6 +59,6 @@ final class ProductController extends AbstractController
         }
 
         // Dependency Inversion: Using the injected mapper
-        return $this->json($this->productMapper->mapToResponseDto($product));
+        return $this->json(ProductMapper::mapToResponseDto($product));
     }
 }

@@ -7,7 +7,7 @@ use App\Dto\Cart\CartItemResponseDto;
 
 class CartMapper
 {
-    public function mapToResponseDto(Cart $cart): CartResponseDto
+    public static function mapToResponseDto(Cart $cart): CartResponseDto
     {
         $items = [];
         $total = 0;

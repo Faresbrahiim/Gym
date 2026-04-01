@@ -16,7 +16,6 @@ class CheckoutController extends AbstractController
 {
     public function __construct(
         private CheckoutService $checkoutService,
-        private OrderService $orderService
     ) {}
 
     #[Route('', methods: ['POST'])]
@@ -50,7 +49,7 @@ class CheckoutController extends AbstractController
     public function getCheckoutStatus(string $checkoutId): JsonResponse
     {
         // In this flow, the checkoutId is essentially the orderId
-        $order = $this->orderService->getOrder(Uuid::fromString($checkoutId));
+        $order = OrderService::getOrder(Uuid::fromString($checkoutId));
 
         if (!$order) {
             return $this->json(['error' => 'Checkout session not found'], 404);

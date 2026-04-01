@@ -16,7 +16,6 @@ class CartController extends AbstractController
 {
     public function __construct(
         private readonly CartServiceInterface $cartService, // Interface Injection
-        private readonly CartMapper $cartMapper            // Mapper Injection
     ) {}
 
     #[Route('', methods: ['GET'])]
@@ -26,7 +25,7 @@ class CartController extends AbstractController
         $cart = $this->cartService->getOrCreateCart($userId);
 
         // Map Entity to DTO
-        return $this->json($this->cartMapper->mapToResponseDto($cart));
+        return $this->json(CartMapper::mapToResponseDto($cart));
     }
 
     #[Route('/items', methods: ['POST'])]
