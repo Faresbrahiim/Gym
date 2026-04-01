@@ -1,0 +1,68 @@
+{
+    "name": "doctrine/doctrine-migrations-bundle",
+    "description": "Symfony DoctrineMigrationsBundle",
+    "license": "MIT",
+    "type": "symfony-bundle",
+    "keywords": [
+        "DBAL",
+        "Migrations",
+        "Schema"
+    ],
+    "authors": [
+        {
+            "name": "Fabien Potencier",
+            "email": "fabien@symfony.com"
+        },
+        {
+            "name": "Doctrine Project",
+            "homepage": "https://www.doctrine-project.org"
+        },
+        {
+            "name": "Symfony Community",
+            "homepage": "https://symfony.com/contributors"
+        }
+    ],
+    "homepage": "https://www.doctrine-project.org",
+    "require": {
+        "php": "^8.4",
+        "doctrine/dbal": "^4",
+        "doctrine/doctrine-bundle": "^3",
+        "doctrine/migrations": "^3.2",
+        "psr/log": "^3",
+        "symfony/config": "^6.4 || ^7.0 || ^8.0",
+        "symfony/console": "^6.4 || ^7.0 || ^8.0",
+        "symfony/dependency-injection": "^6.4 || ^7.0 || ^8.0",
+        "symfony/deprecation-contracts": "^3",
+        "symfony/framework-bundle": "^6.4 || ^7.0 || ^8.0",
+        "symfony/http-foundation": "^6.4 || ^7.0 || ^8.0",
+        "symfony/http-kernel": "^6.4 || ^7.0 || ^8.0",
+        "symfony/service-contracts": "^3.0"
+    },
+    "require-dev": {
+        "composer/semver": "^3.0",
+        "doctrine/coding-standard": "^14",
+        "doctrine/orm": "^3",
+        "phpstan/phpstan": "^2",
+        "phpstan/phpstan-deprecation-rules": "^2",
+        "phpstan/phpstan-phpunit": "^2",
+        "phpstan/phpstan-strict-rules": "^2",
+        "phpstan/phpstan-symfony": "^2",
+        "phpunit/phpunit": "^12.5",
+        "symfony/var-exporter": "^6.4 || ^7 || ^8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Doctrine\\Bundle\\MigrationsBundle\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Doctrine\\Bundle\\MigrationsBundle\\Tests\\": "tests"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}
