@@ -61,4 +61,24 @@ final class ProductController extends AbstractController
         // Dependency Inversion: Using the injected mapper
         return $this->json(ProductMapper::mapToResponseDto($product));
     }
+    #[Route('/{productId}/status', methods: ['PATCH'])]
+    public function updateStatus(string $productId, Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        
+        if (!isset($data['status'])) {
+            return $this->json(['error' => 'Status field is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $product = $this->productService->updateStatus(
+                Uuid::fromString($productId), 
+                $data['status']
+            );
+
+            return $this->json($this->productMapper->mapToResponseDto($product));
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
 }

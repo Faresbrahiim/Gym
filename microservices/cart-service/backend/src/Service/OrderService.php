@@ -76,4 +76,38 @@ class OrderService implements OrderServiceInterface
             $this->orderRepository->save($order, true);
         }
     }
+
+    public function getAllOrders(): array
+    {
+        // On récupère toutes les commandes, triées par la plus récente
+        return $this->orderRepository->findBy([], ['createdAt' => 'DESC']);
+    }
+
+    public function updateOrderStatus(Uuid $orderId, string $newStatus): Order
+    {
+        $order = $this->orderRepository->find($orderId);
+        if (!$order) {
+            throw new \Exception("Order not found");
+        }
+
+        $currentStatus = $order->getStatus();
+        $newStatus = strtoupper($newStatus);
+
+        // Logique de flux : PENDING -> PAID -> COMPLETED ou PENDING -> CANCELLED
+        $allowedTransitions = [
+            'PENDING'   => ['PAID', 'CANCELLED'],
+            'PAID'      => ['COMPLETED', 'CANCELLED'],
+            'COMPLETED' => [], // Statut final
+            'CANCELLED' => []  // Statut final
+        ];
+
+        if (!isset($allowedTransitions[$currentStatus]) || !in_array($newStatus, $allowedTransitions[$currentStatus])) {
+            throw new \InvalidArgumentException("Transition from $currentStatus to $newStatus is not allowed.");
+        }
+
+        $order->setStatus($newStatus);
+        $this->orderRepository->save($order, true);
+
+        return $order;
+    }
 }

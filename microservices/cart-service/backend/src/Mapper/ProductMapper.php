@@ -8,7 +8,7 @@ class ProductMapper
     /**
      * Map a single Entity to a DTO
      */
-    public static function mapToResponseDto(Product $product): ProductResponseDto
+    public static function mapToRseponseDto(Product $product): ProductResponseDto
     {
         return new ProductResponseDto(
             id: $product->getId()->toRfc4122(),
@@ -19,17 +19,9 @@ class ProductMapper
             createdAt: $product->getCreatedAt()->format(\DateTimeInterface::ATOM)
         );
     }
-
-    /**
-     * Map an array of Entities to an array of DTOs
-     * @param Product[] $products
-     * @return ProductResponseDto[]
-     */
     public static function mapCollection(array $products): array
     {
-        return array_map(
-            fn(Product $product) => $this->mapToResponseDto($product),
-            $products
-        );
+        // On utilise self:: car on est dans un contexte statique
+        return array_map([self::class, 'mapToRseponseDto'], $products);
     }
 }

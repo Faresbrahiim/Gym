@@ -1,0 +1,25 @@
+# config/packages/security.yaml
+security:
+    # 1. Gestion des mots de passe (requis par le bundle)
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # 2. Définition d'un fournisseur d'utilisateurs vide
+    providers:
+        users_in_memory: { memory: null }
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        # 3. Le firewall principal : ACCÈS LIBRE
+        main:
+            lazy: true
+            provider: users_in_memory
+            # On active le bundle mais on ne met aucune restriction
+            security: false 
+
+    # 4. On laisse cette section vide ou commentée
+    access_control:
+        # - { path: ^/api/store/admin, roles: ROLE_ADMIN }
