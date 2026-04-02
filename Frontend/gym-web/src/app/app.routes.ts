@@ -18,6 +18,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'setup-2fa',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/auth/pages/setup-two-factor/setup-two-factor.component').then(m => m.SetupTwoFactorComponent)
+  },
+
+  {
     path: '**',
     redirectTo: 'login'
   }

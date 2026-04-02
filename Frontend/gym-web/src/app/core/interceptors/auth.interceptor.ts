@@ -45,10 +45,11 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       }
 
-      // Do not retry login or refresh requests — avoids infinite loops
+      // Do not retry pre-auth or refresh requests — avoids infinite loops
       if (
         request.url.includes('/api/auth/login') ||
-        request.url.includes('/api/auth/refresh')
+        request.url.includes('/api/auth/refresh') ||
+        request.url.includes('/api/auth/2fa/verify')
       ) {
         return throwError(() => error);
       }
