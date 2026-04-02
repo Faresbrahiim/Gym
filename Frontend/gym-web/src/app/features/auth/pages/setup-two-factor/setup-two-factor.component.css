@@ -1,0 +1,54 @@
+.qr-code-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.qr-code-img {
+  width: 180px;
+  height: 180px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+}
+
+.manual-key-section {
+  margin-bottom: 1.5rem;
+}
+
+.manual-key-box {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  word-break: break-all;
+}
+
+.manual-key-box code {
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  color: #495057;
+}
+
+.recovery-codes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.recovery-code-item {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+}
+
+.recovery-code-item code {
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: #212529;
+}

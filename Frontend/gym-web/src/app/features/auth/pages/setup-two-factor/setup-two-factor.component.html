@@ -1,0 +1,154 @@
+<!-- Main Wrapper -->
+<div class="main-wrapper authendication-pages">
+
+  <!-- Page Content -->
+  <div class="content">
+    <div class="container wrapper no-padding">
+      <div class="row no-margin vph-100 d-flex align-items-center justify-content-center">
+        <div class="col-sm-10 col-md-8 col-lg-5 mx-auto">
+
+          <app-auth-card>
+
+            <!-- Intro Phase -->
+            @if (phase() === 'intro') {
+              <div class="text-center mb-4">
+                <div class="mb-3">
+                  <i class="feather-shield" style="font-size: 3rem; color: #495057;"></i>
+                </div>
+                <h4 class="mb-2">Set Up Two-Factor Authentication</h4>
+                <p class="text-muted">Add an extra layer of security to your account. You will need an authenticator app (Google Authenticator, Authy, etc.) to complete setup.</p>
+              </div>
+
+              <div class="alert alert-warning" role="alert">
+                <strong><i class="feather-alert-triangle me-2"></i>Already have 2FA enabled?</strong>
+                <p class="mb-0 small mt-1">Proceeding will replace your current authenticator configuration. Your old codes will stop working immediately. Make sure to save the new recovery codes after setup.</p>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block"
+                (click)="startSetup()">
+                Begin Setup<i class="feather-arrow-right-circle ms-2"></i>
+              </button>
+            }
+
+            <!-- Loading Phase -->
+            @if (phase() === 'loading') {
+              <div class="text-center py-4">
+                <div class="mb-3">
+                  <span class="spinner-border" style="width: 3rem; height: 3rem;" role="status" aria-hidden="true"></span>
+                </div>
+                <h4 class="mb-2">Preparing setup...</h4>
+                <p class="text-muted">Please wait a moment.</p>
+              </div>
+            }
+
+            <!-- Error Phase -->
+            @if (phase() === 'error') {
+              <div class="text-center py-4">
+                <div class="mb-3">
+                  <i class="feather-x-circle" style="font-size: 3rem; color: #dc3545;"></i>
+                </div>
+                <h4 class="mb-2">Setup Failed</h4>
+                <p class="text-muted mb-4">Could not start 2FA setup. Please try again.</p>
+                <button type="button" class="btn btn-secondary register-btn w-100" (click)="retrySetup()">
+                  Try Again<i class="feather-refresh-cw ms-2"></i>
+                </button>
+              </div>
+            }
+
+            <!-- Scan Phase -->
+            @if (phase() === 'scan') {
+
+              <h2>Enable Two-Factor Authentication</h2>
+              <p>Use an authenticator app (Google Authenticator, Authy, etc.) to scan the QR code below.</p>
+
+              <div class="qr-code-wrapper">
+                <img [src]="qrCodeDataUri()" alt="2FA QR Code" class="qr-code-img" />
+              </div>
+
+              <div class="manual-key-section">
+                <p class="text-muted small mb-1">Can't scan? Enter this key manually in your app:</p>
+                <div class="manual-key-box">
+                  <code>{{ manualKey() }}</code>
+                </div>
+              </div>
+
+              @if (confirmError()) {
+                <div class="alert alert-danger" role="alert">
+                  {{ confirmError() }}
+                </div>
+              }
+
+              <form [formGroup]="codeForm" (ngSubmit)="onSubmit()">
+
+                <div class="form-group">
+                  <div class="group-img">
+                    <i class="feather-shield"></i>
+                    <input
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="one-time-code"
+                      maxlength="8"
+                      class="form-control"
+                      placeholder="Enter 6-digit code"
+                      formControlName="code">
+                  </div>
+                  @if (codeForm.get('code')?.touched && codeForm.get('code')?.invalid) {
+                    <div class="text-danger small mt-1">
+                      @if (codeForm.get('code')?.errors?.['required']) {
+                        <span>Code is required.</span>
+                      }
+                      @if (codeForm.get('code')?.errors?.['pattern']) {
+                        <span>Enter a valid 6-digit code from your authenticator app.</span>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <app-loading-button
+                  [loading]="isConfirming()"
+                  cssClass="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block">
+                  Verify and Enable<i class="feather-check-circle ms-2"></i>
+                </app-loading-button>
+
+              </form>
+
+            }
+
+            <!-- Success Phase -->
+            @if (phase() === 'success') {
+
+              <div class="text-center mb-4">
+                <div class="mb-3">
+                  <i class="feather-check-circle" style="font-size: 3rem; color: #28a745;"></i>
+                </div>
+                <h4 class="mb-2">2FA Enabled!</h4>
+                <p class="text-muted">Two-factor authentication has been successfully enabled on your account.</p>
+              </div>
+
+              <div class="alert alert-warning" role="alert">
+                <strong><i class="feather-alert-triangle me-2"></i>Save these codes now — they will not be shown again.</strong>
+                <p class="mb-0 small mt-1">If you lose access to your authenticator app, use one of these codes to sign in. Each code can only be used once.</p>
+              </div>
+
+              <div class="recovery-codes-grid">
+                @for (code of recoveryCodes(); track $index) {
+                  <div class="recovery-code-item">
+                    <code>{{ code }}</code>
+                  </div>
+                }
+              </div>
+
+            }
+
+          </app-auth-card>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Page Content -->
+
+</div>
+<!-- /Main Wrapper -->
