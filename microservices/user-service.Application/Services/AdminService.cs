@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using user_service.Application.Domain.Exceptions;
 using user_service.Application.DTOs;
 using user_service.Application.Entities;
 using user_service.Application.Enums;
 using user_service.Application.Interfaces;
-using user_service.Helpers;
 
 namespace user_service.Application.Services
 {
@@ -63,6 +58,73 @@ namespace user_service.Application.Services
                );
         }
 
+
+        public async Task<UserDto> ChangeUserRoleAsync(
+    Guid userId,
+    ChangeUserRoleRequest request,
+    string performedBy,
+    CancellationToken cancellationToken = default)
+        {
+            var user = await _userRepository.GetById(userId, cancellationToken)
+                  ?? throw new UserNotFoundException(userId);
+
+            var oldRole = user.Role;
+            user.Role = request.Role;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.Update(user, cancellationToken);
+
+            await _fileAuditService.LogAsync(
+                action: "AdminChangedUserRole",
+                performedBy: performedBy,
+                details: $"Changed role of user {user.Email} from {oldRole} to {request.Role}"
+            );
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                FirstName = user.Profile?.FirstName,
+                LastName = user.Profile?.LastName,
+                Role = user.Role,
+                Status = user.Status
+            };
+        }
+
+        public async Task<UserDto> ChangeUserStatusAsync(
+            Guid userId,
+            ChangeUserStatusRequest request,
+            string performedBy,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await _userRepository.GetById(userId, cancellationToken)
+                ?? throw new UserNotFoundException(userId);
+
+
+            var oldStatus = user.Status;
+            user.Status = request.Status;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.Update(user, cancellationToken);
+
+            await _fileAuditService.LogAsync(
+                action: "AdminChangedUserStatus",
+                performedBy: performedBy,
+                details: $"Changed status of user {user.Email} from {oldStatus} to {request.Status}"
+            );
+
+            return new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Username = user.Username,
+                FirstName = user.Profile?.FirstName,
+                LastName = user.Profile?.LastName,
+                Role = user.Role,
+                Status = user.Status
+            };
+        }
         private async Task InviteUserAsync(
                 string email,
                 string username,

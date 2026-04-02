@@ -15,7 +15,8 @@ namespace user_service.Application.Authorization
                     Permissions.UsersCreate,
                     Permissions.UsersActivate,
                     Permissions.UsersSuspend,
-                    Permissions.UsersViewAll
+                    Permissions.UsersViewAll,
+                    Permissions.UsersManage,
                 },
 
                 UserRole.COACH => new[]

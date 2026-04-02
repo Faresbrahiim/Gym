@@ -6,6 +6,7 @@
         public const string UsersActivate = "users.activate";
         public const string UsersSuspend = "users.suspend";
         public const string UsersViewAll = "users.view.all";
+        public const string UsersManage = "users.manage";
 
         // Coach 
         public const string MembersViewAssigned = "members.view.assigned";

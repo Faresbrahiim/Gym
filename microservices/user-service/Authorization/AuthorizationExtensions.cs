@@ -15,6 +15,7 @@ namespace user_service.Authorization
                 RegisterPermissionPolicy(options, Permissions.UsersSuspend);
                 RegisterPermissionPolicy(options, Permissions.UsersViewAll);
                 RegisterPermissionPolicy(options, Permissions.MembersViewAssigned);
+                RegisterPermissionPolicy(options, Permissions.UsersManage);
             });
 
             services.AddSingleton<IAuthorizationHandler, PermissionHandler>();

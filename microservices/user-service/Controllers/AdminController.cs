@@ -41,6 +41,8 @@ namespace user_service.Controllers
         public async Task<IActionResult> CreateCoach(
             [FromBody] CreateCoachByAdminDto dto,
             CancellationToken cancellationToken)
+
+
         {
             var performedBy = User.Identity?.Name;
 
@@ -50,6 +52,40 @@ namespace user_service.Controllers
             await _adminService.CreateCoachAsync(dto, performedBy, cancellationToken);
 
             return Ok(new { message = "Coach invitation sent." });
+        }
+
+        [Authorize(Policy = Permissions.UsersManage)]
+        [HttpPut("{userId}/role")]
+        public async Task<IActionResult> ChangeUserRole(
+    Guid userId,
+    [FromBody] ChangeUserRoleRequest request,
+    CancellationToken cancellationToken)
+        {
+            var performedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(performedBy))
+                return Unauthorized();
+
+            var result = await _adminService.ChangeUserRoleAsync(userId, request, performedBy, cancellationToken);
+
+            return Ok(result);
+        }
+
+        [Authorize(Policy = Permissions.UsersManage)]
+        [HttpPut("{userId}/status")]
+        public async Task<IActionResult> ChangeUserStatus(
+            Guid userId,
+            [FromBody] ChangeUserStatusRequest request,
+            CancellationToken cancellationToken)
+        {
+            var performedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(performedBy))
+                return Unauthorized();
+
+            var result = await _adminService.ChangeUserStatusAsync(userId, request, performedBy, cancellationToken);
+
+            return Ok(result);
         }
     }
 }

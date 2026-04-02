@@ -2,9 +2,9 @@
 {
     public enum UserRole
     {
-        ADMIN,
-        COACH,
-        MEMBER
+        ADMIN = 0,
+        COACH = 1,
+        MEMBER = 2
     }
 
 }
