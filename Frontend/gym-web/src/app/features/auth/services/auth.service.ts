@@ -6,6 +6,7 @@ import { TokenService } from '../../../core/auth/token.service';
 import { LoginRequest } from '../../../shared/models/auth/login-request.model';
 import { LoginResponse } from '../../../shared/models/auth/login-response.model';
 import { RegisterRequest } from '../../../shared/models/auth/register-request.model';
+import { VerifyTwoFactorRequest } from '../../../shared/models/auth/verify-two-factor-request.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -24,6 +25,10 @@ export class AuthService {
 
   verifyEmail(token: string): Observable<{ message: string }> {
     return this.api.post<{ message: string }>(`${this.AUTH_BASE}/verify-email`, { token });
+  }
+
+  verifyTwoFactor(request: VerifyTwoFactorRequest): Observable<LoginResponse> {
+    return this.api.post<LoginResponse>(`${this.AUTH_BASE}/2fa/verify`, request);
   }
 
   logout(): Observable<void> {

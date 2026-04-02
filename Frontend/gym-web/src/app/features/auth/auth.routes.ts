@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { publicGuard } from '../../core/guards/public.guard';
+import { twoFactorGuard } from '../../core/guards/two-factor.guard';
 
 export const authRoutes: Routes = [
   {
@@ -30,5 +31,11 @@ export const authRoutes: Routes = [
     path: 'verify-email',
     loadComponent: () =>
       import('./pages/verify-email/verify-email.component').then(m => m.VerifyEmailComponent)
+  },
+  {
+    path: 'verify-2fa',
+    canActivate: [twoFactorGuard],
+    loadComponent: () =>
+      import('./pages/verify-two-factor/verify-two-factor.component').then(m => m.VerifyTwoFactorComponent)
   }
 ];
