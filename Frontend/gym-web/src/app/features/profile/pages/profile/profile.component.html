@@ -1,0 +1,329 @@
+<!-- Loading -->
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && userMe()) {
+  <div class="content">
+    <div class="container pb-5 pt-4">
+
+      <!-- Profile Header Card -->
+      <div class="card mb-4">
+        <div class="card-body py-4">
+          <div class="d-flex align-items-center gap-4">
+            <img
+              [src]="avatarPreview()"
+              (error)="onAvatarError($event)"
+              alt="Profile picture"
+              class="rounded-circle"
+              style="width: 80px; height: 80px; object-fit: cover; border: 3px solid #eee;"
+            />
+            <div>
+              <h4 class="mb-1 fw-semibold">{{ fullName }}</h4>
+              <span class="badge bg-primary mb-1">{{ userMe()?.role }}</span>
+              <p class="text-muted mb-0 small">{{ userMe()?.email }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation -->
+      <ul class="nav nav-tabs mb-0">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            [class.active]="activeTab() === 'personal'"
+            (click)="setTab('personal')"
+            style="cursor: pointer;"
+          >
+            Personal Info
+          </a>
+        </li>
+        @if (role === 'MEMBER') {
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              [class.active]="activeTab() === 'extra'"
+              (click)="setTab('extra')"
+              style="cursor: pointer;"
+            >
+              Fitness Profile
+            </a>
+          </li>
+        }
+        @if (role === 'COACH') {
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              [class.active]="activeTab() === 'extra'"
+              (click)="setTab('extra')"
+              style="cursor: pointer;"
+            >
+              Coach Profile
+            </a>
+          </li>
+        }
+      </ul>
+
+      <!-- Personal Info Tab -->
+      @if (activeTab() === 'personal') {
+        <div class="card border-top-0 rounded-top-0">
+          <div class="card-body p-4">
+            <h5 class="fw-semibold mb-4">Personal Information</h5>
+
+            @if (profileSuccess()) {
+              <div class="alert alert-success py-2">Profile updated successfully.</div>
+            }
+            @if (profileError()) {
+              <div class="alert alert-danger py-2">{{ profileError() }}</div>
+            }
+
+            <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()">
+              <div class="row g-3">
+
+                <div class="col-md-6">
+                  <label class="form-label">First Name <span class="text-danger">*</span></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="firstName"
+                    [class.is-invalid]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
+                  />
+                  @if (profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
+                    <div class="invalid-feedback">First name is required.</div>
+                  }
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="lastName"
+                    [class.is-invalid]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
+                  />
+                  @if (profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
+                    <div class="invalid-feedback">Last name is required.</div>
+                  }
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Phone</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    formControlName="phone"
+                    placeholder="+1 234 567 8900"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Profile Picture URL</label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    formControlName="profilePictureUrl"
+                    placeholder="https://example.com/avatar.jpg"
+                    (input)="onAvatarUrlInput($event)"
+                  />
+                </div>
+
+              </div>
+
+              <div class="d-flex justify-content-end mt-4">
+                <button
+                  type="submit"
+                  class="btn btn-primary px-4"
+                  [disabled]="isSavingProfile() || profileForm.pristine || profileForm.invalid"
+                >
+                  @if (isSavingProfile()) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  }
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- Fitness Profile Tab (MEMBER) -->
+      @if (activeTab() === 'extra' && role === 'MEMBER') {
+        <div class="card border-top-0 rounded-top-0">
+          <div class="card-body p-4">
+            <h5 class="fw-semibold mb-4">Fitness Profile</h5>
+
+            @if (extraSuccess()) {
+              <div class="alert alert-success py-2">Fitness profile updated successfully.</div>
+            }
+            @if (extraError()) {
+              <div class="alert alert-danger py-2">{{ extraError() }}</div>
+            }
+
+            <form [formGroup]="memberForm" (ngSubmit)="onSaveMemberProfile()">
+              <div class="row g-3">
+
+                <div class="col-md-6">
+                  <label class="form-label">Gender</label>
+                  <select class="form-select" formControlName="gender">
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Date of Birth</label>
+                  <input type="date" class="form-control" formControlName="dateOfBirth" />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Height (cm)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="heightCm"
+                    min="50"
+                    max="300"
+                    placeholder="175"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Weight (kg)</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="weightKg"
+                    min="20"
+                    max="500"
+                    placeholder="70"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Fitness Goal</label>
+                  <select class="form-select" formControlName="fitnessGoal">
+                    <option value="">Select goal</option>
+                    <option value="Build muscle">Build muscle</option>
+                    <option value="Lose weight">Lose weight</option>
+                    <option value="Improve endurance">Improve endurance</option>
+                    <option value="Stay active">Stay active</option>
+                    <option value="Flexibility">Flexibility</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Experience Level</label>
+                  <select class="form-select" formControlName="experienceLevel">
+                    <option value="">Select level</option>
+                    <option value="0">Beginner</option>
+                    <option value="1">Intermediate</option>
+                    <option value="2">Advanced</option>
+                  </select>
+                </div>
+
+              </div>
+
+              <div class="d-flex justify-content-end mt-4">
+                <button
+                  type="submit"
+                  class="btn btn-primary px-4"
+                  [disabled]="isSavingExtra() || memberForm.pristine"
+                >
+                  @if (isSavingExtra()) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  }
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+      <!-- Coach Profile Tab (COACH) -->
+      @if (activeTab() === 'extra' && role === 'COACH') {
+        <div class="card border-top-0 rounded-top-0">
+          <div class="card-body p-4">
+            <h5 class="fw-semibold mb-4">Coach Profile</h5>
+
+            @if (extraSuccess()) {
+              <div class="alert alert-success py-2">Coach profile updated successfully.</div>
+            }
+            @if (extraError()) {
+              <div class="alert alert-danger py-2">{{ extraError() }}</div>
+            }
+
+            <form [formGroup]="coachForm" (ngSubmit)="onSaveCoachProfile()">
+              <div class="row g-3">
+
+                <div class="col-12">
+                  <label class="form-label">Bio</label>
+                  <textarea
+                    class="form-control"
+                    formControlName="bio"
+                    rows="4"
+                    placeholder="Tell members about yourself..."
+                  ></textarea>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Years of Experience</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    formControlName="yearsOfExperience"
+                    min="0"
+                    max="60"
+                    placeholder="5"
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Certifications</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="certifications"
+                    placeholder="NSCA-CPT, ACE..."
+                  />
+                </div>
+
+                <div class="col-md-6">
+                  <label class="form-label">Language</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="language"
+                    placeholder="English, French..."
+                  />
+                </div>
+
+              </div>
+
+              <div class="d-flex justify-content-end mt-4">
+                <button
+                  type="submit"
+                  class="btn btn-primary px-4"
+                  [disabled]="isSavingExtra() || coachForm.pristine"
+                >
+                  @if (isSavingExtra()) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  }
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+}
