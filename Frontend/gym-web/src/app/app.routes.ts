@@ -18,6 +18,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/profile/profile.routes').then(m => m.profileRoutes)
+  },
+
+  {
     path: 'setup-2fa',
     canActivate: [authGuard],
     loadComponent: () =>

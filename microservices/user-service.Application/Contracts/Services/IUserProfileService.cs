@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using user_service.Application.DTOs;
 
 namespace user_service.Application.Contracts.Services
@@ -16,6 +11,16 @@ namespace user_service.Application.Contracts.Services
         Task UpdateMeAsync(
             Guid userId,
             UpdateUserProfileDto dto,
+            CancellationToken cancellationToken = default);
+
+        Task UpdateMemberProfileAsync(
+            Guid userId,
+            UpdateMemberProfileDto dto,
+            CancellationToken cancellationToken = default);
+
+        Task UpdateCoachProfileAsync(
+            Guid userId,
+            UpdateCoachProfileDto dto,
             CancellationToken cancellationToken = default);
     }
 }

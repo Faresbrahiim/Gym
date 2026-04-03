@@ -13,8 +13,8 @@ namespace user_service.Application.Mappers
             {
                 Id = user.Id,
                 FirstName = user.Profile?.FirstName ?? "unknown",
-                LastName = user.Profile?.LastName ?? "unkown",
-                Username = user?.Username ?? "unkown",
+                LastName = user.Profile?.LastName ?? "unknown",
+                Username = user?.Username ?? "unknown",
                 Email = user.Email,
                 Role = user.Role,
             };
