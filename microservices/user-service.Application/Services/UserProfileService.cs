@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
 using user_service.Application.Domain.Entities;
@@ -13,17 +14,20 @@ namespace user_service.Application.Services
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly IMemberProfileRepository _memberProfileRepository;
         private readonly ICoachProfileRepository _coachProfileRepository;
+        private readonly IFileStorageService _fileStorageService;
 
         public UserProfileService(
             IUserRepository userRepository,
             IUserProfileRepository userProfileRepository,
             IMemberProfileRepository memberProfileRepository,
-            ICoachProfileRepository coachProfileRepository)
+            ICoachProfileRepository coachProfileRepository,
+            IFileStorageService fileStorageService)
         {
             _userRepository = userRepository;
             _userProfileRepository = userProfileRepository;
             _memberProfileRepository = memberProfileRepository;
             _coachProfileRepository = coachProfileRepository;
+            _fileStorageService = fileStorageService;
         }
 
         public async Task<UserMeDto> GetMeAsync(
@@ -34,7 +38,7 @@ namespace user_service.Application.Services
                 ?? throw new UserNotFoundException(userId);
 
             if (user.Status != UserStatus.ACTIVE)
-                throw new UnauthorizedAccessException("Account not activated.");
+                throw new AccountNotActivatedException();
 
             var result = new UserMeDto
             {
@@ -88,7 +92,7 @@ namespace user_service.Application.Services
                 ?? throw new UserNotFoundException(userId);
 
             if (user.Status != UserStatus.ACTIVE)
-                throw new UnauthorizedAccessException("Account not activated.");
+                throw new AccountNotActivatedException();
 
             var profile = await _userProfileRepository.GetByUserId(userId, cancellationToken)
                 ?? throw new ProfileNotFoundException(userId);
@@ -112,7 +116,7 @@ namespace user_service.Application.Services
                 ?? throw new UserNotFoundException(userId);
 
             if (user.Status != UserStatus.ACTIVE)
-                throw new UnauthorizedAccessException("Account not activated.");
+                throw new AccountNotActivatedException();
 
             if (user.Role != UserRole.MEMBER)
                 throw new UnauthorizedAccessException("Only members can update member profiles.");
@@ -164,7 +168,7 @@ namespace user_service.Application.Services
                 ?? throw new UserNotFoundException(userId);
 
             if (user.Status != UserStatus.ACTIVE)
-                throw new UnauthorizedAccessException("Account not activated.");
+                throw new AccountNotActivatedException();
 
             if (user.Role != UserRole.COACH)
                 throw new UnauthorizedAccessException("Only coaches can update coach profiles.");
@@ -196,6 +200,30 @@ namespace user_service.Application.Services
 
                 await _coachProfileRepository.Update(existing, cancellationToken);
             }
+        }
+
+        public async Task<string> UploadAvatarAsync(
+            Guid userId,
+            IFormFile file,
+            CancellationToken cancellationToken = default)
+        {
+            var user = await _userRepository.GetById(userId, cancellationToken)
+                ?? throw new UserNotFoundException(userId);
+
+            if (user.Status != UserStatus.ACTIVE)
+                throw new AccountNotActivatedException();
+
+            var profile = await _userProfileRepository.GetByUserId(userId, cancellationToken)
+                ?? throw new ProfileNotFoundException(userId);
+
+            var url = await _fileStorageService.SaveAvatarAsync(file, userId, cancellationToken);
+
+            profile.ProfilePictureUrl = url;
+            profile.UpdatedAt = DateTime.UtcNow;
+
+            await _userProfileRepository.Update(profile, cancellationToken);
+
+            return url;
         }
     }
 }

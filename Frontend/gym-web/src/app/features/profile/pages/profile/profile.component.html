@@ -15,18 +15,47 @@
       <div class="card mb-4">
         <div class="card-body py-4">
           <div class="d-flex align-items-center gap-4">
-            <img
-              [src]="avatarPreview()"
-              (error)="onAvatarError($event)"
-              alt="Profile picture"
-              class="rounded-circle"
-              style="width: 80px; height: 80px; object-fit: cover; border: 3px solid #eee;"
-            />
+
+            <!-- Avatar + upload trigger -->
+            <div class="position-relative" style="width: 80px; height: 80px; flex-shrink: 0;">
+              <img
+                [src]="avatarPreview()"
+                (error)="onAvatarError($event)"
+                alt="Profile picture"
+                class="rounded-circle w-100 h-100"
+                style="object-fit: cover; border: 3px solid #eee;"
+              />
+              <label
+                for="avatarInput"
+                class="position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center rounded-circle text-white"
+                [class.bg-primary]="!pendingAvatarFile()"
+                [class.bg-success]="pendingAvatarFile()"
+                style="width: 26px; height: 26px; cursor: pointer; border: 2px solid #fff;"
+                title="Change photo"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4z"/>
+                  <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+                </svg>
+              </label>
+              <input
+                id="avatarInput"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                class="d-none"
+                (change)="onFileSelected($event)"
+              />
+            </div>
+
             <div>
               <h4 class="mb-1 fw-semibold">{{ fullName }}</h4>
               <span class="badge bg-primary mb-1">{{ userMe()?.role }}</span>
               <p class="text-muted mb-0 small">{{ userMe()?.email }}</p>
+              @if (avatarError()) {
+                <p class="text-danger mb-0 small mt-1">{{ avatarError() }}</p>
+              }
             </div>
+
           </div>
         </div>
       </div>
@@ -121,24 +150,13 @@
                   />
                 </div>
 
-                <div class="col-md-6">
-                  <label class="form-label">Profile Picture URL</label>
-                  <input
-                    type="url"
-                    class="form-control"
-                    formControlName="profilePictureUrl"
-                    placeholder="https://example.com/avatar.jpg"
-                    (input)="onAvatarUrlInput($event)"
-                  />
-                </div>
-
               </div>
 
               <div class="d-flex justify-content-end mt-4">
                 <button
                   type="submit"
                   class="btn btn-primary px-4"
-                  [disabled]="isSavingProfile() || profileForm.pristine || profileForm.invalid"
+                  [disabled]="isSavingProfile() || (profileForm.pristine && !pendingAvatarFile()) || profileForm.invalid"
                 >
                   @if (isSavingProfile()) {
                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>

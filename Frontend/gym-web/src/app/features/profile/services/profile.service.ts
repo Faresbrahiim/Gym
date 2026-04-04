@@ -28,4 +28,10 @@ export class ProfileService {
   updateCoachProfile(dto: UpdateCoachProfileRequest): Observable<void> {
     return this.api.put<void>(`${this.BASE}/coach-profile`, dto);
   }
+
+  uploadAvatar(file: File): Observable<{ url: string }> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.api.postForm<{ url: string }>(`${this.BASE}/avatar`, form);
+  }
 }
