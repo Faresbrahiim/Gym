@@ -2,7 +2,7 @@ import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap, of } from 'rxjs';
+import { Observable, switchMap, of } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { UserMe } from '../../models/user-me.model';
@@ -186,7 +186,7 @@ export class ProfileComponent implements OnInit {
     if (v.phone)     dto.phone     = v.phone;
 
     const pendingFile = this.pendingAvatarFile();
-    const avatar$ = pendingFile
+    const avatar$: Observable<{ url: string } | null> = pendingFile
       ? this.profileService.uploadAvatar(pendingFile)
       : of(null);
 
