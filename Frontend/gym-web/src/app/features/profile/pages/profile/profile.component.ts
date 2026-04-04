@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { switchMap, of } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { UserMe } from '../../models/user-me.model';
@@ -22,16 +23,18 @@ export class ProfileComponent implements OnInit {
 
   readonly DEFAULT_AVATAR = DEFAULT_AVATAR;
 
-  isLoading       = signal(true);
-  isSavingProfile = signal(false);
-  isSavingExtra   = signal(false);
-  profileSuccess  = signal(false);
-  extraSuccess    = signal(false);
-  profileError    = signal<string | null>(null);
-  extraError      = signal<string | null>(null);
-  userMe          = signal<UserMe | null>(null);
-  activeTab       = signal<'personal' | 'extra'>('personal');
-  avatarPreview   = signal(DEFAULT_AVATAR);
+  isLoading         = signal(true);
+  isSavingProfile   = signal(false);
+  isSavingExtra     = signal(false);
+  profileSuccess    = signal(false);
+  extraSuccess      = signal(false);
+  profileError      = signal<string | null>(null);
+  extraError        = signal<string | null>(null);
+  avatarError       = signal<string | null>(null);
+  userMe            = signal<UserMe | null>(null);
+  activeTab         = signal<'personal' | 'extra'>('personal');
+  avatarPreview     = signal(DEFAULT_AVATAR);
+  pendingAvatarFile = signal<File | null>(null);
 
   profileForm!: FormGroup;
   memberForm!: FormGroup;
@@ -56,10 +59,9 @@ export class ProfileComponent implements OnInit {
 
   private buildForms(): void {
     this.profileForm = this.fb.group({
-      firstName:        ['', Validators.required],
-      lastName:         ['', Validators.required],
-      phone:            [''],
-      profilePictureUrl:['']
+      firstName: ['', Validators.required],
+      lastName:  ['', Validators.required],
+      phone:     ['']
     });
 
     this.memberForm = this.fb.group({
@@ -107,10 +109,9 @@ export class ProfileComponent implements OnInit {
   private patchForms(data: UserMe): void {
     if (data.profile) {
       this.profileForm.patchValue({
-        firstName:         data.profile.firstName,
-        lastName:          data.profile.lastName,
-        phone:             data.profile.phone ?? '',
-        profilePictureUrl: data.profile.profilePictureUrl ?? ''
+        firstName: data.profile.firstName,
+        lastName:  data.profile.lastName,
+        phone:     data.profile.phone ?? ''
       });
 
       if (data.profile.profilePictureUrl) {
@@ -155,9 +156,17 @@ export class ProfileComponent implements OnInit {
     (event.target as HTMLImageElement).src = DEFAULT_AVATAR;
   }
 
-  onAvatarUrlInput(event: Event): void {
-    const url = (event.target as HTMLInputElement).value.trim();
-    this.avatarPreview.set(url || DEFAULT_AVATAR);
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => this.avatarPreview.set(e.target!.result as string);
+    reader.readAsDataURL(file);
+
+    this.pendingAvatarFile.set(file);
+    this.avatarError.set(null);
   }
 
   onSaveProfile(): void {
@@ -172,17 +181,26 @@ export class ProfileComponent implements OnInit {
 
     const v = this.profileForm.value;
     const dto: UpdateProfileRequest = {};
-    if (v.firstName)        dto.firstName        = v.firstName;
-    if (v.lastName)         dto.lastName         = v.lastName;
-    if (v.phone)            dto.phone            = v.phone;
-    if (v.profilePictureUrl) dto.profilePictureUrl = v.profilePictureUrl;
+    if (v.firstName) dto.firstName = v.firstName;
+    if (v.lastName)  dto.lastName  = v.lastName;
+    if (v.phone)     dto.phone     = v.phone;
 
-    this.profileService.updateProfile(dto).pipe(
+    const pendingFile = this.pendingAvatarFile();
+    const avatar$ = pendingFile
+      ? this.profileService.uploadAvatar(pendingFile)
+      : of(null);
+
+    avatar$.pipe(
+      switchMap((res) => {
+        if (res) this.avatarPreview.set(res.url);
+        return this.profileService.updateProfile(dto);
+      }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: () => {
         this.isSavingProfile.set(false);
         this.profileSuccess.set(true);
+        this.pendingAvatarFile.set(null);
         this.profileForm.markAsPristine();
         setTimeout(() => this.profileSuccess.set(false), 3000);
       },

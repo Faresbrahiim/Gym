@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using user_service.Application.DTOs;
 using user_service.Application.Contracts.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace user_service.Controllers
 {
@@ -54,6 +55,17 @@ namespace user_service.Controllers
             var userId = GetUserId();
             await _service.UpdateCoachProfileAsync(userId, dto, cancellationToken);
             return NoContent();
+        }
+
+        [HttpPost("avatar")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadAvatar(
+            IFormFile file,
+            CancellationToken cancellationToken)
+        {
+            var userId = GetUserId();
+            var url = await _service.UploadAvatarAsync(userId, file, cancellationToken);
+            return Ok(new { url });
         }
 
         private Guid GetUserId()

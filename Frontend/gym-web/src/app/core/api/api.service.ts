@@ -25,4 +25,8 @@ export class ApiService {
   delete<T>(url: string): Observable<T> {
     return this.http.delete<T>(`${this.base}${url}`);
   }
+
+  postForm<T>(url: string, body: FormData): Observable<T> {
+    return this.http.post<T>(`${this.base}${url}`, body);
+  }
 }

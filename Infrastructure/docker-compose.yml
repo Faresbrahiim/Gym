@@ -58,6 +58,7 @@ services:
     volumes:
       - ../microservices/user-service/Keys:/app/Keys
       - ../microservices/user-service/Logs:/app/Logs
+      - ../microservices/user-service/uploads:/app/uploads
 
   # ==============================
   # Spring Boot Membership Service + Postgres
