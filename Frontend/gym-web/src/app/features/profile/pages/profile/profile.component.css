@@ -1,12 +1,1 @@
-.nav-tabs .nav-link {
-  color: #555;
-}
-
-.nav-tabs .nav-link.active {
-  font-weight: 600;
-}
-
-.rounded-top-0 {
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
-}
+/* Profile page styles handled by global style.css */
