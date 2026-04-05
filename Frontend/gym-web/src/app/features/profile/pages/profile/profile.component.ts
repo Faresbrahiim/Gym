@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, switchMap, of } from 'rxjs';
@@ -15,7 +15,7 @@ const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
 @Component({
   standalone: true,
   selector: 'app-profile',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
