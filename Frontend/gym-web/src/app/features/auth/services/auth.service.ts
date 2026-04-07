@@ -64,4 +64,12 @@ export class AuthService {
   acceptInvitation(token: string, password: string): Observable<{ message: string }> {
     return this.api.post<{ message: string }>(`${this.AUTH_BASE}/accept-invitation`, { token, password });
   }
+
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/password/request-reset`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/password/reset`, { token, newPassword });
+  }
 }

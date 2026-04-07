@@ -222,7 +222,7 @@ namespace user_service.Application.Services
                     _passwordResetExpiryMinutes,
                     cancellationToken);
 
-            var resetLink = $"https://frontend-app/reset-password?token={rawToken}";
+            var resetLink = $"http://localhost:4200/change-password?token={rawToken}";
             await _emailService.SendPasswordResetEmail(user.Email, resetLink);
             await _fileAuditService.LogAsync(
          action: "request reset password  ",
