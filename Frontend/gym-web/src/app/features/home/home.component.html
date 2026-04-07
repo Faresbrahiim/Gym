@@ -137,9 +137,11 @@
     </div>
     <div class="row">
       <div class="featured-slider-group">
-        <div class="owl-carousel featured-venues-slider owl-theme">
+        <div class="swiper featured-venues-slider">
+          <div class="swiper-wrapper">
 
           <!-- Featured Item -->
+          <div class="swiper-slide">
           <div class="featured-venues-item aos" data-aos="fade-up">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -156,7 +158,7 @@
                   <div class="d-flex align-items-center">
                     <span class="rating-bg">4.2</span><span>300 Reviews</span>
                   </div>
-                  <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                  <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                 </div>
                 <h3 class="listing-title"><a href="javascript:void(0);">Sarah Sports Academy</a></h3>
                 <div class="listing-details-group">
@@ -177,9 +179,11 @@
               </div>
             </div>
           </div>
+          </div>
           <!-- /Featured Item -->
 
           <!-- Featured Item -->
+          <div class="swiper-slide">
           <div class="featured-venues-item aos" data-aos="fade-up">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -196,7 +200,7 @@
                   <div class="d-flex align-items-center">
                     <span class="rating-bg">5.0</span><span>150 Reviews</span>
                   </div>
-                  <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                  <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                 </div>
                 <h3 class="listing-title"><a href="javascript:void(0);">Badminton Academy</a></h3>
                 <div class="listing-details-group">
@@ -217,9 +221,11 @@
               </div>
             </div>
           </div>
+          </div>
           <!-- /Featured Item -->
 
           <!-- Featured Item -->
+          <div class="swiper-slide">
           <div class="featured-venues-item aos" data-aos="fade-up">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -235,7 +241,7 @@
                   <div class="d-flex align-items-center">
                     <span class="rating-bg">4.7</span><span>120 Reviews</span>
                   </div>
-                  <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                  <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                 </div>
                 <h3 class="listing-title"><a href="javascript:void(0);">Manchester Academy</a></h3>
                 <div class="listing-details-group">
@@ -256,9 +262,11 @@
               </div>
             </div>
           </div>
+          </div>
           <!-- /Featured Item -->
 
           <!-- Featured Item -->
+          <div class="swiper-slide">
           <div class="featured-venues-item aos" data-aos="fade-up">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -275,7 +283,7 @@
                   <div class="d-flex align-items-center">
                     <span class="rating-bg">4.5</span><span>300 Reviews</span>
                   </div>
-                  <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                  <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                 </div>
                 <h3 class="listing-title"><a href="javascript:void(0);">ABC Sports Academy</a></h3>
                 <div class="listing-details-group">
@@ -296,9 +304,13 @@
               </div>
             </div>
           </div>
+          </div>
           <!-- /Featured Item -->
 
-        </div>
+          </div><!-- /.swiper-wrapper -->
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div><!-- /.swiper -->
       </div>
     </div>
     <div class="view-all text-center aos" data-aos="fade-up">
@@ -412,8 +424,10 @@
     </div>
     <div class="row">
       <div class="featured-slider-group aos" data-aos="fade-up">
-        <div class="owl-carousel featured-coache-slider owl-theme">
+        <div class="swiper featured-coache-slider">
+          <div class="swiper-wrapper">
 
+          <div class="swiper-slide">
           <div class="featured-venues-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -421,7 +435,7 @@
                 <div class="fav-item-venues">
                   <span class="tag tag-blue">Rookie</span>
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
                 <div class="hour-list">
@@ -436,7 +450,9 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -444,7 +460,7 @@
                 <div class="fav-item-venues">
                   <span class="tag tag-blue">Intermediate</span>
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
                 <div class="hour-list">
@@ -459,7 +475,9 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -467,7 +485,7 @@
                 <div class="fav-item-venues">
                   <span class="tag tag-blue">Professional</span>
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
                 <div class="hour-list">
@@ -482,7 +500,9 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -490,7 +510,7 @@
                 <div class="fav-item-venues">
                   <span class="tag tag-blue">Rookie</span>
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
                 <div class="hour-list">
@@ -505,7 +525,9 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
@@ -513,7 +535,7 @@
                 <div class="fav-item-venues">
                   <span class="tag tag-blue">Intermediate</span>
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
                 <div class="hour-list">
@@ -528,8 +550,12 @@
               </div>
             </div>
           </div>
+          </div>
 
-        </div>
+          </div><!-- /.swiper-wrapper -->
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div><!-- /.swiper -->
       </div>
     </div>
     <div class="view-all text-center aos" data-aos="fade-up">
@@ -817,15 +843,17 @@
     </div>
     <div class="row">
       <div class="featured-slider-group aos" data-aos="fade-up">
-        <div class="owl-carousel featured-venues-slider owl-theme">
+        <div class="swiper court-near-slider">
+          <div class="swiper-wrapper">
 
+          <div class="swiper-slide">
           <div class="featured-venues-item court-near-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
                 <a href="javascript:void(0);"><img src="assets/img/venues/venues-04.jpg" alt="Venue"></a>
                 <div class="fav-item-venues">
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
               </div>
@@ -839,14 +867,16 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item court-near-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
                 <a href="javascript:void(0);"><img src="assets/img/venues/venues-05.jpg" alt="Venue"></a>
                 <div class="fav-item-venues">
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
               </div>
@@ -860,14 +890,16 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item court-near-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
                 <a href="javascript:void(0);"><img src="assets/img/venues/venues-06.jpg" alt="Venue"></a>
                 <div class="fav-item-venues">
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
               </div>
@@ -881,14 +913,16 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item court-near-item">
             <div class="listing-item mb-0">
               <div class="listing-img">
                 <a href="javascript:void(0);"><img src="assets/img/venues/venues-05.jpg" alt="Venue"></a>
                 <div class="fav-item-venues">
                   <div class="list-reviews coche-star">
-                    <a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a>
+                    <a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a>
                   </div>
                 </div>
               </div>
@@ -902,8 +936,12 @@
               </div>
             </div>
           </div>
+          </div>
 
-        </div>
+          </div><!-- /.swiper-wrapper -->
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div><!-- /.swiper -->
       </div>
     </div>
     <div class="view-all text-center aos" data-aos="fade-up">
@@ -922,8 +960,10 @@
     </div>
     <div class="row">
       <div class="featured-slider-group aos" data-aos="fade-up">
-        <div class="owl-carousel testimonial-slide featured-venues-slider owl-theme">
+        <div class="swiper testimonial-slide">
+          <div class="swiper-wrapper">
 
+          <div class="swiper-slide">
           <div class="testimonial-group">
             <div class="testimonial-review">
               <div class="rating-point">
@@ -941,7 +981,9 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="testimonial-group">
             <div class="testimonial-review">
               <div class="rating-point">
@@ -959,7 +1001,9 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="testimonial-group">
             <div class="testimonial-review">
               <div class="rating-point">
@@ -977,17 +1021,23 @@
               </div>
             </div>
           </div>
+          </div>
 
-        </div>
+          </div><!-- /.swiper-wrapper -->
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div><!-- /.swiper -->
       </div>
 
       <div class="brand-slider-group aos" data-aos="fade-up">
-        <div class="owl-carousel testimonial-brand-slider owl-theme">
-          <div class="brand-logos"><img src="assets/img/testimonial-icon-01.svg" alt="Brand"></div>
-          <div class="brand-logos"><img src="assets/img/testimonial-icon-04.svg" alt="Brand"></div>
-          <div class="brand-logos"><img src="assets/img/testimonial-icon-03.svg" alt="Brand"></div>
-          <div class="brand-logos"><img src="assets/img/testimonial-icon-04.svg" alt="Brand"></div>
-          <div class="brand-logos"><img src="assets/img/testimonial-icon-05.svg" alt="Brand"></div>
+        <div class="swiper testimonial-brand-slider">
+          <div class="swiper-wrapper">
+          <div class="swiper-slide"><div class="brand-logos"><img src="assets/img/testimonial-icon-01.svg" alt="Brand"></div></div>
+          <div class="swiper-slide"><div class="brand-logos"><img src="assets/img/testimonial-icon-04.svg" alt="Brand"></div></div>
+          <div class="swiper-slide"><div class="brand-logos"><img src="assets/img/testimonial-icon-03.svg" alt="Brand"></div></div>
+          <div class="swiper-slide"><div class="brand-logos"><img src="assets/img/testimonial-icon-04.svg" alt="Brand"></div></div>
+          <div class="swiper-slide"><div class="brand-logos"><img src="assets/img/testimonial-icon-05.svg" alt="Brand"></div></div>
+          </div>
         </div>
       </div>
 
@@ -1104,15 +1154,17 @@
     </div>
     <div class="row">
       <div class="featured-slider-group">
-        <div class="owl-carousel featured-venues-slider owl-theme">
+        <div class="swiper latest-news-slider">
+          <div class="swiper-wrapper">
 
+          <div class="swiper-slide">
           <div class="featured-venues-item aos" data-aos="fade-up">
             <div class="listing-item mb-0">
               <div class="listing-img">
                 <a href="javascript:void(0);"><img src="assets/img/venues/venues-07.jpg" alt="News"></a>
                 <div class="fav-item-venues news-sports">
                   <span class="tag tag-blue">Badminton</span>
-                  <div class="list-reviews coche-star"><a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a></div>
+                  <div class="list-reviews coche-star"><a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a></div>
                 </div>
               </div>
               <div class="listing-content news-content">
@@ -1131,14 +1183,16 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item aos" data-aos="fade-up">
             <div class="listing-item mb-0">
               <div class="listing-img">
                 <a href="javascript:void(0);"><img src="assets/img/venues/venues-08.jpg" alt="News"></a>
                 <div class="fav-item-venues news-sports">
                   <span class="tag tag-blue">Sports Activities</span>
-                  <div class="list-reviews coche-star"><a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a></div>
+                  <div class="list-reviews coche-star"><a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a></div>
                 </div>
               </div>
               <div class="listing-content news-content">
@@ -1157,14 +1211,16 @@
               </div>
             </div>
           </div>
+          </div>
 
+          <div class="swiper-slide">
           <div class="featured-venues-item aos" data-aos="fade-up">
             <div class="listing-item mb-0">
               <div class="listing-img">
                 <a href="javascript:void(0);"><img src="assets/img/venues/venues-09.jpg" alt="News"></a>
                 <div class="fav-item-venues news-sports">
                   <span class="tag tag-blue">Rules of Game</span>
-                  <div class="list-reviews coche-star"><a href="javascript:void(0)" class="fav-icon"><i class="feather-heart"></i></a></div>
+                  <div class="list-reviews coche-star"><a href="javascript:void(0)" class="fav-icon" (click)="toggleFavourite($event)"><i class="feather-heart"></i></a></div>
                 </div>
               </div>
               <div class="listing-content news-content">
@@ -1183,8 +1239,12 @@
               </div>
             </div>
           </div>
+          </div>
 
-        </div>
+          </div><!-- /.swiper-wrapper -->
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div>
+        </div><!-- /.swiper -->
       </div>
     </div>
     <div class="view-all text-center aos" data-aos="fade-up">

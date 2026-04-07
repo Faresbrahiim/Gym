@@ -28,24 +28,17 @@
             ],
             "styles": [
               "src/assets/css/bootstrap.min.css",
-              "src/assets/plugins/owl-carousel/owl.carousel.min.css",
-              "src/assets/plugins/owl-carousel/owl.theme.default.min.css",
+              "node_modules/swiper/swiper-bundle.min.css",
               "src/assets/plugins/aos/aos.css",
-              "src/assets/plugins/select2/css/select2.min.css",
               "src/assets/css/feather.css",
               "src/assets/css/style.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "src/styles.css"
             ],
             "scripts": [
-              "src/assets/js/jquery-3.7.1.min.js",
               "src/assets/js/bootstrap.bundle.min.js",
-              "src/assets/plugins/owl-carousel/owl.carousel.min.js",
               "src/assets/plugins/aos/aos.js",
-              "src/assets/plugins/select2/js/select2.min.js",
-              "src/assets/js/jquery.waypoints.js",
-              "src/assets/js/jquery.counterup.min.js",
-              "src/assets/js/script.js"
+              "node_modules/swiper/swiper-bundle.min.js"
             ]
           },
           "configurations": {

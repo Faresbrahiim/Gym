@@ -1,7 +1,5 @@
-import { Component, inject, signal, OnInit, ViewChild, ElementRef, DestroyRef } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { filter } from 'rxjs/operators';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, inject, signal, OnInit, HostListener } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { catchError, EMPTY } from 'rxjs';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
@@ -15,15 +13,18 @@ import { ProfileService } from '../../../features/profile/services/profile.servi
 })
 export class HeaderComponent implements OnInit {
 
-  @ViewChild('headerEl', { static: true }) private headerEl!: ElementRef<HTMLElement>;
-
   private readonly authService    = inject(AuthService);
   private readonly tokenService   = inject(TokenService);
   private readonly profileService = inject(ProfileService);
   private readonly router         = inject(Router);
-  private readonly destroyRef     = inject(DestroyRef);
 
   isMobileMenuOpen = signal(false);
+  isScrolled = signal(false);
+
+  @HostListener('window:scroll')
+  onScroll(): void {
+    this.isScrolled.set(window.scrollY > 0);
+  }
 
   /** Reactive avatar URL maintained by ProfileService */
   readonly avatarUrl = this.profileService.currentAvatarUrl;
@@ -40,21 +41,9 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Only fetch profile when the user is logged in
     if (this.isAuthenticated) {
       this.profileService.getMe().pipe(catchError(() => EMPTY)).subscribe();
     }
-
-    // On every route change, clear any inline background that jQuery's scroll handler
-    // set on the previous page. Without this, scrolling on /home sets
-    // background:#177c82 as an inline style which persists (overriding CSS) when
-    // navigating to /profile or any other route.
-    this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.headerEl.nativeElement.style.removeProperty('background');
-    });
   }
 
   /** True when the current route is the landing/home page */
