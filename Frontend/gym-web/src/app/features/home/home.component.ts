@@ -1,90 +1,154 @@
 import { Component, AfterViewInit } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
-// jQuery and plugins are loaded globally via angular.json scripts
-declare var $: any;
 declare var AOS: any;
+declare var Swiper: any;
 
 @Component({
   standalone: true,
   selector: 'app-home',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink],
   templateUrl: './home.component.html'
 })
 export class HomeComponent implements AfterViewInit {
 
-  ngAfterViewInit(): void {
-    // Angular renders components after document.ready fires, so all jQuery plugin
-    // initializations in script.js missed the DOM. Re-initialize them here.
-    setTimeout(() => this.initPlugins(), 100);
+  toggleFavourite(event: Event): void {
+    (event.currentTarget as HTMLElement).classList.toggle('selected');
   }
 
-  private initPlugins(): void {
-    if (typeof $ === 'undefined') return;
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.initAos();
+      this.initSwipers();
+      this.initCounters();
+    }, 100);
+  }
 
-    // ── Owl Carousels ──────────────────────────────────────────────────────────
-
-    if ($.fn.owlCarousel) {
-
-      // Safely initialize a carousel (destroy first if already initialized)
-      const initOwl = (selector: string, options: object) => {
-        const el = $(selector);
-        if (!el.length) return;
-        if (el.hasClass('owl-loaded')) {
-          el.trigger('destroy.owl.carousel').removeClass('owl-loaded owl-drag');
-        }
-        el.owlCarousel(options);
-      };
-
-      initOwl('.featured-venues-slider', {
-        loop: true, margin: 24, nav: true, dots: false, autoplay: false, smartSpeed: 2000,
-        navText: ["<i class='feather-chevron-left'></i>", "<i class='feather-chevron-right'></i>"],
-        responsive: { 0: { items: 1 }, 500: { items: 1 }, 768: { items: 2 }, 1000: { items: 3 } }
-      });
-
-      initOwl('.featured-coache-slider', {
-        loop: true, margin: 24, nav: true, dots: false, autoplay: false, smartSpeed: 2000,
-        navText: ["<i class='feather-chevron-left'></i>", "<i class='feather-chevron-right'></i>"],
-        responsive: { 0: { items: 1 }, 500: { items: 1 }, 768: { items: 2 }, 1000: { items: 4 } }
-      });
-
-      initOwl('.testimonial-brand-slider', {
-        loop: true, margin: 60, nav: false, dots: false, autoplay: true, smartSpeed: 2000,
-        responsive: { 0: { items: 1 }, 500: { items: 1 }, 768: { items: 3 }, 1000: { items: 5 } }
-      });
-
-      // Testimonial slide carousel (different class used on the testimonials section)
-      initOwl('.testimonial-slide', {
-        loop: true, margin: 24, nav: true, dots: false, autoplay: false, smartSpeed: 2000,
-        navText: ["<i class='feather-chevron-left'></i>", "<i class='feather-chevron-right'></i>"],
-        responsive: { 0: { items: 1 }, 500: { items: 1 }, 768: { items: 2 }, 1000: { items: 3 } }
-      });
-    }
-
-    // ── AOS (Animate on Scroll) ────────────────────────────────────────────────
+  // ── AOS (Animate on Scroll) ──────────────────────────────────────────────────
+  private initAos(): void {
     if (typeof AOS !== 'undefined') {
-      // init is safe to call multiple times; it re-observes elements
       AOS.init({ duration: 1200, once: true });
     }
+  }
 
-    // ── Select2 ────────────────────────────────────────────────────────────────
-    if ($.fn.select2) {
-      // Hero search selects
-      $('.search-box .select').each(function(this: HTMLElement) {
-        if (!$(this).hasClass('select2-hidden-accessible')) {
-          $(this).select2({ minimumResultsForSearch: -1, width: '100%' });
-        }
-      });
-    }
-
-    // ── CounterUp ──────────────────────────────────────────────────────────────
-    if ($.fn.counterUp) {
-      $('.coach-count .counter-up').counterUp({ delay: 15, time: 1500 });
-    }
-
-    // ── Favourite icon toggle ──────────────────────────────────────────────────
-    $('.fav-icon').off('click.home').on('click.home', function(this: HTMLElement) {
-      $(this).toggleClass('selected');
+  // ── Swiper carousels ─────────────────────────────────────────────────────────
+  private initSwipers(): void {
+    // Featured Venues — 1 / 2 / 3 columns
+    this.initSwiper('.featured-venues-slider', {
+      loop: true,
+      navigation: true,
+      spaceBetween: 24,
+      slidesPerView: 1,
+      breakpoints: {
+        768:  { slidesPerView: 2 },
+        1000: { slidesPerView: 3 }
+      }
     });
+
+    // Featured Coaches — 1 / 2 / 4 columns
+    this.initSwiper('.featured-coache-slider', {
+      loop: true,
+      navigation: true,
+      spaceBetween: 24,
+      slidesPerView: 1,
+      breakpoints: {
+        768:  { slidesPerView: 2 },
+        1000: { slidesPerView: 4 }
+      }
+    });
+
+    // Testimonial brand logos — autoplay, no nav, 1 / 3 / 5 columns
+    this.initSwiper('.testimonial-brand-slider', {
+      loop: true,
+      autoplay: { delay: 2500, disableOnInteraction: false },
+      spaceBetween: 60,
+      slidesPerView: 1,
+      breakpoints: {
+        768:  { slidesPerView: 3 },
+        1000: { slidesPerView: 5 }
+      }
+    });
+
+    // Testimonials — 1 / 2 / 3 columns
+    this.initSwiper('.testimonial-slide', {
+      loop: true,
+      navigation: true,
+      spaceBetween: 24,
+      slidesPerView: 1,
+      breakpoints: {
+        768:  { slidesPerView: 2 },
+        1000: { slidesPerView: 3 }
+      }
+    });
+
+    // Courts Near You — 1 / 2 / 3 columns
+    this.initSwiper('.court-near-slider', {
+      loop: true,
+      navigation: true,
+      spaceBetween: 24,
+      slidesPerView: 1,
+      breakpoints: {
+        768:  { slidesPerView: 2 },
+        1000: { slidesPerView: 3 }
+      }
+    });
+
+    // Latest News — 1 / 2 / 3 columns
+    this.initSwiper('.latest-news-slider', {
+      loop: true,
+      navigation: true,
+      spaceBetween: 24,
+      slidesPerView: 1,
+      breakpoints: {
+        768:  { slidesPerView: 2 },
+        1000: { slidesPerView: 3 }
+      }
+    });
+  }
+
+  private initSwiper(selector: string, config: any): void {
+    const el = document.querySelector<HTMLElement>(selector);
+    if (!el) return;
+    const finalConfig = { ...config };
+    if (finalConfig.navigation === true) {
+      finalConfig.navigation = {
+        nextEl: el.querySelector<HTMLElement>('.swiper-button-next'),
+        prevEl: el.querySelector<HTMLElement>('.swiper-button-prev'),
+      };
+    }
+    new Swiper(el, finalConfig);
+  }
+
+  // ── CounterUp replacement (IntersectionObserver + rAF) ───────────────────────
+  private initCounters(): void {
+    const counters = document.querySelectorAll<HTMLElement>('.counter-up');
+    if (!counters.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target as HTMLElement;
+        const target = parseInt(el.textContent ?? '0', 10);
+        observer.unobserve(el);
+        this.animateCount(el, target);
+      });
+    }, { threshold: 0.5 });
+
+    counters.forEach(el => observer.observe(el));
+  }
+
+  private animateCount(el: HTMLElement, target: number): void {
+    const duration = 1500;
+    const startTime = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      el.textContent = String(Math.floor(progress * target));
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = String(target);
+      }
+    };
+    requestAnimationFrame(step);
   }
 }

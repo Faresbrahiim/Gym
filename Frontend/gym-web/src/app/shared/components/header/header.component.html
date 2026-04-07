@@ -1,5 +1,7 @@
 <!-- Header -->
-<header [class]="headerClass" #headerEl>
+<header [class]="headerClass"
+        [class.fixed-top]="!isHome"
+        [style.background]="isHome && isScrolled() ? '#177c82' : null">
   <div class="container-fluid">
     <nav class="navbar navbar-expand-lg header-nav">
 
