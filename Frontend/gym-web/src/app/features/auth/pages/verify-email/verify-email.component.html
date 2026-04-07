@@ -39,10 +39,49 @@
                   <i class="feather-x-circle" style="font-size: 3rem; color: #dc3545;"></i>
                 </div>
                 <h4 class="mb-2">Verification Failed</h4>
-                <p class="text-muted mb-4">{{ errorMessage() }}</p>
-                <button class="btn btn-secondary register-btn w-100" (click)="goToLogin()">
-                  Back to Sign In<i class="feather-arrow-right-circle ms-2"></i>
-                </button>
+                <p class="text-muted mb-3">{{ errorMessage() }}</p>
+
+                @if (resendSuccess()) {
+                  <div class="alert alert-success text-start" role="alert">
+                    <i class="feather-mail me-2"></i>
+                    If your email is registered and unverified, a new link has been sent. Check your inbox.
+                  </div>
+                  <button class="btn btn-secondary register-btn w-100 d-inline-flex justify-content-center align-items-center mt-2" (click)="goToLogin()">
+                    Back to Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                  </button>
+                }
+
+                @if (!resendSuccess()) {
+                  <p class="text-muted mb-3" style="font-size:0.875rem;">Didn't receive the email or link expired? Enter your email to resend it.</p>
+
+                  @if (resendError()) {
+                    <div class="alert alert-danger text-start" role="alert">{{ resendError() }}</div>
+                  }
+
+                  <form [formGroup]="resendForm" (ngSubmit)="onResend()" class="text-start">
+                    <div class="form-group">
+                      <div class="group-img">
+                        <i class="feather-mail"></i>
+                        <input type="text" class="form-control" placeholder="Your email address" formControlName="email">
+                      </div>
+                      @if (resendForm.get('email')?.touched && resendForm.get('email')?.invalid) {
+                        <div class="text-danger small mt-1">
+                          @if (resendForm.get('email')?.errors?.['required']) { <span>Email is required.</span> }
+                          @if (resendForm.get('email')?.errors?.['pattern']) { <span>Enter a valid email address.</span> }
+                        </div>
+                      }
+                    </div>
+                    <app-loading-button
+                      [loading]="isResending()"
+                      cssClass="btn btn-secondary register-btn w-100 d-inline-flex justify-content-center align-items-center">
+                      Resend Verification Email<i class="feather-send ms-2"></i>
+                    </app-loading-button>
+                  </form>
+
+                  <div class="mt-3">
+                    <a routerLink="/login" class="text-muted" style="font-size:0.875rem;">Back to Sign In</a>
+                  </div>
+                }
               }
 
             </div>

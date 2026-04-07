@@ -8,6 +8,7 @@ import { LoadingButtonComponent } from '../../../../shared/components/loading-bu
 import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
 import { AuthService } from '../../services/auth.service';
 import { strongPasswordValidators, passwordMatchValidator } from '../../../../shared/validators/password.validator';
+import { emailValidators } from '../../../../shared/validators/email.validator';
 
 @Component({
   standalone: true,
@@ -24,14 +25,19 @@ import { strongPasswordValidators, passwordMatchValidator } from '../../../../sh
 })
 export class SetupPasswordComponent implements OnInit {
 
-  isSubmitting = signal(false);
-  isSuccess    = signal(false);
-  invalidLink  = signal(false);
-  errorMessage = signal<string | null>(null);
-  showPassword = signal(false);
-  showConfirm  = signal(false);
+  isSubmitting  = signal(false);
+  isSuccess     = signal(false);
+  invalidLink   = signal(false);
+  errorMessage  = signal<string | null>(null);
+  showPassword  = signal(false);
+  showConfirm   = signal(false);
+
+  isResending   = signal(false);
+  resendSuccess = signal(false);
+  resendError   = signal<string | null>(null);
 
   form!: FormGroup;
+  resendForm!: FormGroup;
   private token = '';
 
   private readonly destroyRef = inject(DestroyRef);
@@ -45,6 +51,8 @@ export class SetupPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParams['token'] ?? '';
+
+    this.resendForm = this.fb.group({ email: ['', emailValidators] });
 
     if (!this.token) {
       this.invalidLink.set(true);
@@ -83,6 +91,29 @@ export class SetupPasswordComponent implements OnInit {
         } else {
           this.errorMessage.set('Something went wrong. Please try again.');
         }
+      }
+    });
+  }
+
+  onResend(): void {
+    if (this.isResending() || this.resendForm.invalid) {
+      this.resendForm.markAllAsTouched();
+      return;
+    }
+
+    this.isResending.set(true);
+    this.resendError.set(null);
+
+    this.authService.resendInvitation(this.resendForm.value.email).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: () => {
+        this.isResending.set(false);
+        this.resendSuccess.set(true);
+      },
+      error: () => {
+        this.isResending.set(false);
+        this.resendError.set('Something went wrong. Please try again.');
       }
     });
   }

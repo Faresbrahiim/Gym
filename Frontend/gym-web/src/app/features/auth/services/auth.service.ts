@@ -72,4 +72,12 @@ export class AuthService {
   resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
     return this.api.post<{ message: string }>(`${this.AUTH_BASE}/password/reset`, { token, newPassword });
   }
+
+  resendVerification(email: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/resend-verification`, { email });
+  }
+
+  resendInvitation(email: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/resend-invitation`, { email });
+  }
 }
