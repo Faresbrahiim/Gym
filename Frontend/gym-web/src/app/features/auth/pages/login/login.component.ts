@@ -1,4 +1,4 @@
-import { Component, signal, inject, DestroyRef } from '@angular/core';
+import { Component, signal, inject, DestroyRef, OnInit } from '@angular/core';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,6 +12,8 @@ import { TwoFactorStateService } from '../../services/two-factor-state.service';
 import { ProfileService } from '../../../profile/services/profile.service';
 import { LoginRequest } from '../../../../shared/models/auth/login-request.model';
 
+declare const google: any;
+
 @Component({
   standalone: true,
   selector: 'app-login',
@@ -19,7 +21,7 @@ import { LoginRequest } from '../../../../shared/models/auth/login-request.model
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   showUserPassword = false;
   showCoachPassword = false;
@@ -52,6 +54,46 @@ export class LoginComponent {
     });
   }
 
+  ngOnInit(): void {
+    this.initializeGoogleLogin();
+  }
+
+  private initializeGoogleLogin(): void {
+  google.accounts.id.initialize({
+  client_id: '863501968602-m5op5onnboc6pv7abk0d3bhdncqt8ffb.apps.googleusercontent.com',
+  callback: (response: any) => this.handleGoogleResponse(response)
+});
+
+    // Render buttons into custom placeholders
+    const userBtn = document.getElementById('google-user-btn');
+    const coachBtn = document.getElementById('google-coach-btn');
+
+    if (userBtn) {
+      google.accounts.id.renderButton(userBtn, { theme: 'outline', size: 'large', width: '250' });
+    }
+    if (coachBtn) {
+      google.accounts.id.renderButton(coachBtn, { theme: 'outline', size: 'large', width: '250' });
+    }
+  }
+
+  private handleGoogleResponse(response: any): void {
+  if (!response?.credential) return;
+
+  this.isLoading.set(true);
+  this.errorMessage.set(null);
+
+  this.authService.loginWithGoogle({ token: response.credential }).subscribe({
+    next: (res) => {
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+      this.handleLoginResponse(res, returnUrl);
+    },
+    error: (err) => {
+      this.isLoading.set(false);
+      this.errorMessage.set('Google login failed. Please try again.');
+    }
+  });
+}
+
   toggleUserPassword(): void  { this.showUserPassword  = !this.showUserPassword;  }
   toggleCoachPassword(): void { this.showCoachPassword = !this.showCoachPassword; }
 
@@ -72,14 +114,12 @@ export class LoginComponent {
   private redirectAfterLogin(returnUrl: string): void {
     const role = this.tokenService.getRole();
 
-    // Admins skip onboarding check
     if (role === 'ADMIN') {
       this.isLoading.set(false);
       this.router.navigateByUrl(returnUrl);
       return;
     }
 
-    // Check if role-specific profile exists to decide onboarding
     this.profileService.getMe().pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
@@ -112,9 +152,7 @@ export class LoginComponent {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
 
     this.authService.login(credentials).subscribe({
-      next: (response) => {
-        this.handleLoginResponse(response, returnUrl);
-      },
+      next: (response) => this.handleLoginResponse(response, returnUrl),
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(err?.status === 401
@@ -138,9 +176,7 @@ export class LoginComponent {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
 
     this.authService.login(credentials).subscribe({
-      next: (response) => {
-        this.handleLoginResponse(response, returnUrl);
-      },
+      next: (response) => this.handleLoginResponse(response, returnUrl),
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(err?.status === 401

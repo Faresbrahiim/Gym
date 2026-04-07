@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthBannerComponent } from '../../../../shared/components/auth-banner/auth-banner.component';
@@ -10,14 +10,23 @@ import { strongPasswordValidators, passwordMatchValidator } from '../../../../sh
 import { AuthService } from '../../services/auth.service';
 import { RegisterRequest } from '../../../../shared/models/auth/register-request.model';
 
+declare const google: any;
+
 @Component({
   standalone: true,
   selector: 'app-register',
-  imports: [RouterLink, ReactiveFormsModule, AuthBannerComponent, AuthCardComponent, LoadingButtonComponent, PasswordRulesComponent],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule,
+    AuthBannerComponent,
+    AuthCardComponent,
+    LoadingButtonComponent,
+    PasswordRulesComponent
+  ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
 
   showPassword        = false;
   showConfirmPassword = false;
@@ -28,7 +37,11 @@ export class RegisterComponent {
 
   registerForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.registerForm = this.fb.group({
       firstName:       ['', Validators.required],
       lastName:        ['', Validators.required],
@@ -39,11 +52,70 @@ export class RegisterComponent {
     }, { validators: passwordMatchValidator });
   }
 
-  togglePassword():        void { this.showPassword        = !this.showPassword;        }
-  toggleConfirmPassword(): void { this.showConfirmPassword = !this.showConfirmPassword; }
+  // ✅ INIT GOOGLE (same as login)
+  ngOnInit(): void {
+    this.initializeGoogleRegister();
+  }
+
+  private initializeGoogleRegister(): void {
+    google.accounts.id.initialize({
+      client_id: '863501968602-m5op5onnboc6pv7abk0d3bhdncqt8ffb.apps.googleusercontent.com',
+      callback: (response: any) => this.handleGoogleResponse(response)
+    });
+
+    // same logic as login
+    setTimeout(() => {
+      const btn = document.getElementById('google-register-btn');
+
+      if (btn) {
+        google.accounts.id.renderButton(btn, {
+          theme: 'outline',
+          size: 'large',
+          width: '250'
+        });
+      }
+    });
+  }
+
+  // ✅ SAME HANDLER AS LOGIN
+  private handleGoogleResponse(response: any): void {
+    if (!response?.credential) return;
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.authService.loginWithGoogle({ token: response.credential }).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+
+        if (res.accessToken && res.refreshToken) {
+          localStorage.setItem('accessToken', res.accessToken);
+          localStorage.setItem('refreshToken', res.refreshToken);
+        }
+
+        this.router.navigate(['/home']);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Google signup failed. Try again.');
+      }
+    });
+  }
+
+  // ---------------------------
+  // NORMAL REGISTER LOGIC
+  // ---------------------------
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPassword(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
 
   onSubmit(): void {
     if (this.isLoading()) return;
+
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
@@ -61,9 +133,11 @@ export class RegisterComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.status === 409
-          ? 'Email or username already exists.'
-          : 'Registration failed. Please try again.');
+        this.errorMessage.set(
+          err?.status === 409
+            ? 'Email or username already exists.'
+            : 'Registration failed. Please try again.'
+        );
       }
     });
   }
