@@ -29,10 +29,12 @@ export const routes: Routes = [
           import('./features/home/home.component').then(m => m.HomeComponent)
       },
       {
+        // Profile feature — delegates to profile.routes.ts
+        // authGuard here covers all child routes (/profile and /profile/edit)
         path: 'profile',
         canActivate: [authGuard],
-        loadComponent: () =>
-          import('./features/profile/pages/profile/profile.component').then(m => m.ProfileComponent)
+        loadChildren: () =>
+          import('./features/profile/profile.routes').then(m => m.profileRoutes)
       }
     ]
   },

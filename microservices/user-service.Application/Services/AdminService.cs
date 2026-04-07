@@ -97,7 +97,7 @@ namespace user_service.Application.Services
             var rawToken = await _passwordCredentialService
                     .CreateInvitationTokenAsync(user.Id, cancellationToken);
 
-            var invitationLink = $"https://frontend/setup-password?token={rawToken}";
+            var invitationLink = $"http://localhost:4200/setup-password?token={rawToken}";
 
             await _emailService.SendInvitationEmail(user.Email, invitationLink);
 

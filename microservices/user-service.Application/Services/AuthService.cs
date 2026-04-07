@@ -419,7 +419,7 @@ namespace user_service.Application.Services
                 _ => throw new InvalidOperationException("Unsupported token type")
             };
 
-            var link = $"https://frontend-app/{frontendPath}?token={rawToken}";
+            var link = $"http://localhost:4200/{frontendPath}?token={rawToken}";
 
             await sendEmail(user.Email, link);
 
