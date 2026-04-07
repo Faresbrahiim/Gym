@@ -48,7 +48,9 @@ namespace user_service.Middleware
                 EmailAlreadyExistsException => StatusCodes.Status409Conflict,
                 UsernameAlreadyExistsException => StatusCodes.Status409Conflict,
                 InvalidTokenException => StatusCodes.Status403Forbidden,
+                AccountNotActivatedException => StatusCodes.Status403Forbidden,
                 UserNotFoundException => StatusCodes.Status404NotFound,
+                ProfileNotFoundException => StatusCodes.Status404NotFound,
                 ExternalAuthException => StatusCodes.Status401Unauthorized,
 
                 _ => StatusCodes.Status500InternalServerError

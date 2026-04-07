@@ -1,0 +1,184 @@
+<div class="main-wrapper authendication-pages">
+  <div class="content">
+    <div class="container" style="max-width: 680px; padding-top: 60px; padding-bottom: 60px;">
+
+      <!-- Spinner while checking profile -->
+      @if (isCheckingProfile()) {
+        <div class="d-flex justify-content-center align-items-center" style="min-height: 40vh;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      }
+
+      @if (!isCheckingProfile()) {
+
+        <div class="text-center mb-5">
+          <h2 class="fw-bold">Welcome! Let's set up your profile</h2>
+          <p class="text-muted">This takes just a minute. You can always update it later.</p>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="alert alert-danger">{{ errorMessage() }}</div>
+        }
+
+        <!-- Member Onboarding Form -->
+        @if (role === 'MEMBER') {
+          <form [formGroup]="memberForm" (ngSubmit)="onSubmit()">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <h5 class="fw-semibold mb-4">Fitness Information</h5>
+                <div class="row g-3">
+
+                  <div class="col-md-6">
+                    <label class="form-label">Gender</label>
+                    <select class="form-select" formControlName="gender">
+                      <option value="">Select gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" formControlName="dateOfBirth" />
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Height (cm)</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      formControlName="heightCm"
+                      min="50"
+                      max="300"
+                      placeholder="175"
+                    />
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Weight (kg)</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      formControlName="weightKg"
+                      min="20"
+                      max="500"
+                      placeholder="70"
+                    />
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Fitness Goal</label>
+                    <select class="form-select" formControlName="fitnessGoal">
+                      <option value="">Select goal</option>
+                      <option value="Build muscle">Build muscle</option>
+                      <option value="Lose weight">Lose weight</option>
+                      <option value="Improve endurance">Improve endurance</option>
+                      <option value="Stay active">Stay active</option>
+                      <option value="Flexibility">Flexibility</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Experience Level</label>
+                    <select class="form-select" formControlName="experienceLevel">
+                      <option value="">Select level</option>
+                      <option value="0">Beginner</option>
+                      <option value="1">Intermediate</option>
+                      <option value="2">Advanced</option>
+                    </select>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-outline-secondary" (click)="skip()">
+                Skip for now
+              </button>
+              <button type="submit" class="btn btn-primary px-4" [disabled]="isSaving()">
+                @if (isSaving()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                }
+                Get Started
+              </button>
+            </div>
+          </form>
+        }
+
+        <!-- Coach Onboarding Form -->
+        @if (role === 'COACH') {
+          <form [formGroup]="coachForm" (ngSubmit)="onSubmit()">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <h5 class="fw-semibold mb-4">Coach Information</h5>
+                <div class="row g-3">
+
+                  <div class="col-12">
+                    <label class="form-label">Bio</label>
+                    <textarea
+                      class="form-control"
+                      formControlName="bio"
+                      rows="4"
+                      placeholder="Tell members about your coaching style and expertise..."
+                    ></textarea>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Years of Experience</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      formControlName="yearsOfExperience"
+                      min="0"
+                      max="60"
+                      placeholder="5"
+                    />
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Certifications</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="certifications"
+                      placeholder="NSCA-CPT, ACE, NASM..."
+                    />
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label">Language</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="language"
+                      placeholder="English, French..."
+                    />
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+              <button type="button" class="btn btn-outline-secondary" (click)="skip()">
+                Skip for now
+              </button>
+              <button type="submit" class="btn btn-primary px-4" [disabled]="isSaving()">
+                @if (isSaving()) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                }
+                Get Started
+              </button>
+            </div>
+          </form>
+        }
+
+      }
+
+    </div>
+  </div>
+</div>

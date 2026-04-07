@@ -22,6 +22,11 @@ obj/
 Logs/
 
 # -------------------------
+# Uploads
+# -------------------------
+microservices/user-service/uploads/
+
+# -------------------------
 # Environment files
 # -------------------------
 .env

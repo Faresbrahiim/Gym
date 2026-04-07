@@ -43,7 +43,7 @@ namespace user_service.Controllers
             [FromBody] CreateCoachByAdminDto dto,
             CancellationToken cancellationToken)
         {
-            var performedBy = User.Identity?.Name;
+            var performedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrWhiteSpace(performedBy))
                 return Unauthorized();

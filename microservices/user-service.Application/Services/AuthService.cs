@@ -78,7 +78,7 @@ namespace user_service.Application.Services
             var email = request.Email.Trim().ToLower();
             var user = await _userRepository.GetByEmail(email, cancellationToken);
 
-            if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash) || user.Status != UserStatus.ACTIVE)
+            if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException();
 
             if (user.TwoFactorEnabled)
