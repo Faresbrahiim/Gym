@@ -57,4 +57,8 @@ export class AuthService {
       })
     );
   }
+   loginWithGoogle(payload: { token: string }): Observable<LoginResponse> {
+    return this.api.post<LoginResponse>(`${this.AUTH_BASE}/login/google`, payload);
+  }
+  
 }
