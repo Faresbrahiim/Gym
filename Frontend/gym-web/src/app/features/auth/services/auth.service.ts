@@ -57,8 +57,11 @@ export class AuthService {
       })
     );
   }
-   loginWithGoogle(payload: { token: string }): Observable<LoginResponse> {
+  loginWithGoogle(payload: { token: string }): Observable<LoginResponse> {
     return this.api.post<LoginResponse>(`${this.AUTH_BASE}/login/google`, payload);
   }
-  
+
+  acceptInvitation(token: string, password: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/accept-invitation`, { token, password });
+  }
 }
