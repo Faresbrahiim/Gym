@@ -37,5 +37,11 @@ export const authRoutes: Routes = [
     canActivate: [twoFactorGuard],
     loadComponent: () =>
       import('./pages/verify-two-factor/verify-two-factor.component').then(m => m.VerifyTwoFactorComponent)
+  },
+  {
+    // No guard — invited user arrives unauthenticated via email link
+    path: 'setup-password',
+    loadComponent: () =>
+      import('./pages/setup-password/setup-password.component').then(m => m.SetupPasswordComponent)
   }
 ];

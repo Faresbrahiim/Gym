@@ -27,6 +27,8 @@ namespace user_service.Application.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRecoveryCodeRepository _recoveryCodeRepository;
         private readonly IEventPublisher _eventPublisher;
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
+        private readonly IRevokedTokenRepository _revokedTokenRepository;
 
         private readonly int _passwordResetExpiryMinutes;
 
@@ -45,7 +47,9 @@ namespace user_service.Application.Services
             IHttpContextAccessor httpContextAccessor,
             ITwoFactorService twoFactorService,
             IRecoveryCodeRepository recoveryCodeRepository,
-            IEventPublisher eventPublisher)
+            IEventPublisher eventPublisher,
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            IRevokedTokenRepository revokedTokenRepository)
 
         {
             _userRepository = userRepository;
@@ -68,6 +72,8 @@ namespace user_service.Application.Services
             _twoFactorService = twoFactorService;
             _recoveryCodeRepository = recoveryCodeRepository;
             _eventPublisher = eventPublisher;
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            _revokedTokenRepository = revokedTokenRepository;
         }
 
         // -----------------------------------------------------
@@ -80,6 +86,9 @@ namespace user_service.Application.Services
 
             if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException();
+
+            if (user.Status != UserStatus.ACTIVE)
+                throw new AccountNotActivatedException();
 
             if (user.TwoFactorEnabled)
             {
@@ -222,7 +231,7 @@ namespace user_service.Application.Services
                     _passwordResetExpiryMinutes,
                     cancellationToken);
 
-            var resetLink = $"https://frontend-app/reset-password?token={rawToken}";
+            var resetLink = $"http://localhost:4200/change-password?token={rawToken}";
             await _emailService.SendPasswordResetEmail(user.Email, resetLink);
             await _fileAuditService.LogAsync(
          action: "request reset password  ",
@@ -265,9 +274,9 @@ namespace user_service.Application.Services
                 await _userRepository.Update(user, cancellationToken);
 
             var userDto = UserMapper.ToDto(user);
-            var accessToken = _tokenService.GenerateToken(userDto);
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            var tokenResult = _tokenService.GenerateToken(userDto);
 
-            // ⭐ REAL refresh token
             var rawRefresh = TokenHelper.GenerateToken();
             var hash = TokenHelper.HashToken(rawRefresh);
             var httpContext = _httpContextAccessor.HttpContext;
@@ -281,7 +290,10 @@ namespace user_service.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
                 UserAgent = userAgent,
-                IpAddress = ip
+                IpAddress = ip,
+                // Immediate Session Invalidation — JTI Blacklist  author: Anas
+                AccessTokenJti = tokenResult.Jti,
+                AccessTokenExpiresAt = tokenResult.ExpiresAt
             }, cancellationToken);
             await _fileAuditService.LogAsync(
             action: "log in  ",
@@ -291,10 +303,10 @@ namespace user_service.Application.Services
             return new LoginResponse
             {
                 RequiresTwoFactor = false,
-                AccessToken = accessToken,
+                AccessToken = tokenResult.Token,
                 RefreshToken = rawRefresh,
                 UserId = user.Id
-            }; ;
+            };
         }
 
         // -----------------------------------------------------
@@ -321,6 +333,9 @@ namespace user_service.Application.Services
             // create new
             var newRaw = TokenHelper.GenerateToken();
             var newHash = TokenHelper.HashToken(newRaw);
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            var userDto = UserMapper.ToDto(user);
+            var tokenResult = _tokenService.GenerateToken(userDto);
 
             await _refreshTokenRepository.Create(new RefreshToken
             {
@@ -329,16 +344,16 @@ namespace user_service.Application.Services
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
                 UserAgent = userAgent,
-                IpAddress = ip
+                IpAddress = ip,
+                // Immediate Session Invalidation — JTI Blacklist  author: Anas
+                AccessTokenJti = tokenResult.Jti,
+                AccessTokenExpiresAt = tokenResult.ExpiresAt
             }, cancellationToken);
-
-            var userDto = UserMapper.ToDto(user);
-            var newAccess = _tokenService.GenerateToken(userDto);
 
             return new LoginResponse
             {
                 RequiresTwoFactor = false,
-                AccessToken = newAccess,
+                AccessToken = tokenResult.Token,
                 RefreshToken = newRaw,
                 UserId = user.Id
             };
@@ -419,7 +434,7 @@ namespace user_service.Application.Services
                 _ => throw new InvalidOperationException("Unsupported token type")
             };
 
-            var link = $"https://frontend-app/{frontendPath}?token={rawToken}";
+            var link = $"http://localhost:4200/{frontendPath}?token={rawToken}";
 
             await sendEmail(user.Email, link);
 
@@ -429,8 +444,19 @@ namespace user_service.Application.Services
                 details: $"{tokenType} token resent to {user.Email}"
             );
         }
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
         public async Task LogoutAll(Guid userId)
         {
+            var activeTokens = await _refreshTokenRepository.GetActiveTokens(userId);
+
+            var jtisToRevoke = activeTokens
+                .Where(t => t.AccessTokenJti != null && t.AccessTokenExpiresAt.HasValue)
+                .Select(t => (t.AccessTokenJti!, t.AccessTokenExpiresAt!.Value))
+                .ToList();
+
+            if (jtisToRevoke.Count > 0)
+                await _revokedTokenRepository.AddRange(jtisToRevoke);
+
             await _refreshTokenRepository.RevokeAllTokens(userId);
         }
 
@@ -447,12 +473,17 @@ namespace user_service.Application.Services
             }).ToList();
         }
 
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
         public async Task RevokeSession(Guid userId, Guid tokenId)
         {
             var token = await _refreshTokenRepository.GetById(userId, tokenId);
 
             if (token == null)
                 return;
+
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            if (token.AccessTokenJti != null && token.AccessTokenExpiresAt.HasValue)
+                await _revokedTokenRepository.Add(token.AccessTokenJti, token.AccessTokenExpiresAt.Value);
 
             await _refreshTokenRepository.Revoke(token);
         }

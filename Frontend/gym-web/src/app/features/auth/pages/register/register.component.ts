@@ -8,6 +8,8 @@ import { PasswordRulesComponent } from '../../../../shared/components/password-r
 import { emailValidators } from '../../../../shared/validators/email.validator';
 import { strongPasswordValidators, passwordMatchValidator } from '../../../../shared/validators/password.validator';
 import { AuthService } from '../../services/auth.service';
+import { TokenService } from '../../../../core/auth/token.service';
+import { ErrorService } from '../../../../core/services/error.service';
 import { RegisterRequest } from '../../../../shared/models/auth/register-request.model';
 
 declare const google: any;
@@ -40,6 +42,8 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private tokenService: TokenService,
+    private errorService: ErrorService,
     private router: Router
   ) {
     this.registerForm = this.fb.group({
@@ -89,15 +93,14 @@ export class RegisterComponent implements OnInit {
         this.isLoading.set(false);
 
         if (res.accessToken && res.refreshToken) {
-          localStorage.setItem('accessToken', res.accessToken);
-          localStorage.setItem('refreshToken', res.refreshToken);
+          this.tokenService.setTokens(res.accessToken, res.refreshToken);
         }
 
         this.router.navigate(['/home']);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set('Google signup failed. Try again.');
+        this.errorMessage.set(this.errorService.extractMessage(err));
       }
     });
   }
@@ -133,11 +136,7 @@ export class RegisterComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(
-          err?.status === 409
-            ? 'Email or username already exists.'
-            : 'Registration failed. Please try again.'
-        );
+        this.errorMessage.set(this.errorService.extractMessage(err));
       }
     });
   }

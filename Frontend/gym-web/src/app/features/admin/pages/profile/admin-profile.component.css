@@ -1,0 +1,360 @@
+/* ── Page header ────────────────────────────────── */
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e2433;
+  margin: 0 0 4px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #7a8a9a;
+  margin: 0;
+}
+
+/* ── Loading ─────────────────────────────────────── */
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  font-size: 14px;
+  color: #7a8a9a;
+}
+
+.loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #e0e6ed;
+  border-top-color: #177c82;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error banner ────────────────────────────────── */
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: #fff5f5;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #c0392b;
+  margin-bottom: 20px;
+}
+
+/* ── Profile card ────────────────────────────────── */
+
+.profile-card {
+  display: flex;
+  gap: 32px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  padding: 28px 32px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+/* ── Avatar column ───────────────────────────────── */
+
+.avatar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 140px;
+}
+
+.avatar-wrap {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.avatar-img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #edf0f4;
+}
+
+.avatar-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: #177c82;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.avatar-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: "Outfit", sans-serif;
+  color: #3a4a5a;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.avatar-upload-btn:hover {
+  border-color: #177c82;
+  color: #177c82;
+}
+
+.avatar-file-input {
+  display: none;
+}
+
+.avatar-hint {
+  font-size: 11px;
+  color: #b0bec5;
+  margin: 0;
+  text-align: center;
+}
+
+.avatar-error {
+  font-size: 12px;
+  color: #dc3545;
+  margin: 0;
+}
+
+/* ── Form column ─────────────────────────────────── */
+
+.form-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+/* ── Feedback banners ────────────────────────────── */
+
+.feedback-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.feedback-banner--success {
+  background: #f0faf0;
+  border: 1px solid #b8e0b8;
+  color: #2e7d32;
+}
+
+.feedback-banner--error {
+  background: #fff5f5;
+  border: 1px solid #fcc;
+  color: #c0392b;
+}
+
+/* ── Form fields ─────────────────────────────────── */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.form-row .form-field {
+  margin-bottom: 0;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a4a5a;
+}
+
+.required-mark {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
+.field-input {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: "Outfit", sans-serif;
+  color: #1e2433;
+  background: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: #177c82;
+  box-shadow: 0 0 0 3px rgba(23, 124, 130, 0.12);
+}
+
+.field-input::placeholder {
+  color: #b0bec5;
+}
+
+.form-field.has-error .field-input {
+  border-color: #dc3545;
+}
+
+.form-field.has-error .field-input:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc3545;
+}
+
+/* ── Form actions ────────────────────────────────── */
+
+.form-actions {
+  padding-top: 4px;
+}
+
+:host ::ng-deep .btn-save-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: #177c82;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Outfit", sans-serif;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+:host ::ng-deep .btn-save-profile:hover:not(:disabled) {
+  background: #135f64;
+}
+
+:host ::ng-deep .btn-save-profile:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Account info card ───────────────────────────── */
+
+.account-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  padding: 24px 32px;
+  max-width: 600px;
+}
+
+.account-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e2433;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.account-row:last-child {
+  border-bottom: none;
+}
+
+.account-label {
+  width: 110px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #7a8a9a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.account-value {
+  font-size: 14px;
+  color: #1e2433;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: #e8f4f5;
+  color: #177c82;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .profile-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px;
+  }
+
+  .avatar-col {
+    flex-direction: row;
+    align-items: center;
+    min-width: unset;
+    flex-wrap: wrap;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

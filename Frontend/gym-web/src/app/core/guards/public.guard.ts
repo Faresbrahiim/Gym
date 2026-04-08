@@ -7,7 +7,8 @@ export const publicGuard: CanActivateFn = () => {
   const router       = inject(Router);
 
   if (tokenService.isAuthenticated()) {
-    return router.createUrlTree(['/home']);
+    const role = tokenService.getRole();
+    return router.createUrlTree(role === 'ADMIN' ? ['/admin/dashboard'] : ['/home']);
   }
 
   return true;

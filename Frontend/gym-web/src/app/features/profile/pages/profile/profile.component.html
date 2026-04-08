@@ -119,31 +119,31 @@
 
                     <!-- Avatar upload -->
                     <div class="col-md-12">
-                      <div class="file-upload-text">
-                        <div class="file-upload position-relative" style="display:inline-block;">
+                      <div class="profile-avatar-row">
+                        <div class="profile-avatar-wrap">
                           <img
                             [src]="avatarPreview()"
                             (error)="onAvatarError($event)"
-                            class="img-fluid rounded-circle"
-                            style="width:80px;height:80px;object-fit:cover;"
+                            class="profile-avatar-img"
                             alt="Profile photo"
                           />
-                          @if (!pendingAvatarFile()) {
-                            <span style="position:absolute;bottom:0;right:0;">
-                              <i class="feather-edit-3" style="cursor:pointer;background:#fff;border-radius:50%;padding:3px;border:1px solid #ddd;"></i>
-                              <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif"
-                                     class="position-absolute top-0 start-0 w-100 h-100 opacity-0"
-                                     style="cursor:pointer;"
-                                     (change)="onFileSelected($event)">
-                            </span>
-                          } @else {
-                            <span class="badge bg-success position-absolute bottom-0 end-0" style="font-size:10px;">Pending</span>
+                          @if (pendingAvatarFile()) {
+                            <span class="profile-avatar-badge">Pending</span>
                           }
                         </div>
-                        <h5>Upload a photo (JPG, PNG, WebP). Changes save with the form.</h5>
-                        @if (avatarError()) {
-                          <p class="text-danger small mt-1">{{ avatarError() }}</p>
-                        }
+                        <div class="profile-avatar-actions">
+                          <label class="profile-avatar-btn">
+                            <i class="feather-upload"></i>
+                            Change photo
+                            <input type="file" accept="image/jpeg,image/png,image/webp"
+                                   class="profile-avatar-file-input"
+                                   (change)="onFileSelected($event)">
+                          </label>
+                          @if (avatarError()) {
+                            <p class="profile-avatar-error">{{ avatarError() }}</p>
+                          }
+                          <p class="profile-avatar-hint">JPG, PNG or WebP · max 5 MB</p>
+                        </div>
                       </div>
                     </div>
 
@@ -223,20 +223,11 @@
                 </form>
               </div>
 
-              <!-- Save / Reset -->
+              <!-- Save -->
               <div class="save-changes text-end">
-                <button
-                  type="button"
-                  class="btn btn-primary reset-profile me-2"
-                  (click)="profileForm.reset(); pendingAvatarFile.set(null); avatarPreview.set(DEFAULT_AVATAR)"
-                  [disabled]="isSavingProfile()"
-                >
-                  Reset
-                </button>
                 <button
                   type="submit"
                   class="btn btn-secondary save-profile"
-                  form=""
                   (click)="onSaveProfile()"
                   [disabled]="isSavingProfile() || (profileForm.pristine && !pendingAvatarFile()) || profileForm.invalid"
                 >

@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../../../core/auth/token.service';
+import { ErrorService } from '../../../../core/services/error.service';
 import { UpdateMemberProfileRequest } from '../../models/update-member-profile-request.model';
 import { UpdateCoachProfileRequest } from '../../models/update-coach-profile-request.model';
 
@@ -31,6 +32,7 @@ export class OnboardingComponent implements OnInit {
     private fb: FormBuilder,
     private profileService: ProfileService,
     private tokenService: TokenService,
+    private errorService: ErrorService,
     private router: Router
   ) {}
 
@@ -104,8 +106,7 @@ export class OnboardingComponent implements OnInit {
       },
       error: (err) => {
         this.isSaving.set(false);
-        console.error('[Onboarding] save failed', err);
-        this.errorMessage.set(`Error ${err?.status ?? 'unknown'}: ${err?.error?.message ?? 'Something went wrong. Please try again.'}`);
+        this.errorMessage.set(this.errorService.extractMessage(err));
       }
     });
   }

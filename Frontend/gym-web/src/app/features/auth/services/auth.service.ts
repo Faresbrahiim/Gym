@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { ApiService } from '../../../core/api/api.service';
 import { TokenService } from '../../../core/auth/token.service';
+import { ProfileService } from '../../profile/services/profile.service';
 import { LoginRequest } from '../../../shared/models/auth/login-request.model';
 import { LoginResponse } from '../../../shared/models/auth/login-response.model';
 import { RegisterRequest } from '../../../shared/models/auth/register-request.model';
@@ -15,7 +16,11 @@ export class AuthService {
 
   private readonly AUTH_BASE = '/api/auth';
 
-  constructor(private api: ApiService, private tokenService: TokenService) {}
+  constructor(
+    private api: ApiService,
+    private tokenService: TokenService,
+    private profileService: ProfileService
+  ) {}
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.api.post<LoginResponse>(`${this.AUTH_BASE}/login/email`, credentials);
@@ -46,19 +51,57 @@ export class AuthService {
 
     if (!refreshToken) {
       this.tokenService.clearTokens();
+      this.profileService.clearSession();
       return of<void>(undefined);
     }
 
     return this.api.post<void>(`${this.AUTH_BASE}/logout`, { refreshToken }).pipe(
-      tap(() => this.tokenService.clearTokens()),
+      tap(() => {
+        this.tokenService.clearTokens();
+        this.profileService.clearSession();
+      }),
       catchError(() => {
         this.tokenService.clearTokens();
+        this.profileService.clearSession();
         return of<void>(undefined);
       })
     );
   }
-   loginWithGoogle(payload: { token: string }): Observable<LoginResponse> {
+  loginWithGoogle(payload: { token: string }): Observable<LoginResponse> {
     return this.api.post<LoginResponse>(`${this.AUTH_BASE}/login/google`, payload);
   }
-  
+
+  acceptInvitation(token: string, password: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/accept-invitation`, { token, password });
+  }
+
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/password/request-reset`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/password/reset`, { token, newPassword });
+  }
+
+  resendVerification(email: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/resend-verification`, { email });
+  }
+
+  resendInvitation(email: string): Observable<{ message: string }> {
+    return this.api.post<{ message: string }>(`${this.AUTH_BASE}/resend-invitation`, { email });
+  }
+
+  logoutAll(): Observable<void> {
+    return this.api.post<void>(`${this.AUTH_BASE}/logout-all`, {}).pipe(
+      tap(() => {
+        this.tokenService.clearTokens();
+        this.profileService.clearSession();
+      }),
+      catchError(() => {
+        this.tokenService.clearTokens();
+        this.profileService.clearSession();
+        return of<void>(undefined);
+      })
+    );
+  }
 }

@@ -56,12 +56,25 @@ namespace user_service.Middleware
                 _ => StatusCodes.Status500InternalServerError
             };
 
+            var message = exception switch
+            {
+                UnauthorizedAccessException       => "Invalid credentials.",
+                AccountNotActivatedException      => "Your account is not active.",
+                EmailAlreadyExistsException       => "An account with this email already exists.",
+                UsernameAlreadyExistsException    => "This username is already taken.",
+                InvalidTokenException             => "The token is invalid or has expired.",
+                UserNotFoundException             => "User not found.",
+                ProfileNotFoundException          => "Profile not found.",
+                ExternalAuthException             => "Authentication failed.",
+                KeyNotFoundException              => "Resource not found.",
+                ArgumentException                 => exception.Message,
+                _                                 => "An unexpected error occurred."
+            };
+
             var response = new
             {
                 success = false,
-                message = statusCode == 500
-                    ? "An unexpected error occurred."
-                    : exception.Message,
+                message,
                 traceId = context.TraceIdentifier
             };
 

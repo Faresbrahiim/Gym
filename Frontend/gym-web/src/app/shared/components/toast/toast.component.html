@@ -1,0 +1,28 @@
+@if (toastService.toasts().length > 0) {
+  <div class="toast-container" role="region" aria-label="Notifications" aria-live="polite">
+    @for (toast of toastService.toasts(); track trackById($index, toast)) {
+      <div
+        class="toast-item"
+        [ngClass]="'toast-' + toast.type"
+        role="alert"
+      >
+        <div class="toast-icon">
+          @switch (toast.type) {
+            @case ('success') { <i class="feather-check-circle"></i> }
+            @case ('error')   { <i class="feather-x-circle"></i> }
+            @case ('info')    { <i class="feather-info"></i> }
+          }
+        </div>
+        <span class="toast-message">{{ toast.message }}</span>
+        <button
+          class="toast-close"
+          type="button"
+          aria-label="Dismiss notification"
+          (click)="toastService.dismiss(toast.id)"
+        >
+          <i class="feather-x"></i>
+        </button>
+      </div>
+    }
+  </div>
+}

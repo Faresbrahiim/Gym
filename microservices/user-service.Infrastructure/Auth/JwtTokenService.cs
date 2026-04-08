@@ -1,4 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -29,7 +29,8 @@ namespace user_service.Infrastructure.Auth
             _privateKey.ImportFromPem(privateKeyText.ToCharArray());
         }
 
-        public string GenerateToken(UserDto user)
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
+        public TokenResult GenerateToken(UserDto user)
         {
             var permissions = RolePermissionMapping.GetPermissions(user.Role);
             var credentials = new SigningCredentials(
@@ -37,12 +38,17 @@ namespace user_service.Infrastructure.Auth
                 SecurityAlgorithms.RsaSha256
             );
 
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            var jti = Guid.NewGuid().ToString();
+            var expiresAt = DateTime.UtcNow.AddHours(1);
+
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("role", user.Role.ToString())
-               
+                new Claim("role", user.Role.ToString()),
+                // Immediate Session Invalidation — JTI Blacklist  author: Anas
+                new Claim(JwtRegisteredClaimNames.Jti, jti)
             };
 
             foreach (var permission in permissions)
@@ -54,11 +60,16 @@ namespace user_service.Infrastructure.Auth
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: expiresAt,
                 signingCredentials: credentials
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            return new TokenResult(
+                new JwtSecurityTokenHandler().WriteToken(token),
+                jti,
+                expiresAt
+            );
         }
     }
 }

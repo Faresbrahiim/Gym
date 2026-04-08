@@ -1,0 +1,251 @@
+/* ── Page header ──────────────────────────────────── */
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e2433;
+  margin: 0 0 4px;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #7a8a9a;
+  margin: 0;
+}
+
+/* ── Invite card ──────────────────────────────────── */
+
+.invite-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+  max-width: 520px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* ── Tabs ─────────────────────────────────────────── */
+
+.invite-tabs {
+  display: flex;
+  border-bottom: 1px solid #edf0f4;
+}
+
+.invite-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  font-family: "Outfit", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #7a8a9a;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+
+.invite-tab:hover {
+  color: #1e2433;
+}
+
+.invite-tab.active {
+  color: #177c82;
+  border-bottom-color: #177c82;
+  font-weight: 600;
+}
+
+/* ── Success state ────────────────────────────────── */
+
+.feedback-state {
+  padding: 32px 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.feedback-state--success .feedback-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e8f5e9;
+  color: #2e7d32;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.feedback-body {
+  flex: 1;
+}
+
+.feedback-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e2433;
+  margin: 0 0 2px;
+}
+
+.feedback-detail {
+  font-size: 13px;
+  color: #7a8a9a;
+  margin: 0;
+  word-break: break-all;
+}
+
+.btn-send-another {
+  background: none;
+  border: 1px solid #177c82;
+  color: #177c82;
+  font-family: "Outfit", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-send-another:hover {
+  background: #177c82;
+  color: #ffffff;
+}
+
+/* ── Form ─────────────────────────────────────────── */
+
+.invite-form {
+  padding: 24px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a4a5a;
+}
+
+.required-mark {
+  color: #dc3545;
+  margin-left: 2px;
+}
+
+.field-input {
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: "Outfit", sans-serif;
+  color: #1e2433;
+  background: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: #177c82;
+  box-shadow: 0 0 0 3px rgba(23, 124, 130, 0.12);
+}
+
+.field-input::placeholder {
+  color: #b0bec5;
+}
+
+.form-field.has-error .field-input {
+  border-color: #dc3545;
+}
+
+.form-field.has-error .field-input:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.12);
+}
+
+.field-error {
+  font-size: 12px;
+  color: #dc3545;
+}
+
+/* ── Error banner ─────────────────────────────────── */
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: #fff5f5;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #c0392b;
+}
+
+/* ── Submit button ────────────────────────────────── */
+
+.form-actions {
+  padding-top: 4px;
+}
+
+/* LoadingButtonComponent projects content — target its host element */
+:host ::ng-deep .btn-submit-invite {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: #177c82;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Outfit", sans-serif;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+:host ::ng-deep .btn-submit-invite:hover:not(:disabled) {
+  background: #135f64;
+}
+
+:host ::ng-deep .btn-submit-invite:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── Info note ────────────────────────────────────── */
+
+.info-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 520px;
+  font-size: 13px;
+  color: #7a8a9a;
+  line-height: 1.5;
+}
+
+.info-note i {
+  font-size: 14px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  color: #b0bec5;
+}

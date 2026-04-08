@@ -1,0 +1,119 @@
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Invite User</h1>
+    <p class="page-subtitle">Send an invitation email to a new member or coach</p>
+  </div>
+</div>
+
+<!-- Invite card -->
+<div class="invite-card">
+
+  <!-- Tabs -->
+  <div class="invite-tabs">
+    <button
+      type="button"
+      class="invite-tab"
+      [class.active]="activeTab() === 'member'"
+      (click)="setTab('member')">
+      <i class="feather-user"></i>
+      Invite Member
+    </button>
+    <button
+      type="button"
+      class="invite-tab"
+      [class.active]="activeTab() === 'coach'"
+      (click)="setTab('coach')">
+      <i class="feather-award"></i>
+      Invite Coach
+    </button>
+  </div>
+
+  <!-- ── Success state ── -->
+  @if (successMsg()) {
+    <div class="feedback-state feedback-state--success">
+      <div class="feedback-icon">
+        <i class="feather-check-circle"></i>
+      </div>
+      <div class="feedback-body">
+        <p class="feedback-title">Invitation sent!</p>
+        <p class="feedback-detail">{{ successMsg() }}</p>
+      </div>
+      <button type="button" class="btn-send-another" (click)="sendAnother()">
+        Send another
+      </button>
+    </div>
+  }
+
+  <!-- ── Form ── -->
+  @if (!successMsg()) {
+    <form
+      [formGroup]="activeForm"
+      (ngSubmit)="onSubmit()"
+      class="invite-form"
+      novalidate>
+
+      <!-- Email -->
+      <div class="form-field" [class.has-error]="fieldError(activeForm, 'email')">
+        <label class="field-label">
+          Email address <span class="required-mark">*</span>
+        </label>
+        <input
+          type="email"
+          formControlName="email"
+          class="field-input"
+          placeholder="user@example.com"
+          autocomplete="off">
+        @if (fieldError(activeForm, 'email')) {
+          <span class="field-error">{{ fieldError(activeForm, 'email') }}</span>
+        }
+      </div>
+
+      <!-- Username -->
+      <div class="form-field" [class.has-error]="fieldError(activeForm, 'username')">
+        <label class="field-label">
+          Username <span class="required-mark">*</span>
+        </label>
+        <input
+          type="text"
+          formControlName="username"
+          class="field-input"
+          placeholder="e.g. johndoe"
+          autocomplete="off">
+        @if (fieldError(activeForm, 'username')) {
+          <span class="field-error">{{ fieldError(activeForm, 'username') }}</span>
+        }
+      </div>
+
+      <!-- Error banner -->
+      @if (errorMsg()) {
+        <div class="error-banner">
+          <i class="feather-alert-circle"></i>
+          {{ errorMsg() }}
+        </div>
+      }
+
+      <!-- Submit -->
+      <div class="form-actions">
+        <app-loading-button
+          [loading]="isLoading()"
+          type="submit"
+          cssClass="btn-submit-invite">
+          <i class="feather-send"></i>
+          Send Invitation
+        </app-loading-button>
+      </div>
+
+    </form>
+  }
+
+</div>
+
+<!-- Info note -->
+<div class="info-note">
+  <i class="feather-info"></i>
+  <span>
+    The invited user will receive an email with a link to set their password and activate their account.
+    Invitation links expire after <strong>30 minutes</strong>.
+  </span>
+</div>

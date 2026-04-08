@@ -1,13 +1,15 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { permissionGuard } from './core/guards/permission.guard';
+import { rootGuard } from './core/guards/root.guard';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 
 export const routes: Routes = [
-  // Root redirect — bare "/" goes to the public home landing page
   {
     path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
+    canActivate: [rootGuard],
+    children: []
   },
 
   // Public auth routes (login, register, forgot-password, etc.)
@@ -29,10 +31,12 @@ export const routes: Routes = [
           import('./features/home/home.component').then(m => m.HomeComponent)
       },
       {
+        // Profile feature — delegates to profile.routes.ts
+        // authGuard here covers all child routes (/profile and /profile/edit)
         path: 'profile',
         canActivate: [authGuard],
-        loadComponent: () =>
-          import('./features/profile/pages/profile/profile.component').then(m => m.ProfileComponent)
+        loadChildren: () =>
+          import('./features/profile/profile.routes').then(m => m.profileRoutes)
       }
     ]
   },
@@ -51,6 +55,16 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/auth/pages/setup-two-factor/setup-two-factor.component').then(m => m.SetupTwoFactorComponent)
+  },
+
+  // Admin panel — protected by authGuard + permissionGuard (role: ADMIN)
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [authGuard, permissionGuard],
+    data: { role: 'ADMIN' },
+    loadChildren: () =>
+      import('./features/admin/admin.routes').then(m => m.adminRoutes)
   },
 
   // 404

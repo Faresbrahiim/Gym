@@ -24,7 +24,7 @@ namespace user_service.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_status", "user_status", new[] { "pending", "active", "suspended" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("user_service.Application.Entities.CoachAvailability", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.CoachAvailability", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -59,7 +59,7 @@ namespace user_service.Migrations
                         });
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.CoachProfile", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.CoachProfile", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -96,7 +96,7 @@ namespace user_service.Migrations
                         });
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.ExternalLogin", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.ExternalLogin", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -133,7 +133,7 @@ namespace user_service.Migrations
                     b.ToTable("external_logins", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.MemberProfile", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.MemberProfile", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -178,7 +178,7 @@ namespace user_service.Migrations
                         });
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.PasswordResetToken", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.PasswordResetToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -213,7 +213,7 @@ namespace user_service.Migrations
                     b.ToTable("password_reset_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.RecoveryCode", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.RecoveryCode", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -244,11 +244,18 @@ namespace user_service.Migrations
                     b.ToTable("recovery_codes", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.RefreshToken", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("AccessTokenExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AccessTokenJti")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -287,7 +294,23 @@ namespace user_service.Migrations
                     b.ToTable("refresh_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.User", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.RevokedToken", b =>
+                {
+                    b.Property<string>("Jti")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Jti");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.ToTable("revoked_tokens", (string)null);
+                });
+
+            modelBuilder.Entity("user_service.Application.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -349,7 +372,7 @@ namespace user_service.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.UserProfile", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.UserProfile", b =>
                 {
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -387,7 +410,7 @@ namespace user_service.Migrations
                     b.ToTable("user_profiles", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.UserToken", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.UserToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -419,9 +442,9 @@ namespace user_service.Migrations
                     b.ToTable("user_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.CoachAvailability", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.CoachAvailability", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "Coach")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "Coach")
                         .WithMany("CoachAvailabilities")
                         .HasForeignKey("CoachId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -430,20 +453,20 @@ namespace user_service.Migrations
                     b.Navigation("Coach");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.CoachProfile", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.CoachProfile", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithOne("CoachProfile")
-                        .HasForeignKey("user_service.Application.Entities.CoachProfile", "UserId")
+                        .HasForeignKey("user_service.Application.Domain.Entities.CoachProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.ExternalLogin", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.ExternalLogin", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithMany("ExternalLogins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -452,20 +475,20 @@ namespace user_service.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.MemberProfile", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.MemberProfile", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithOne("MemberProfile")
-                        .HasForeignKey("user_service.Application.Entities.MemberProfile", "UserId")
+                        .HasForeignKey("user_service.Application.Domain.Entities.MemberProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.PasswordResetToken", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.PasswordResetToken", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithMany("PasswordResetTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -474,9 +497,9 @@ namespace user_service.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.RecoveryCode", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.RecoveryCode", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithMany("RecoveryCodes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -485,9 +508,9 @@ namespace user_service.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.RefreshToken", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.RefreshToken", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -496,20 +519,20 @@ namespace user_service.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.UserProfile", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.UserProfile", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithOne("Profile")
-                        .HasForeignKey("user_service.Application.Entities.UserProfile", "UserId")
+                        .HasForeignKey("user_service.Application.Domain.Entities.UserProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.UserToken", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.UserToken", b =>
                 {
-                    b.HasOne("user_service.Application.Entities.User", "User")
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -518,7 +541,7 @@ namespace user_service.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Entities.User", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.User", b =>
                 {
                     b.Navigation("CoachAvailabilities");
 

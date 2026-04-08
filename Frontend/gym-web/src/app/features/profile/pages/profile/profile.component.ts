@@ -5,6 +5,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, switchMap, of } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../../../core/auth/token.service';
+import { ErrorService } from '../../../../core/services/error.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { UserMe } from '../../models/user-me.model';
 import { UpdateProfileRequest } from '../../models/update-profile-request.model';
 import { UpdateMemberProfileRequest } from '../../models/update-member-profile-request.model';
@@ -48,6 +50,8 @@ export class ProfileComponent implements OnInit {
     private fb: FormBuilder,
     private profileService: ProfileService,
     private tokenService: TokenService,
+    private errorService: ErrorService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -100,8 +104,9 @@ export class ProfileComponent implements OnInit {
         this.patchForms(data);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
+        this.toastService.error(this.errorService.extractMessage(err));
       }
     });
   }
@@ -204,9 +209,9 @@ export class ProfileComponent implements OnInit {
         this.profileForm.markAsPristine();
         setTimeout(() => this.profileSuccess.set(false), 3000);
       },
-      error: () => {
+      error: (err) => {
         this.isSavingProfile.set(false);
-        this.profileError.set('Failed to save. Please try again.');
+        this.profileError.set(this.errorService.extractMessage(err));
       }
     });
   }
@@ -238,9 +243,9 @@ export class ProfileComponent implements OnInit {
         this.memberForm.markAsPristine();
         setTimeout(() => this.extraSuccess.set(false), 3000);
       },
-      error: () => {
+      error: (err) => {
         this.isSavingExtra.set(false);
-        this.extraError.set('Failed to save. Please try again.');
+        this.extraError.set(this.errorService.extractMessage(err));
       }
     });
   }
@@ -270,9 +275,9 @@ export class ProfileComponent implements OnInit {
         this.coachForm.markAsPristine();
         setTimeout(() => this.extraSuccess.set(false), 3000);
       },
-      error: () => {
+      error: (err) => {
         this.isSavingExtra.set(false);
-        this.extraError.set('Failed to save. Please try again.');
+        this.extraError.set(this.errorService.extractMessage(err));
       }
     });
   }
