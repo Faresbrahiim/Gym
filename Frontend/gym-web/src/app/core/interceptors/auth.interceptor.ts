@@ -78,7 +78,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 
       return refreshInProgress$.pipe(
         switchMap((response) => {
-          refreshInProgress$ = null;
+          refreshInProgress$ = null; 
 
           if (!response.accessToken || !response.refreshToken) {
             tokenService.clearTokens();

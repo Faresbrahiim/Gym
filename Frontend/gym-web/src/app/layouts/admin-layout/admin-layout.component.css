@@ -1,0 +1,266 @@
+/* ─────────────────────────────────────────────────
+   Shell layout — sidebar + main column
+───────────────────────────────────────────────── */
+
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f6f8;
+  font-family: "Outfit", sans-serif;
+}
+
+/* ─────────────────────────────────────────────────
+   Sidebar
+───────────────────────────────────────────────── */
+
+.admin-sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: #1e2433;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  transition: width 0.22s ease;
+  z-index: 100;
+}
+
+/* Collapsed state — icon-only */
+.admin-shell.sidebar-collapsed .admin-sidebar {
+  width: 64px;
+}
+
+.admin-shell.sidebar-collapsed .nav-label,
+.admin-shell.sidebar-collapsed .nav-group-label {
+  display: none;
+}
+
+.admin-shell.sidebar-collapsed .sidebar-logo {
+  max-width: 32px;
+}
+
+.admin-shell.sidebar-collapsed .sidebar-header {
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.admin-shell.sidebar-collapsed .nav-item,
+.admin-shell.sidebar-collapsed .sidebar-logout-btn {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+/* Sidebar header — logo + brand name */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sidebar-logo {
+  height: 34px;
+  width: auto;
+  max-width: 160px;
+  flex-shrink: 0;
+}
+
+/* Sidebar navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.nav-group {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.nav-group-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 12px 20px 4px;
+  margin: 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background: rgba(23, 124, 130, 0.18);
+  color: #4ecdc4;
+  font-weight: 600;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #177c82;
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+}
+
+/* Sidebar footer — logout */
+.sidebar-footer {
+  padding: 12px 0 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sidebar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "Outfit", sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: left;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(220, 53, 69, 0.12);
+  color: #e07a84;
+}
+
+/* ─────────────────────────────────────────────────
+   Main column (topbar + content)
+───────────────────────────────────────────────── */
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ─────────────────────────────────────────────────
+   Topbar
+───────────────────────────────────────────────── */
+
+.admin-topbar {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #e8ecf0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  flex-shrink: 0;
+}
+
+.topbar-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  font-size: 18px;
+  color: #5a6a7a;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+.topbar-toggle:hover {
+  background: #f0f3f6;
+  color: #1e2433;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-admin-email {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5a6a7a;
+}
+
+.topbar-admin-email i {
+  font-size: 15px;
+}
+
+/* ─────────────────────────────────────────────────
+   Page content area
+───────────────────────────────────────────────── */
+
+.admin-content {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+}
+
+/* ─────────────────────────────────────────────────
+   Mobile — sidebar becomes overlay below 768px
+───────────────────────────────────────────────── */
+
+@media (max-width: 767px) {
+  .admin-shell {
+    position: relative;
+  }
+
+  .admin-sidebar {
+    position: fixed;
+    left: -240px;
+    top: 0;
+    height: 100%;
+    transition: left 0.22s ease;
+    z-index: 200;
+  }
+
+  .admin-shell:not(.sidebar-collapsed) .admin-sidebar {
+    left: 0;
+  }
+
+  .admin-content {
+    padding: 20px 16px;
+  }
+}

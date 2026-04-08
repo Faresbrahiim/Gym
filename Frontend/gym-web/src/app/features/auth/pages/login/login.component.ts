@@ -118,7 +118,7 @@ export class LoginComponent implements OnInit {
 
     if (role === 'ADMIN') {
       this.isLoading.set(false);
-      this.router.navigateByUrl(returnUrl);
+      this.router.navigate(['/admin/dashboard']);
       return;
     }
 

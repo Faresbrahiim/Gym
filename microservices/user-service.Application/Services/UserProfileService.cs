@@ -94,17 +94,33 @@ namespace user_service.Application.Services
             if (user.Status != UserStatus.ACTIVE)
                 throw new AccountNotActivatedException();
 
-            var profile = await _userProfileRepository.GetByUserId(userId, cancellationToken)
-                ?? throw new ProfileNotFoundException(userId);
+            var now = DateTime.UtcNow;
+            var profile = await _userProfileRepository.GetByUserId(userId, cancellationToken);
 
-            if (dto.FirstName != null) profile.FirstName = dto.FirstName;
-            if (dto.LastName != null)  profile.LastName  = dto.LastName;
-            if (dto.Phone != null)     profile.Phone     = dto.Phone;
-            if (dto.ProfilePictureUrl != null) profile.ProfilePictureUrl = dto.ProfilePictureUrl;
+            if (profile == null)
+            {
+                await _userProfileRepository.Create(new UserProfile
+                {
+                    UserId     = userId,
+                    FirstName  = dto.FirstName ?? string.Empty,
+                    LastName   = dto.LastName  ?? string.Empty,
+                    Phone      = dto.Phone,
+                    ProfilePictureUrl = dto.ProfilePictureUrl,
+                    CreatedAt  = now,
+                    UpdatedAt  = now
+                }, cancellationToken);
+            }
+            else
+            {
+                if (dto.FirstName != null)        profile.FirstName         = dto.FirstName;
+                if (dto.LastName != null)         profile.LastName          = dto.LastName;
+                if (dto.Phone != null)            profile.Phone             = dto.Phone;
+                if (dto.ProfilePictureUrl != null) profile.ProfilePictureUrl = dto.ProfilePictureUrl;
 
-            profile.UpdatedAt = DateTime.UtcNow;
+                profile.UpdatedAt = now;
 
-            await _userProfileRepository.Update(profile, cancellationToken);
+                await _userProfileRepository.Update(profile, cancellationToken);
+            }
         }
 
         public async Task UpdateMemberProfileAsync(
@@ -213,15 +229,29 @@ namespace user_service.Application.Services
             if (user.Status != UserStatus.ACTIVE)
                 throw new AccountNotActivatedException();
 
-            var profile = await _userProfileRepository.GetByUserId(userId, cancellationToken)
-                ?? throw new ProfileNotFoundException(userId);
-
+            var now = DateTime.UtcNow;
+            var profile = await _userProfileRepository.GetByUserId(userId, cancellationToken);
             var url = await _fileStorageService.SaveAvatarAsync(file, userId, cancellationToken);
 
-            profile.ProfilePictureUrl = url;
-            profile.UpdatedAt = DateTime.UtcNow;
+            if (profile == null)
+            {
+                await _userProfileRepository.Create(new UserProfile
+                {
+                    UserId            = userId,
+                    FirstName         = string.Empty,
+                    LastName          = string.Empty,
+                    ProfilePictureUrl = url,
+                    CreatedAt         = now,
+                    UpdatedAt         = now
+                }, cancellationToken);
+            }
+            else
+            {
+                profile.ProfilePictureUrl = url;
+                profile.UpdatedAt = now;
 
-            await _userProfileRepository.Update(profile, cancellationToken);
+                await _userProfileRepository.Update(profile, cancellationToken);
+            }
 
             return url;
         }

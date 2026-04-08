@@ -87,6 +87,9 @@ namespace user_service.Application.Services
             if (user == null || !_passwordHasher.Verify(request.Password, user.PasswordHash))
                 throw new UnauthorizedAccessException();
 
+            if (user.Status != UserStatus.ACTIVE)
+                throw new AccountNotActivatedException();
+
             if (user.TwoFactorEnabled)
             {
                 return new LoginResponse

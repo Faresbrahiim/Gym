@@ -46,9 +46,14 @@ export class ProfileService {
     return this.meCache$;
   }
 
-  /** Call after any mutation so the next getMe() fetches fresh data from the server. */
   invalidateCache(): void {
     this.meCache$ = null;
+  }
+
+  clearSession(): void {
+    this.meCache$ = null;
+    this.currentAvatarUrl.set(DEFAULT_AVATAR);
+    this.currentUsername.set('');
   }
 
   updateProfile(dto: UpdateProfileRequest): Observable<void> {

@@ -1,0 +1,93 @@
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Welcome back, {{ adminName }}</p>
+  </div>
+  <a routerLink="/admin/users/invite" class="btn-primary-admin">
+    <i class="feather-user-plus"></i>
+    Invite User
+  </a>
+</div>
+
+<!-- Stat cards -->
+<div class="stat-grid">
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--members">
+      <i class="feather-users"></i>
+    </div>
+    <div class="stat-body">
+      <span class="stat-value">—</span>
+      <span class="stat-label">Total Members</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--coaches">
+      <i class="feather-award"></i>
+    </div>
+    <div class="stat-body">
+      <span class="stat-value">—</span>
+      <span class="stat-label">Total Coaches</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--pending">
+      <i class="feather-clock"></i>
+    </div>
+    <div class="stat-body">
+      <span class="stat-value">—</span>
+      <span class="stat-label">Pending Invitations</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--active">
+      <i class="feather-activity"></i>
+    </div>
+    <div class="stat-body">
+      <span class="stat-value">—</span>
+      <span class="stat-label">Active Users</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Quick actions -->
+<div class="section-header">
+  <h2 class="section-title">Quick Actions</h2>
+</div>
+
+<div class="action-grid">
+
+  <a routerLink="/admin/users/invite" class="action-card">
+    <div class="action-icon action-icon--member">
+      <i class="feather-user-plus"></i>
+    </div>
+    <div class="action-body">
+      <span class="action-title">Invite Member</span>
+      <span class="action-desc">Send an invitation email to a new member</span>
+    </div>
+    <i class="feather-chevron-right action-arrow"></i>
+  </a>
+
+  <a routerLink="/admin/users/invite" class="action-card">
+    <div class="action-icon action-icon--coach">
+      <i class="feather-award"></i>
+    </div>
+    <div class="action-body">
+      <span class="action-title">Invite Coach</span>
+      <span class="action-desc">Send an invitation email to a new coach</span>
+    </div>
+    <i class="feather-chevron-right action-arrow"></i>
+  </a>
+
+</div>
+
+<!-- Placeholder notice -->
+<div class="notice-banner">
+  <i class="feather-info"></i>
+  <span>Stat cards will populate once user listing endpoints are available.</span>
+</div>

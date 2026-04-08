@@ -1,0 +1,169 @@
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">View and update your administrator account details</p>
+  </div>
+</div>
+
+<!-- Loading state -->
+@if (isLoading()) {
+  <div class="loading-state">
+    <div class="loading-spinner"></div>
+    <span>Loading profile…</span>
+  </div>
+}
+
+@if (!isLoading()) {
+
+  <!-- Load error -->
+  @if (errorMsg() && !userMe()) {
+    <div class="error-banner">
+      <i class="feather-alert-circle"></i>
+      {{ errorMsg() }}
+    </div>
+  }
+
+  @if (userMe()) {
+
+    <!-- ── Profile card ── -->
+    <div class="profile-card">
+
+      <!-- Avatar column -->
+      <div class="avatar-col">
+        <div class="avatar-wrap">
+          <img
+            [src]="avatarPreview()"
+            (error)="onAvatarError($event)"
+            class="avatar-img"
+            alt="Profile photo"
+          />
+          @if (pendingAvatarFile()) {
+            <span class="avatar-badge">Pending</span>
+          }
+        </div>
+
+        <label class="avatar-upload-btn">
+          <i class="feather-upload"></i>
+          Change photo
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            class="avatar-file-input"
+            (change)="onFileSelected($event)"
+          />
+        </label>
+
+        @if (avatarError()) {
+          <p class="avatar-error">{{ avatarError() }}</p>
+        }
+
+        <p class="avatar-hint">JPG, PNG or WebP · max 5 MB</p>
+      </div>
+
+      <!-- Form column -->
+      <div class="form-col">
+
+        <form [formGroup]="profileForm" (ngSubmit)="onSave()" novalidate>
+
+          <!-- Feedback -->
+          @if (successMsg()) {
+            <div class="feedback-banner feedback-banner--success">
+              <i class="feather-check-circle"></i>
+              {{ successMsg() }}
+            </div>
+          }
+          @if (errorMsg() && userMe()) {
+            <div class="feedback-banner feedback-banner--error">
+              <i class="feather-alert-circle"></i>
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <!-- First name + Last name -->
+          <div class="form-row">
+            <div class="form-field" [class.has-error]="fieldError('firstName')">
+              <label class="field-label">First name <span class="required-mark">*</span></label>
+              <input
+                type="text"
+                formControlName="firstName"
+                class="field-input"
+                placeholder="First name"
+                autocomplete="given-name"
+              />
+              @if (fieldError('firstName')) {
+                <span class="field-error">{{ fieldError('firstName') }}</span>
+              }
+            </div>
+
+            <div class="form-field" [class.has-error]="fieldError('lastName')">
+              <label class="field-label">Last name <span class="required-mark">*</span></label>
+              <input
+                type="text"
+                formControlName="lastName"
+                class="field-input"
+                placeholder="Last name"
+                autocomplete="family-name"
+              />
+              @if (fieldError('lastName')) {
+                <span class="field-error">{{ fieldError('lastName') }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-field">
+            <label class="field-label">Phone number</label>
+            <input
+              type="tel"
+              formControlName="phone"
+              class="field-input"
+              placeholder="+1 555 000 0000"
+              autocomplete="tel"
+            />
+          </div>
+
+          <!-- Actions -->
+          <div class="form-actions">
+            <app-loading-button
+              [loading]="isSaving()"
+              type="submit"
+              cssClass="btn-save-profile">
+              <i class="feather-save"></i>
+              Save changes
+            </app-loading-button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+    <!-- /Profile card -->
+
+    <!-- ── Account info card ── -->
+    <div class="account-card">
+      <h2 class="account-card-title">Account information</h2>
+      <div class="account-rows">
+
+        <div class="account-row">
+          <span class="account-label">Email</span>
+          <span class="account-value">{{ userMe()?.email }}</span>
+        </div>
+
+        <div class="account-row">
+          <span class="account-label">Username</span>
+          <span class="account-value">{{ userMe()?.username }}</span>
+        </div>
+
+        <div class="account-row">
+          <span class="account-label">Role</span>
+          <span class="role-badge">Admin</span>
+        </div>
+
+      </div>
+    </div>
+    <!-- /Account info card -->
+
+  }
+
+}
