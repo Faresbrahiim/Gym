@@ -52,7 +52,13 @@
                         <div class="form-group">
                           <div class="group-img">
                             <i class="feather-user"></i>
-                            <input type="text" class="form-control" placeholder="Email" formControlName="email">
+                            <input
+  type="email"
+  class="form-control"
+  placeholder="Email"
+  formControlName="email"
+  autocomplete="email"
+>
                           </div>
                           @if (userLoginForm.get('email')?.touched && userLoginForm.get('email')?.invalid) {
                             <div class="text-danger small mt-1">
@@ -69,7 +75,13 @@
                         <div class="form-group">
                           <div class="pass-group group-img">
                             <i class="toggle-password" [class.feather-eye]="showUserPassword" [class.feather-eye-off]="!showUserPassword" (click)="toggleUserPassword()"></i>
-                            <input [type]="showUserPassword ? 'text' : 'password'" class="form-control pass-input" placeholder="Password" formControlName="password">
+                            <input
+  [type]="showUserPassword ? 'text' : 'password'"
+  class="form-control pass-input"
+  placeholder="Password"
+  formControlName="password"
+  autocomplete="current-password"
+>
                           </div>
                           @if (userLoginForm.get('password')?.touched && userLoginForm.get('password')?.errors?.['required']) {
                             <div class="text-danger small mt-1">
@@ -80,7 +92,8 @@
 
                         <div class="form-group d-sm-flex align-items-center justify-content-between">
                           <div class="form-check form-switch d-flex align-items-center justify-content-start">
-                            <input class="form-check-input" type="checkbox" id="user-pass">
+                            <input class="form-check-input" type="checkbox" id="user-pass" formControlName="rememberPassword">
+
                             <label class="form-check-label" for="user-pass">Remember Password</label>
                           </div>
                           <span><a routerLink="/forgot-password" class="forgot-pass">Forgot Password</a></span>
@@ -156,7 +169,7 @@
 
                         <div class="form-group d-sm-flex align-items-center justify-content-between">
                           <div class="form-check form-switch d-flex align-items-center justify-content-start">
-                            <input class="form-check-input" type="checkbox" id="coach-pass">
+                            <input class="form-check-input" type="checkbox" id="coach-pass" formControlName="rememberPassword">
                             <label class="form-check-label" for="coach-pass">Remember Password</label>
                           </div>
                           <span><a routerLink="/forgot-password" class="forgot-pass">Forgot Password</a></span>

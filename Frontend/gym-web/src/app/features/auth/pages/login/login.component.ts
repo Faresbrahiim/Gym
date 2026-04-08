@@ -47,24 +47,39 @@ export class LoginComponent implements OnInit {
   ) {
     this.userLoginForm = this.fb.group({
       email:    ['', emailValidators],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
+      rememberPassword: [false]
     });
 
     this.coachLoginForm = this.fb.group({
       email:    ['', emailValidators],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
+      rememberPassword: [false]
     });
   }
 
-  ngOnInit(): void {
-    this.initializeGoogleLogin();
-  }
+ngOnInit(): void {
+  this.initializeGoogleLogin();
 
+  const savedEmail = localStorage.getItem('rememberedEmail');
+
+  if (savedEmail) {
+    this.userLoginForm.patchValue({
+      email: savedEmail,
+      rememberPassword: true
+    });
+
+    this.coachLoginForm.patchValue({
+      email: savedEmail,
+      rememberPassword: true
+    });
+  }
+}
   private initializeGoogleLogin(): void {
   google.accounts.id.initialize({
   client_id: '863501968602-m5op5onnboc6pv7abk0d3bhdncqt8ffb.apps.googleusercontent.com',
   callback: (response: any) => this.handleGoogleResponse(response)
-});
+  });
 
     // Render buttons into custom placeholders
     const userBtn = document.getElementById('google-user-btn');
@@ -146,7 +161,13 @@ export class LoginComponent implements OnInit {
       this.userLoginForm.markAllAsTouched();
       return;
     }
+    const { email, rememberPassword } = this.userLoginForm.value;
 
+    if (rememberPassword) {
+    localStorage.setItem('rememberedEmail', email);
+    } else {
+    localStorage.removeItem('rememberedEmail');
+    }
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
@@ -172,7 +193,13 @@ export class LoginComponent implements OnInit {
       this.coachLoginForm.markAllAsTouched();
       return;
     }
+    const { email, rememberPassword } = this.coachLoginForm.value;
 
+    if (rememberPassword) {
+    localStorage.setItem('rememberedEmail', email);
+    } else {
+    localStorage.removeItem('rememberedEmail');
+    }
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
