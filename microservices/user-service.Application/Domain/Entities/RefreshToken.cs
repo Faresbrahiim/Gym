@@ -18,7 +18,9 @@
 
         public string? IpAddress { get; set; }
 
-
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
+        public string? AccessTokenJti { get; set; }
+        public DateTime? AccessTokenExpiresAt { get; set; }
 
         // Navigation
         public User User { get; set; } = null!;

@@ -80,4 +80,14 @@ export class AuthService {
   resendInvitation(email: string): Observable<{ message: string }> {
     return this.api.post<{ message: string }>(`${this.AUTH_BASE}/resend-invitation`, { email });
   }
+
+  logoutAll(): Observable<void> {
+    return this.api.post<void>(`${this.AUTH_BASE}/logout-all`, {}).pipe(
+      tap(() => this.tokenService.clearTokens()),
+      catchError(() => {
+        this.tokenService.clearTokens();
+        return of<void>(undefined);
+      })
+    );
+  }
 }

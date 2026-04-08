@@ -12,6 +12,12 @@ export const profileRoutes: Routes = [
     path: 'edit',
     loadComponent: () =>
       import('./pages/profile/profile.component').then(m => m.ProfileComponent)
+  },
+  {
+    // /profile/security — active sessions management
+    path: 'security',
+    loadComponent: () =>
+      import('./pages/security/security.component').then(m => m.SecurityComponent)
   }
   // NOTE: /profile/onboarding is intentionally kept as a top-level route in app.routes.ts
   // because it must render outside MainLayout (full-screen, no header/footer).

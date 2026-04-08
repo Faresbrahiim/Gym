@@ -40,6 +40,9 @@ builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<IRecoveryCodeRepository, RecoveryCodeRepository>();
 builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 builder.Services.AddScoped<AdminSeeder>();
+// Immediate Session Invalidation — JTI Blacklist  author: Anas
+builder.Services.AddScoped<IRevokedTokenRepository, RevokedTokenRepository>();
+builder.Services.AddHostedService<RevokedTokenCleanupService>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
@@ -100,10 +103,19 @@ builder.Services
             Console.WriteLine(context.Exception);
             return Task.CompletedTask;
         },
-        OnTokenValidated = context =>
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
+        OnTokenValidated = async context =>
         {
-            Console.WriteLine("JWT VALIDATED SUCCESSFULLY");
-            return Task.CompletedTask;
+            var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+
+            if (!string.IsNullOrEmpty(jti))
+            {
+                var repo = context.HttpContext.RequestServices
+                    .GetRequiredService<IRevokedTokenRepository>();
+
+                if (await repo.IsRevoked(jti))
+                    context.Fail("Token has been revoked.");
+            }
         }
     };
 });

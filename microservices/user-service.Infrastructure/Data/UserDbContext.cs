@@ -23,6 +23,9 @@ namespace user_service.Infrastructure.Data
 
         public DbSet<UserToken> UserTokens => Set<UserToken>();
 
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
+        public DbSet<RevokedToken> RevokedTokens => Set<RevokedToken>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
