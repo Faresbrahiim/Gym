@@ -1,13 +1,13 @@
-package com.gym.membershipservice.application.service;
+package com.gym.membershipservice.application.service.plan;
 
-import com.gym.membershipservice.application.dto.PlanUpdateRequestDTO;
+import com.gym.membershipservice.application.dto.Plan.PlanUpdateRequestDTO;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
-import com.gym.membershipservice.application.dto.PlanResponseDTO;
+import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
 import com.gym.membershipservice.api.mapper.PlanMapper;
-import com.gym.membershipservice.application.dto.PlanRequestDTO;
-import com.gym.membershipservice.application.port.out.PlanService;
+import com.gym.membershipservice.application.dto.Plan.PlanRequestDTO;
+import com.gym.membershipservice.application.port.PlanService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

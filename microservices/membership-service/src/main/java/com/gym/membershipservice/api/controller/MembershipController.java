@@ -1,9 +1,8 @@
 package com.gym.membershipservice.api.controller;
 
-import com.gym.membershipservice.application.dto.SubscriptionDTO;
-import com.gym.membershipservice.application.dto.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.out.MembershipService;
+import com.gym.membershipservice.application.port.MembershipService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

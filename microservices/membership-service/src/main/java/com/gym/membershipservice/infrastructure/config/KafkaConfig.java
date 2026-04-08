@@ -2,6 +2,7 @@ package com.gym.membershipservice.infrastructure.config;
 
 
 import com.gym.membershipservice.application.dto.kafka.UserRegisteredEvent;
+import com.gym.membershipservice.infrastructure.kafka.UserRegisteredEventDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;

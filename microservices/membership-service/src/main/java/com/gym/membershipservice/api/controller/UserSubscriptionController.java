@@ -2,7 +2,7 @@ package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
-import com.gym.membershipservice.application.port.out.SubscriptionService;
+import com.gym.membershipservice.application.port.SubscriptionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 

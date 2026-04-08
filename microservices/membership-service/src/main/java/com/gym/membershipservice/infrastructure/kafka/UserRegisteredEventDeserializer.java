@@ -1,4 +1,4 @@
-package com.gym.membershipservice.infrastructure.config;
+package com.gym.membershipservice.infrastructure.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gym.membershipservice.application.dto.kafka.UserRegisteredEvent;

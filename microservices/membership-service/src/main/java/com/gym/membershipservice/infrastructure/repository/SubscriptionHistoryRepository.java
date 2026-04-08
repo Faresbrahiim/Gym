@@ -7,7 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface SubscriptionHistoryRepository extends JpaRepository<SubscriptionHistory, UUID> {
-
-    // Corrected to query by the subscription's id through the relation
     List<SubscriptionHistory> findBySubscription_Id(UUID subscriptionId);
 }

@@ -1,13 +1,14 @@
-package com.gym.membershipservice.application.service;
+package com.gym.membershipservice.application.service.subscription;
 
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.out.PlanService;
-import com.gym.membershipservice.application.port.out.SubscriptionHistoryService;
-import com.gym.membershipservice.application.port.out.SubscriptionService;
+import com.gym.membershipservice.application.port.PlanService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionService;
+import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.stereotype.Service;

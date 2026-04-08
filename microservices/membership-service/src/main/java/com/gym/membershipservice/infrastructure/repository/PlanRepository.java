@@ -9,8 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PlanRepository extends JpaRepository<Plan, UUID> {
-
     List<Plan> findByStatus(PlanStatus status);
-    Optional<Plan> findByName(String name);
     Optional<Plan> findByStatusAndName(PlanStatus status, String name);
 }
