@@ -1,10 +1,10 @@
-package com.gym.membershipservice.application.service;
+package com.gym.membershipservice.application.service.membership;
 
-import com.gym.membershipservice.application.dto.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.out.MembershipService;
+import com.gym.membershipservice.application.port.MembershipService;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.stereotype.Service;
 

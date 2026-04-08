@@ -1,6 +1,6 @@
-package com.gym.membershipservice.application.port.out;
+package com.gym.membershipservice.application.port;
 
-import com.gym.membershipservice.application.dto.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 
 import java.util.List;

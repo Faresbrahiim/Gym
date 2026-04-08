@@ -1,8 +1,8 @@
-package com.gym.membershipservice.application.dto;
+package com.gym.membershipservice.application.dto.Plan;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 public class PlanRequestDTO {
 
@@ -12,11 +12,10 @@ public class PlanRequestDTO {
     private String description;
 
     @NotNull
-    @Positive
+    @Min(0) // allow 0
     private Double price;
 
-    @NotNull
-    @Positive
+
     private Integer durationInDays;
 
     // Getters & Setters

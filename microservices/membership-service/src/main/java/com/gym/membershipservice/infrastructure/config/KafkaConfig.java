@@ -1,60 +1,46 @@
 package com.gym.membershipservice.infrastructure.config;
 
+
+import com.gym.membershipservice.application.dto.kafka.UserRegisteredEvent;
+import com.gym.membershipservice.infrastructure.kafka.UserRegisteredEventDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.*;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
+// ------------------------------
+// Kafka Configuration
+// ------------------------------
 @Configuration
 public class KafkaConfig {
 
     private static final String BOOTSTRAP_SERVERS = "kafka:9092";
-    private static final String GROUP_ID = "membership-service"; // matches listener
 
-    // =========================
-    // Producer
-    // =========================
+    // ------------------------
+    // JSON Consumer Factory
+    // ------------------------
     @Bean
-    public ProducerFactory<String, String> producerFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        return new DefaultKafkaProducerFactory<>(props);
-    }
-
-    @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
-    }
-
-    // =========================
-    // Consumer
-    // =========================
-    @Bean
-    public ConsumerFactory<String, String> consumerFactory() {
+    public ConsumerFactory<String, UserRegisteredEvent> userRegisteredEventConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "membership-service-json");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // read from beginning if no offset
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserRegisteredEventDeserializer.class);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, UserRegisteredEvent> userRegisteredEventKafkaListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UserRegisteredEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-        factory.setMissingTopicsFatal(false); // optional: avoids crash if topic not ready
+        factory.setConsumerFactory(userRegisteredEventConsumerFactory());
         return factory;
     }
 }

@@ -1,7 +1,7 @@
 package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
-import com.gym.membershipservice.application.port.out.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

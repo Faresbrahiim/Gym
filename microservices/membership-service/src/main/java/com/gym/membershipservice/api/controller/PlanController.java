@@ -1,9 +1,9 @@
 package com.gym.membershipservice.api.controller;
 
-import com.gym.membershipservice.application.service.PlanServiceImpl;
-import com.gym.membershipservice.application.dto.PlanResponseDTO;
-import com.gym.membershipservice.application.dto.PlanRequestDTO;
-import com.gym.membershipservice.application.dto.PlanUpdateRequestDTO;
+import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
+import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
+import com.gym.membershipservice.application.dto.Plan.PlanRequestDTO;
+import com.gym.membershipservice.application.dto.Plan.PlanUpdateRequestDTO;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -1,8 +1,8 @@
-package com.gym.membershipservice.infrastructure.helper;
+package com.gym.membershipservice.infrastructure.scheduler;
 
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.out.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public class SubscriptionScheduler {
     }
 
     // --- Expire subscriptions ---
-    @Scheduled(fixedRate = 10000) // every 10s for testing
+    @Scheduled(fixedRate = 100000) // every 10s for testing
     @Transactional
     public void expireSubscriptions() {
         LocalDateTime now = LocalDateTime.now();
@@ -43,8 +43,8 @@ public class SubscriptionScheduler {
             }
         }
     }
-    // NOTE : when make sure u subtract one hour
-    @Scheduled(fixedRate = 10000)
+
+    @Scheduled(fixedRate = 100000)
     @Transactional
     public void reactivateFrozenSubscriptions() {
         LocalDateTime nowUtc = LocalDateTime.now(ZoneOffset.UTC);
