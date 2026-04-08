@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthCardComponent } from '../../../../shared/components/auth-card/auth-card.component';
 import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
 import { AuthService } from '../../services/auth.service';
+import { ErrorService } from '../../../../core/services/error.service';
 import { emailValidators } from '../../../../shared/validators/email.validator';
 
 @Component({
@@ -24,7 +25,7 @@ export class ForgotPasswordComponent {
 
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  constructor(private fb: FormBuilder, private authService: AuthService, private errorService: ErrorService) {
     this.forgotPasswordForm = this.fb.group({
       email: ['', emailValidators]
     });
@@ -46,9 +47,9 @@ export class ForgotPasswordComponent {
         this.isSubmitting.set(false);
         this.isSuccess.set(true);
       },
-      error: () => {
+      error: (err) => {
         this.isSubmitting.set(false);
-        this.errorMessage.set('Something went wrong. Please try again.');
+        this.errorMessage.set(this.errorService.extractMessage(err));
       }
     });
   }

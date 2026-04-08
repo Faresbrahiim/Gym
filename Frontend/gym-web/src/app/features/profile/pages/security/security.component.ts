@@ -4,6 +4,8 @@ import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../services/session.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { ErrorService } from '../../../../core/services/error.service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { Session } from '../../models/session.model';
 
 interface ParsedAgent {
@@ -43,8 +45,9 @@ function parseUserAgent(ua: string | null): ParsedAgent {
 })
 export class SecurityComponent implements OnInit {
 
-  isLoading      = signal(true);
-  hasError       = signal(false);
+  isLoading        = signal(true);
+  hasError         = signal(false);
+  loadErrorMessage = signal<string | null>(null);
   sessions       = signal<Session[]>([]);
   revokingIds    = signal<Set<string>>(new Set());
   isLoggingOutAll   = signal(false);
@@ -55,6 +58,8 @@ export class SecurityComponent implements OnInit {
   constructor(
     private sessionService: SessionService,
     private authService: AuthService,
+    private errorService: ErrorService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -69,6 +74,7 @@ export class SecurityComponent implements OnInit {
   private loadSessions(): void {
     this.isLoading.set(true);
     this.hasError.set(false);
+    this.loadErrorMessage.set(null);
 
     this.sessionService.getSessions().pipe(
       takeUntilDestroyed(this.destroyRef)
@@ -80,9 +86,10 @@ export class SecurityComponent implements OnInit {
         this.sessions.set(sorted);
         this.isLoading.set(false);
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
         this.hasError.set(true);
+        this.loadErrorMessage.set(this.errorService.extractMessage(err));
       }
     });
   }
@@ -146,10 +153,11 @@ export class SecurityComponent implements OnInit {
         updated.delete(tokenId);
         this.revokingIds.set(updated);
       },
-      error: () => {
+      error: (err) => {
         const updated = new Set(this.revokingIds());
         updated.delete(tokenId);
         this.revokingIds.set(updated);
+        this.toastService.error(this.errorService.extractMessage(err));
       }
     });
   }

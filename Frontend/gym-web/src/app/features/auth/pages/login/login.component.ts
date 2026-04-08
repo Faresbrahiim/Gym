@@ -10,6 +10,7 @@ import { AuthService } from '../../services/auth.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { TwoFactorStateService } from '../../services/two-factor-state.service';
 import { ProfileService } from '../../../profile/services/profile.service';
+import { ErrorService } from '../../../../core/services/error.service';
 import { LoginRequest } from '../../../../shared/models/auth/login-request.model';
 
 declare const google: any;
@@ -40,6 +41,7 @@ export class LoginComponent implements OnInit {
     private tokenService: TokenService,
     private twoFactorStateService: TwoFactorStateService,
     private profileService: ProfileService,
+    private errorService: ErrorService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -89,7 +91,7 @@ export class LoginComponent implements OnInit {
     },
     error: (err) => {
       this.isLoading.set(false);
-      this.errorMessage.set('Google login failed. Please try again.');
+      this.errorMessage.set(this.errorService.extractMessage(err));
     }
   });
 }
@@ -155,9 +157,11 @@ export class LoginComponent implements OnInit {
       next: (response) => this.handleLoginResponse(response, returnUrl),
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.status === 401
-          ? 'Invalid email or password.'
-          : 'Something went wrong. Please try again.');
+        this.errorMessage.set(
+          err?.status === 401
+            ? 'Invalid email or password.'
+            : this.errorService.extractMessage(err)
+        );
       }
     });
   }
@@ -179,9 +183,11 @@ export class LoginComponent implements OnInit {
       next: (response) => this.handleLoginResponse(response, returnUrl),
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.status === 401
-          ? 'Invalid email or password.'
-          : 'Something went wrong. Please try again.');
+        this.errorMessage.set(
+          err?.status === 401
+            ? 'Invalid email or password.'
+            : this.errorService.extractMessage(err)
+        );
       }
     });
   }

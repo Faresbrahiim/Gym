@@ -6,6 +6,7 @@ import { AuthCardComponent } from '../../../../shared/components/auth-card/auth-
 import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
 import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
 import { AuthService } from '../../services/auth.service';
+import { ErrorService } from '../../../../core/services/error.service';
 import { strongPasswordValidators, passwordMatchValidator } from '../../../../shared/validators/password.validator';
 
 @Component({
@@ -33,7 +34,8 @@ export class ChangePasswordComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private errorService: ErrorService
   ) {}
 
   ngOnInit(): void {
@@ -74,7 +76,7 @@ export class ChangePasswordComponent implements OnInit {
         if (err?.status === 400 || err?.status === 403 || err?.status === 404) {
           this.errorMessage.set('This reset link is invalid or has expired. Please request a new one.');
         } else {
-          this.errorMessage.set('Something went wrong. Please try again.');
+          this.errorMessage.set(this.errorService.extractMessage(err));
         }
       }
     });

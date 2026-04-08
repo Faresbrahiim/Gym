@@ -7,6 +7,7 @@ import { AuthBannerComponent } from '../../../../shared/components/auth-banner/a
 import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
 import { PasswordRulesComponent } from '../../../../shared/components/password-rules/password-rules.component';
 import { AuthService } from '../../services/auth.service';
+import { ErrorService } from '../../../../core/services/error.service';
 import { strongPasswordValidators, passwordMatchValidator } from '../../../../shared/validators/password.validator';
 import { emailValidators } from '../../../../shared/validators/email.validator';
 
@@ -46,7 +47,8 @@ export class SetupPasswordComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private errorService: ErrorService
   ) {}
 
   ngOnInit(): void {
@@ -89,7 +91,7 @@ export class SetupPasswordComponent implements OnInit {
         if (err?.status === 400 || err?.status === 403 || err?.status === 404) {
           this.errorMessage.set('This invitation link is invalid or has already been used. Please contact your administrator.');
         } else {
-          this.errorMessage.set('Something went wrong. Please try again.');
+          this.errorMessage.set(this.errorService.extractMessage(err));
         }
       }
     });
@@ -111,9 +113,9 @@ export class SetupPasswordComponent implements OnInit {
         this.isResending.set(false);
         this.resendSuccess.set(true);
       },
-      error: () => {
+      error: (err) => {
         this.isResending.set(false);
-        this.resendError.set('Something went wrong. Please try again.');
+        this.resendError.set(this.errorService.extractMessage(err));
       }
     });
   }
