@@ -24,14 +24,11 @@ declare const google: any;
 })
 export class LoginComponent implements OnInit {
 
-  showUserPassword = false;
-  showCoachPassword = false;
-
+  showPassword = false;
   isLoading    = signal(false);
   errorMessage = signal<string | null>(null);
 
-  userLoginForm: FormGroup;
-  coachLoginForm: FormGroup;
+  loginForm: FormGroup;
 
   private readonly destroyRef = inject(DestroyRef);
 
@@ -45,74 +42,47 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute
   ) {
-    this.userLoginForm = this.fb.group({
+    this.loginForm = this.fb.group({
       email:    ['', emailValidators],
-      password: ['', Validators.required],
-      rememberPassword: [false]
-    });
-
-    this.coachLoginForm = this.fb.group({
-      email:    ['', emailValidators],
-      password: ['', Validators.required],
-      rememberPassword: [false]
+      password: ['', Validators.required]
     });
   }
 
-ngOnInit(): void {
-  this.initializeGoogleLogin();
-
-  const savedEmail = localStorage.getItem('rememberedEmail');
-
-  if (savedEmail) {
-    this.userLoginForm.patchValue({
-      email: savedEmail,
-      rememberPassword: true
-    });
-
-    this.coachLoginForm.patchValue({
-      email: savedEmail,
-      rememberPassword: true
-    });
+  ngOnInit(): void {
+    this.initializeGoogleLogin();
   }
-}
+
   private initializeGoogleLogin(): void {
-  google.accounts.id.initialize({
-  client_id: '863501968602-m5op5onnboc6pv7abk0d3bhdncqt8ffb.apps.googleusercontent.com',
-  callback: (response: any) => this.handleGoogleResponse(response)
-  });
+    google.accounts.id.initialize({
+      client_id: '863501968602-m5op5onnboc6pv7abk0d3bhdncqt8ffb.apps.googleusercontent.com',
+      callback: (response: any) => this.handleGoogleResponse(response)
+    });
 
-    // Render buttons into custom placeholders
-    const userBtn = document.getElementById('google-user-btn');
-    const coachBtn = document.getElementById('google-coach-btn');
-
-    if (userBtn) {
-      google.accounts.id.renderButton(userBtn, { theme: 'outline', size: 'large', width: '250' });
-    }
-    if (coachBtn) {
-      google.accounts.id.renderButton(coachBtn, { theme: 'outline', size: 'large', width: '250' });
+    const btn = document.getElementById('google-btn');
+    if (btn) {
+      google.accounts.id.renderButton(btn, { theme: 'outline', size: 'large', width: '250' });
     }
   }
 
   private handleGoogleResponse(response: any): void {
-  if (!response?.credential) return;
+    if (!response?.credential) return;
 
-  this.isLoading.set(true);
-  this.errorMessage.set(null);
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
 
-  this.authService.loginWithGoogle({ token: response.credential }).subscribe({
-    next: (res) => {
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
-      this.handleLoginResponse(res, returnUrl);
-    },
-    error: (err) => {
-      this.isLoading.set(false);
-      this.errorMessage.set(this.errorService.extractMessage(err));
-    }
-  });
-}
+    this.authService.loginWithGoogle({ token: response.credential }).subscribe({
+      next: (res) => {
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+        this.handleLoginResponse(res, returnUrl);
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        this.errorMessage.set(this.errorService.extractMessage(err));
+      }
+    });
+  }
 
-  toggleUserPassword(): void  { this.showUserPassword  = !this.showUserPassword;  }
-  toggleCoachPassword(): void { this.showCoachPassword = !this.showCoachPassword; }
+  togglePassword(): void { this.showPassword = !this.showPassword; }
 
   private handleLoginResponse(response: any, returnUrl: string): void {
     if (response.requiresTwoFactor && response.userId) {
@@ -155,55 +125,17 @@ ngOnInit(): void {
     });
   }
 
-  onUserLoginSubmit(): void {
+  onSubmit(): void {
     if (this.isLoading()) return;
-    if (this.userLoginForm.invalid) {
-      this.userLoginForm.markAllAsTouched();
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       return;
     }
-    const { email, rememberPassword } = this.userLoginForm.value;
 
-    if (rememberPassword) {
-    localStorage.setItem('rememberedEmail', email);
-    } else {
-    localStorage.removeItem('rememberedEmail');
-    }
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const credentials: LoginRequest = this.userLoginForm.value;
-    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
-
-    this.authService.login(credentials).subscribe({
-      next: (response) => this.handleLoginResponse(response, returnUrl),
-      error: (err) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(
-          err?.status === 401
-            ? 'Invalid email or password.'
-            : this.errorService.extractMessage(err)
-        );
-      }
-    });
-  }
-
-  onCoachLoginSubmit(): void {
-    if (this.isLoading()) return;
-    if (this.coachLoginForm.invalid) {
-      this.coachLoginForm.markAllAsTouched();
-      return;
-    }
-    const { email, rememberPassword } = this.coachLoginForm.value;
-
-    if (rememberPassword) {
-    localStorage.setItem('rememberedEmail', email);
-    } else {
-    localStorage.removeItem('rememberedEmail');
-    }
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
-
-    const credentials: LoginRequest = this.coachLoginForm.value;
+    const credentials: LoginRequest = this.loginForm.value;
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
 
     this.authService.login(credentials).subscribe({
