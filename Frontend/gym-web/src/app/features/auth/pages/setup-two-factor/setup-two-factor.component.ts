@@ -23,6 +23,7 @@ export class SetupTwoFactorComponent implements OnInit {
   recoveryCodes = signal<string[]>([]);
   isConfirming = signal(false);
   confirmError = signal<string | null>(null);
+  copied = signal(false);
 
   codeForm: FormGroup;
 
@@ -96,5 +97,12 @@ export class SetupTwoFactorComponent implements OnInit {
     this.codeForm.reset();
     this.confirmError.set(null);
     this.loadSetup();
+  }
+
+  copyRecoveryCodes(): void {
+    navigator.clipboard.writeText(this.recoveryCodes().join('\n')).then(() => {
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2500);
+    });
   }
 }
