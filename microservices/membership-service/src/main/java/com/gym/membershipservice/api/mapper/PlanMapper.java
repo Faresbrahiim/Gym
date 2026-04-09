@@ -1,8 +1,8 @@
 package com.gym.membershipservice.api.mapper;
 
 import com.gym.membershipservice.application.entity.Plan;
-import com.gym.membershipservice.application.dto.PlanResponseDTO;
-import com.gym.membershipservice.application.dto.PlanRequestDTO;
+import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
+import com.gym.membershipservice.application.dto.Plan.PlanRequestDTO;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import java.util.List;
 import java.util.stream.Collectors;

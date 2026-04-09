@@ -1,4 +1,4 @@
-package com.gym.membershipservice.application.port.out;
+package com.gym.membershipservice.application.port;
 
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
@@ -31,5 +31,7 @@ public interface SubscriptionService {
     List<SubscriptionHistory> getSubscriptionHistory(UUID subscriptionId);
     Subscription freezeSubscription(UUID subscriptionId, LocalDateTime freezeEnd);
 //    void checkAndActivateFrozenSubscriptions();
+    public Subscription createFreeSubscription(UUID userId) ;
+
 
 }

@@ -1,4 +1,4 @@
-package com.gym.membershipservice.application.dto;
+package com.gym.membershipservice.application.dto.Plan;
 
 import java.util.UUID;
 

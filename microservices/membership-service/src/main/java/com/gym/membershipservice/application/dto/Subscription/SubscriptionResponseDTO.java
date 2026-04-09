@@ -1,4 +1,4 @@
-package com.gym.membershipservice.application.dto;
+package com.gym.membershipservice.application.dto.Subscription;
 
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 
