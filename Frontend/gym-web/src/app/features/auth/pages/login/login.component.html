@@ -1,0 +1,116 @@
+<!-- Main Wrapper -->
+<div class="main-wrapper authendication-pages">
+
+  <!-- Page Content -->
+  <div class="content">
+    <div class="container wrapper no-padding">
+      <div class="row no-margin vph-100">
+
+        <div class="col-12 col-sm-12 col-lg-6 no-padding">
+          <app-auth-banner
+            modifierClass="login"
+            buttonText="Login"
+            description="Log in right away for our advanced sports software solutions, created to address issues in regular sporting events and activities.">
+          </app-auth-banner>
+        </div>
+
+        <div class="col-12 col-sm-12 col-lg-6 no-padding">
+          <div class="dull-pg">
+            <div class="row no-margin vph-100 d-flex align-items-center justify-content-center">
+              <div class="col-sm-10 col-md-10 col-lg-10 mx-auto">
+
+                <app-auth-card>
+
+                  <h2>Welcome Back</h2>
+                  <p>Login into your account</p>
+
+                  @if (errorMessage()) {
+                    <div class="alert alert-danger" role="alert">
+                      {{ errorMessage() }}
+                    </div>
+                  }
+
+                  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+                    <div class="form-group">
+                      <div class="group-img">
+                        <i class="feather-user"></i>
+                        <input type="text" class="form-control" placeholder="Email" formControlName="email">
+                      </div>
+                      @if (loginForm.get('email')?.touched && loginForm.get('email')?.invalid) {
+                        <div class="text-danger small mt-1">
+                          @if (loginForm.get('email')?.errors?.['required']) {
+                            <span>Email is required.</span>
+                          }
+                          @if (loginForm.get('email')?.errors?.['pattern']) {
+                            <span>Enter a valid email address (e.g. name@domain.com).</span>
+                          }
+                        </div>
+                      }
+                    </div>
+
+                    <div class="form-group">
+                      <div class="pass-group group-img">
+                        <i class="toggle-password"
+                           [class.feather-eye]="showPassword"
+                           [class.feather-eye-off]="!showPassword"
+                           (click)="togglePassword()"></i>
+                        <input [type]="showPassword ? 'text' : 'password'"
+                               class="form-control pass-input"
+                               placeholder="Password"
+                               formControlName="password">
+                      </div>
+                      @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors?.['required']) {
+                        <div class="text-danger small mt-1">
+                          <span>Password is required.</span>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="form-group d-sm-flex align-items-center justify-content-between">
+                      <div class="form-check form-switch d-flex align-items-center justify-content-start">
+                        <input class="form-check-input" type="checkbox" id="remember-pass">
+                        <label class="form-check-label" for="remember-pass">Remember Password</label>
+                      </div>
+                      <span><a routerLink="/forgot-password" class="forgot-pass">Forgot Password</a></span>
+                    </div>
+
+                    <app-loading-button
+                      [loading]="isLoading()"
+                      cssClass="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block">
+                      Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                    </app-loading-button>
+
+                    <div class="form-group">
+                      <div class="login-options text-center">
+                        <span class="text">Or continue with</span>
+                      </div>
+                    </div>
+
+                    <div class="form-group mb-0">
+                      <ul class="social-login d-flex justify-content-center align-items-center">
+                        <li class="text-center">
+                          <button id="google-btn" type="button" class="btn btn-google">
+                            <img src="/assets/img/icons/google.svg" alt="Google"> Sign in with Google
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+
+                  </form>
+
+                  <p card-footer>Don't have an account? <a routerLink="/register">Sign up!</a></p>
+
+                </app-auth-card>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- /Page Content -->
+</div>
+<!-- /Main Wrapper -->

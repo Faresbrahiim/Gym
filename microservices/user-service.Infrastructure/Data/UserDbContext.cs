@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using user_service.Application.Enums;
-using user_service.Application.Entities;
+using user_service.Application.Domain.Enums;
+using user_service.Application.Domain.Entities;
 
 namespace user_service.Infrastructure.Data
 {
@@ -18,8 +18,13 @@ namespace user_service.Infrastructure.Data
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
         public DbSet<CoachAvailability> CoachAvailabilities => Set<CoachAvailability>();
-
+        public DbSet<RecoveryCode> RecoveryCodes => Set<RecoveryCode>();
         public DbSet<ExternalLogin> ExternalLogins { get; set; } = null!;
+
+        public DbSet<UserToken> UserTokens => Set<UserToken>();
+
+        // Immediate Session Invalidation — JTI Blacklist  author: Anas
+        public DbSet<RevokedToken> RevokedTokens => Set<RevokedToken>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,6 +34,8 @@ namespace user_service.Infrastructure.Data
             // Explicit PostgreSQL enum names (production-safe)
             modelBuilder.HasPostgresEnum<UserRole>("user_role");
             modelBuilder.HasPostgresEnum<UserStatus>("user_status");
+
+
 
             
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserDbContext).Assembly);

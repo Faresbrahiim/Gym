@@ -1,0 +1,18 @@
+﻿using user_service.Application.Domain.Entities;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace user_service.Application.Contracts.Repositories
+{
+    public interface IRefreshTokenRepository
+    {
+        Task Create(RefreshToken token, CancellationToken cancellationToken = default);
+        Task<RefreshToken?> GetValidToken(string tokenHash, CancellationToken cancellationToken = default);
+        Task Revoke(RefreshToken token, CancellationToken cancellationToken = default);
+        Task RevokeAllTokens(Guid userId, CancellationToken cancellationToken = default);
+        Task<List<RefreshToken>> GetActiveTokens(Guid userId);
+
+        Task<RefreshToken?> GetById(Guid userId, Guid tokenId);
+    }
+}

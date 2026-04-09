@@ -1,0 +1,188 @@
+<!-- Main Wrapper -->
+<div class="main-wrapper authendication-pages">
+
+  <!-- Page Content -->
+  <div class="content">
+    <div class="container wrapper no-padding">
+      <div class="row no-margin vph-100">
+
+        <div class="col-12 col-sm-12 col-md-12 col-lg-6 no-padding">
+          <app-auth-banner
+            modifierClass="register"
+            buttonText="register Now"
+            description="Register now for our innovative sports software solutions, designed to tackle challenges in everyday sports activities and events.">
+          </app-auth-banner>
+        </div>
+
+        <div class="col-12 col-sm-12 col-md-12 col-lg-6 no-padding">
+          <div class="dull-pg">
+            <div class="row no-margin vph-100 d-flex align-items-center justify-content-center">
+              <div class="col-sm-10 col-md-10 col-lg-10 mx-auto">
+
+                <app-auth-card>
+
+                  @if (registrationSuccess()) {
+
+                    <!-- Success State -->
+                    <div class="text-center py-4">
+                      <div class="mb-3">
+                        <i class="feather-check-circle" style="font-size: 3rem; color: #28a745;"></i>
+                      </div>
+                      <h4 class="mb-2">Account Created!</h4>
+                      <p class="text-muted mb-1">Your account has been successfully created.</p>
+                      <p class="text-muted mb-4">Please check your email and verify your address before signing in.</p>
+                      <button class="btn btn-secondary register-btn w-100" (click)="goToLogin()">
+                        Go to Sign In<i class="feather-arrow-right-circle ms-2"></i>
+                      </button>
+                    </div>
+
+                  } @else {
+
+                    <!-- Registration Form -->
+                    <h2>Get Started With Dreamsports</h2>
+                    <p>Ignite your sports journey with DreamSports and get started now.</p>
+
+                    @if (errorMessage()) {
+                      <div class="alert alert-danger" role="alert">
+                        {{ errorMessage() }}
+                      </div>
+                    }
+
+                    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+
+                      <div class="form-group">
+                        <div class="group-img">
+                          <i class="feather-user"></i>
+                          <input type="text" class="form-control" placeholder="First Name" formControlName="firstName">
+                        </div>
+                        @if (registerForm.get('firstName')?.touched && registerForm.get('firstName')?.errors?.['required']) {
+                          <div class="text-danger small mt-1">
+                            <span>First name is required.</span>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="form-group">
+                        <div class="group-img">
+                          <i class="feather-user"></i>
+                          <input type="text" class="form-control" placeholder="Last Name" formControlName="lastName">
+                        </div>
+                        @if (registerForm.get('lastName')?.touched && registerForm.get('lastName')?.errors?.['required']) {
+                          <div class="text-danger small mt-1">
+                            <span>Last name is required.</span>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="form-group">
+                        <div class="group-img">
+                          <i class="feather-user"></i>
+                          <input type="text" class="form-control" placeholder="Username" formControlName="username">
+                        </div>
+                        @if (registerForm.get('username')?.touched && registerForm.get('username')?.errors?.['required']) {
+                          <div class="text-danger small mt-1">
+                            <span>Username is required.</span>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="form-group">
+                        <div class="group-img">
+                          <i class="feather-mail"></i>
+                          <input type="text" class="form-control" placeholder="Email" formControlName="email">
+                        </div>
+                        @if (registerForm.get('email')?.touched && registerForm.get('email')?.invalid) {
+                          <div class="text-danger small mt-1">
+                            @if (registerForm.get('email')?.errors?.['required']) {
+                              <span>Email is required.</span>
+                            }
+                            @if (registerForm.get('email')?.errors?.['pattern']) {
+                              <span>Enter a valid email address (e.g. name@domain.com).</span>
+                            }
+                          </div>
+                        }
+                      </div>
+
+                      <div class="form-group">
+                        <div class="pass-group group-img">
+                          <i class="toggle-password" [class.feather-eye]="showPassword" [class.feather-eye-off]="!showPassword" (click)="togglePassword()"></i>
+                          <input [type]="showPassword ? 'text' : 'password'" class="form-control pass-input" placeholder="Password" formControlName="password">
+                        </div>
+                        @if (registerForm.get('password')?.touched && registerForm.get('password')?.errors?.['required']) {
+                          <div class="text-danger small mt-1">
+                            <span>Password is required.</span>
+                          </div>
+                        }
+                        <app-password-rules
+                          [password]="registerForm.get('password')?.value ?? ''"
+                          [touched]="!!registerForm.get('password')?.touched">
+                        </app-password-rules>
+                      </div>
+
+                      <div class="form-group">
+                        <div class="pass-group group-img">
+                          <i class="toggle-password-confirm" [class.feather-eye]="showConfirmPassword" [class.feather-eye-off]="!showConfirmPassword" (click)="toggleConfirmPassword()"></i>
+                          <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-control pass-confirm" placeholder="Confirm Password" formControlName="confirmPassword">
+                        </div>
+                        @if (registerForm.get('confirmPassword')?.touched && registerForm.errors?.['passwordMismatch']) {
+                          <div class="text-danger small mt-1">
+                            <span>Passwords do not match.</span>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="form-check d-flex justify-content-start align-items-center policy">
+                        <div class="d-inline-block">
+                          <input class="form-check-input" type="checkbox" value="" id="policy">
+                        </div>
+                        <label class="form-check-label" for="policy">By continuing you indicate that you read and agreed to the <a href="#">Terms of Use</a></label>
+                      </div>
+
+                      <app-loading-button
+                        [loading]="isLoading()"
+                        cssClass="btn btn-secondary register-btn d-inline-flex justify-content-center align-items-center w-100 btn-block">
+                        Create Account<i class="feather-arrow-right-circle ms-2"></i>
+                      </app-loading-button>
+
+                      <div class="form-group">
+                        <div class="login-options text-center">
+                          <span class="text">Or continue with</span>
+                        </div>
+                      </div>
+                      <div class="form-group mb-0">
+                        <ul class="social-login d-flex justify-content-center align-items-center">
+                           <li class="text-center">
+                           <button id="google-register-btn" type="button"
+                              class="btn btn-social d-flex align-items-center justify-content-center">
+                              <img src="/assets/img/icons/google.svg" class="img-fluid" alt="Google">
+                              <span>Google</span>
+                            </button>
+                            </li>
+                          <li class="text-center">
+                            <button type="button" class="btn btn-social d-flex align-items-center justify-content-center">
+                              <img src="/assets/img/icons/facebook.svg" class="img-fluid" alt="Facebook">
+                              <span>Facebook</span>
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+
+                    </form>
+
+                  }
+
+                  <p card-footer>Have an account? <a routerLink="/login">Sign In!</a></p>
+
+                </app-auth-card>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <!-- /Page Content -->
+</div>
+<!-- /Main Wrapper -->

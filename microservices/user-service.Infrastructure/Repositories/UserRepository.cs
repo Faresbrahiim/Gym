@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using user_service.Application.Common;
-using user_service.Application.DTOs;
-using user_service.Application.Entities;
-using user_service.Application.Enums;
-using user_service.Application.Interfaces;
 using user_service.Infrastructure.Data;
+using user_service.Application.Contracts.Repositories;
+using user_service.Application.Contracts.Services;
+using user_service.Application.Domain.Entities;
 
 namespace user_service.Infrastructure.Repositories
 {
@@ -75,62 +73,15 @@ namespace user_service.Infrastructure.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
         }
-        public async Task<PagedResult<UserListDto>> GetUsersForAdminAsync(
-    int page,
-    int pageSize,
-    string? search,
-    UserRole? role,
-    UserStatus? status)
+        public async Task<User?> GetFullById(
+        Guid userId,
+        CancellationToken cancellationToken = default)
         {
-            var query = _context.Users
+            return await _context.Users
                 .Include(u => u.Profile)
                 .Include(u => u.MemberProfile)
-                .AsQueryable();
-
-            //  Search
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Where(u =>
-                    u.Email.Contains(search) ||
-                    u.Username.Contains(search));
-            }
-
-            //  Filter by Role
-            if (role.HasValue)
-                query = query.Where(u => u.Role == role.Value);
-
-            //  Filter by Status
-            if (status.HasValue)
-                query = query.Where(u => u.Status == status.Value);
-
-            var totalCount = await query.CountAsync();
-
-            var users = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(u => new UserListDto
-                {
-                    Id = u.Id,
-                    Email = u.Email,
-                    Username = u.Username,
-                    Role = u.Role.ToString(),
-                    Status = u.Status.ToString(),
-                    FirstName = u.Profile.FirstName,
-                    LastName = u.Profile.LastName,
-                    Phone = u.Profile.Phone,
-                    FitnessGoal = u.MemberProfile != null
-                        ? u.MemberProfile.FitnessGoal
-                        : null
-                })
-                .ToListAsync();
-
-            return new PagedResult<UserListDto>
-            {
-                Items = users,
-                TotalCount = totalCount,
-                Page = page,
-                PageSize = pageSize
-            };
+                .Include(u => u.CoachProfile)
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         }
     }
 }

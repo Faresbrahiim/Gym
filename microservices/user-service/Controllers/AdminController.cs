@@ -1,39 +1,56 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using user_service.Application.Enums;
-using user_service.Application.Interfaces;
+using System.Security.Claims;
+using user_service.Application.Domain.Authorization;
+using user_service.Application.DTOs;
+using user_service.Application.Contracts.Repositories;
+using user_service.Application.Contracts.Services;
+using user_service.Authorization;
 
 namespace user_service.Controllers
 {
+    [Route("api/admin/users")]
     [ApiController]
-    [Route("api/admin")]
-    [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
-        private readonly IUserService _userService;
+        private readonly IAdminService _adminService;
 
-        public AdminController(IUserService userService)
+        public AdminController(IAdminService adminService)
         {
-            _userService = userService;
+            _adminService = adminService;
         }
 
-        [HttpGet("users")]
-        public async Task<IActionResult> GetUsers(
-        int page = 1,
-        int pageSize = 10,
-        string? search = null,
-        UserRole? role = null,
-        UserStatus? status = null)
+        [Authorize(Policy = Permissions.UsersCreate)]
+        [HttpPost("member")]
+        public async Task<IActionResult> CreateMember(
+           [FromBody] CreateMemberByAdminDto dto,
+           CancellationToken cancellationToken)
         {
-            var result = await _userService.GetUsersForAdminAsync(
-                page,
-                pageSize,
-                search,
-                role,
-                status);
+            var performedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            return Ok(result);
+            if (string.IsNullOrWhiteSpace(performedBy))
+                return Unauthorized();
+
+            await _adminService.CreateMemberAsync(dto, performedBy, cancellationToken);
+
+            return Ok(new { message = "Member invitation sent." });
+        }
+
+        [Authorize(Policy = Permissions.UsersCreate)]
+        [HttpPost("coach")]
+        public async Task<IActionResult> CreateCoach(
+            [FromBody] CreateCoachByAdminDto dto,
+            CancellationToken cancellationToken)
+        {
+            var performedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrWhiteSpace(performedBy))
+                return Unauthorized();
+
+            await _adminService.CreateCoachAsync(dto, performedBy, cancellationToken);
+
+            return Ok(new { message = "Coach invitation sent." });
         }
     }
 }

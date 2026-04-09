@@ -1,0 +1,88 @@
+<div class="admin-shell" [class.sidebar-collapsed]="sidebarCollapsed()">
+
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <aside class="admin-sidebar">
+
+    <div class="sidebar-header">
+      <img src="assets/img/logo.svg" alt="Logo" class="sidebar-logo">
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <!-- Overview group -->
+      <ul class="nav-group">
+        <li>
+          <a routerLink="/admin/dashboard"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }"
+             class="nav-item">
+            <i class="feather-grid nav-icon"></i>
+            <span class="nav-label">Dashboard</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Users group -->
+      <p class="nav-group-label">Users</p>
+      <ul class="nav-group">
+        <li>
+          <a routerLink="/admin/users/invite"
+             routerLinkActive="active"
+             class="nav-item">
+            <i class="feather-user-plus nav-icon"></i>
+            <span class="nav-label">Invite User</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Account group -->
+      <p class="nav-group-label">Account</p>
+      <ul class="nav-group">
+        <li>
+          <a routerLink="/admin/profile"
+             routerLinkActive="active"
+             class="nav-item">
+            <i class="feather-user nav-icon"></i>
+            <span class="nav-label">My Profile</span>
+          </a>
+        </li>
+      </ul>
+
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-logout-btn" type="button" (click)="onLogout()">
+        <i class="feather-log-out nav-icon"></i>
+        <span class="nav-label">Logout</span>
+      </button>
+    </div>
+
+  </aside>
+  <!-- ── /Sidebar ──────────────────────────────────────────── -->
+
+  <div class="admin-main">
+
+    <!-- ── Topbar ─────────────────────────────────────────── -->
+    <header class="admin-topbar">
+      <button class="topbar-toggle" type="button" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+        <i class="feather-menu"></i>
+      </button>
+
+      <div class="topbar-right">
+        <span class="topbar-admin-email">
+          <i class="feather-user"></i>
+          {{ adminEmail() }}
+        </span>
+      </div>
+    </header>
+    <!-- ── /Topbar ─────────────────────────────────────────── -->
+
+    <!-- ── Page content ───────────────────────────────────── -->
+    <main class="admin-content">
+      <router-outlet />
+    </main>
+    <!-- ── /Page content ──────────────────────────────────── -->
+
+  </div>
+
+</div>

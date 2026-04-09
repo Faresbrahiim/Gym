@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using user_service.Application.Domain.Authorization;
 
 namespace user_service.Authorization
 {

@@ -8,6 +8,9 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Confluent.Kafka" Version="2.6.0" />
+		<PackageReference Include="Otp.NET" Version="1.4.1" />
+		<PackageReference Include="QRCoder" Version="1.7.0" />
 		<ProjectReference Include="..\user-service.Application\user-service.Application.csproj" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
 		
@@ -17,6 +20,8 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="MimeKit" Version="4.15.0" />
+		<PackageReference Include="MailKit" Version="4.15.0" />
 		<PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />

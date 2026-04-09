@@ -1,0 +1,279 @@
+<!-- Loading -->
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}
+
+<!-- Error -->
+@if (!isLoading() && hasError()) {
+  <div class="content court-bg">
+    <div class="container">
+      <div class="text-center py-5">
+        <p class="text-muted mb-3">Unable to load profile. Please try again.</p>
+        <button class="btn btn-secondary" (click)="retry()">Retry</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Profile content -->
+@if (!isLoading() && !hasError() && userMe()) {
+
+  <!-- Breadcrumb -->
+  <section class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container">
+      <h1 class="text-white">My Profile</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>My Profile</li>
+      </ul>
+    </div>
+  </section>
+  <!-- /Breadcrumb -->
+
+  <!-- Dashboard Menu -->
+  <div class="dashboard-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="dashboard-menu">
+            <ul>
+              <li>
+                <a routerLink="/home">
+                  <img src="assets/img/icons/dashboard-icon.svg" alt="Icon">
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0);">
+                  <img src="assets/img/icons/booking-icon.svg" alt="Icon">
+                  <span>My Bookings</span>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0);">
+                  <img src="assets/img/icons/chat-icon.svg" alt="Icon">
+                  <span>Chat</span>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0);">
+                  <img src="assets/img/icons/invoice-icon.svg" alt="Icon">
+                  <span>Invoices</span>
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0);">
+                  <img src="assets/img/icons/wallet-icon.svg" alt="Icon">
+                  <span>Wallet</span>
+                </a>
+              </li>
+              <li>
+                <a routerLink="/profile" class="active">
+                  <img src="assets/img/icons/profile-icon.svg" alt="Icon">
+                  <span>Profile</span>
+                </a>
+              </li>
+              <li>
+                <a routerLink="/profile/security">
+                  <img src="assets/img/icons/sessions.svg" alt="Icon">
+                  <span>Security</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- /Dashboard Menu -->
+
+  <!-- Page Content -->
+  <div class="content court-bg">
+    <div class="container">
+
+      <!-- ===== PROFILE HERO ===== -->
+      <div class="profile-detail-group">
+        <div class="card">
+          <div class="profile-set align-items-center">
+
+            <!-- Avatar -->
+            <div class="profile-set-image">
+              <img
+                [src]="avatarUrl"
+                (error)="onAvatarError($event)"
+                class="rounded-circle"
+                style="width:120px;height:120px;object-fit:cover;"
+                alt="Profile photo"
+              />
+            </div>
+
+            <!-- Name / role / contact -->
+            <div class="profile-set-content">
+              <h3>{{ fullName }}</h3>
+
+              <div class="rating-city d-flex align-items-center mb-2">
+                <span
+                  class="badge"
+                  [style.background]="roleBadgeColor"
+                  style="font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;color:#fff;">
+                  {{ roleLabel }}
+                </span>
+              </div>
+
+              <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
+                <li class="d-flex align-items-center me-4 mb-1">
+                  <img src="assets/img/icons/mail.svg" alt="Email" style="width:15px;margin-right:6px;">
+                  <h6 class="mb-0" style="color:#6B7385;">{{ userMe()!.email }}</h6>
+                </li>
+                @if (userMe()!.profile?.phone) {
+                  <li class="d-flex align-items-center mb-1">
+                    <img src="assets/img/icons/call.svg" alt="Phone" style="width:15px;margin-right:6px;">
+                    <h6 class="mb-0" style="color:#6B7385;">{{ userMe()!.profile!.phone }}</h6>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <!-- Edit CTA -->
+            <div class="ms-auto flex-shrink-0 mt-3 mt-md-0">
+              <a routerLink="/profile/edit" class="btn btn-secondary">
+                <i class="feather-edit-3 me-1"></i>Edit Profile
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <!-- /Profile Hero -->
+
+      <!-- ===== ACCOUNT INFORMATION ===== -->
+      <div class="profile-card">
+        <div class="profile-card-title">
+          <h4>Account Information</h4>
+        </div>
+        <div class="profile-contact-details" style="border-bottom:0;padding-bottom:0;margin-bottom:0;">
+          <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
+            <li>
+              <span>Full Name</span>
+              <h6>{{ fullName }}</h6>
+            </li>
+            <li>
+              <span>Username</span>
+              <h6>&#64;{{ userMe()!.username }}</h6>
+            </li>
+            <li>
+              <span>Email</span>
+              <h6>{{ userMe()!.email }}</h6>
+            </li>
+            <li>
+              <span>Role</span>
+              <h6>{{ roleLabel }}</h6>
+            </li>
+            @if (userMe()!.profile?.phone) {
+              <li>
+                <span>Phone</span>
+                <h6>{{ userMe()!.profile!.phone }}</h6>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+      <!-- /Account Information -->
+
+      <!-- ===== FITNESS PROFILE (MEMBER) ===== -->
+      @if (role === 'MEMBER' && userMe()!.memberProfile) {
+        <div class="profile-card">
+          <div class="profile-card-title">
+            <h4>Fitness Profile</h4>
+          </div>
+          <div class="profile-contact-details" style="border-bottom:0;padding-bottom:0;margin-bottom:0;">
+            <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
+              @if (userMe()!.memberProfile!.gender) {
+                <li>
+                  <span>Gender</span>
+                  <h6>{{ userMe()!.memberProfile!.gender }}</h6>
+                </li>
+              }
+              @if (userMe()!.memberProfile!.dateOfBirth) {
+                <li>
+                  <span>Date of Birth</span>
+                  <h6>{{ formattedDob }}</h6>
+                </li>
+              }
+              @if (userMe()!.memberProfile!.heightCm) {
+                <li>
+                  <span>Height</span>
+                  <h6>{{ userMe()!.memberProfile!.heightCm }} cm</h6>
+                </li>
+              }
+              @if (userMe()!.memberProfile!.weightKg) {
+                <li>
+                  <span>Weight</span>
+                  <h6>{{ userMe()!.memberProfile!.weightKg }} kg</h6>
+                </li>
+              }
+              @if (userMe()!.memberProfile!.fitnessGoal) {
+                <li>
+                  <span>Fitness Goal</span>
+                  <h6>{{ userMe()!.memberProfile!.fitnessGoal }}</h6>
+                </li>
+              }
+              @if (userMe()!.memberProfile!.experienceLevel !== null && userMe()!.memberProfile!.experienceLevel !== undefined) {
+                <li>
+                  <span>Experience Level</span>
+                  <h6>{{ experienceLabel }}</h6>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+      <!-- /Fitness Profile -->
+
+      <!-- ===== COACH PROFILE (COACH) ===== -->
+      @if (role === 'COACH' && userMe()!.coachProfile) {
+        <div class="profile-card">
+          <div class="profile-card-title">
+            <h4>Coach Profile</h4>
+          </div>
+          @if (userMe()!.coachProfile!.bio) {
+            <div class="profile-card-content info-about">
+              <p>{{ userMe()!.coachProfile!.bio }}</p>
+            </div>
+          }
+          <div class="profile-contact-details" style="border-bottom:0;padding-bottom:0;margin-bottom:0;">
+            <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
+              @if (userMe()!.coachProfile!.yearsOfExperience !== null && userMe()!.coachProfile!.yearsOfExperience !== undefined) {
+                <li>
+                  <span>Experience</span>
+                  <h6>{{ userMe()!.coachProfile!.yearsOfExperience }} years</h6>
+                </li>
+              }
+              @if (userMe()!.coachProfile!.certifications) {
+                <li>
+                  <span>Certifications</span>
+                  <h6>{{ userMe()!.coachProfile!.certifications }}</h6>
+                </li>
+              }
+              @if (userMe()!.coachProfile!.language) {
+                <li>
+                  <span>Language</span>
+                  <h6>{{ userMe()!.coachProfile!.language }}</h6>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+      <!-- /Coach Profile -->
+
+    </div>
+  </div>
+  <!-- /Page Content -->
+
+}

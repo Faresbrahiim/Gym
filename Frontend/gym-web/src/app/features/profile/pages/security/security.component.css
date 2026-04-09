@@ -1,0 +1,101 @@
+/* Session list */
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.session-item:last-child {
+  border-bottom: none;
+}
+
+/* Device icon circle */
+.session-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f5f6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #177c82;
+  font-size: 20px;
+}
+
+/* Info block */
+.session-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.session-os {
+  font-weight: 400;
+  color: #6B7385;
+}
+
+/* "This device" badge */
+.session-current-badge {
+  background: #e8f5f1;
+  color: #097E52;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+
+/* Meta row: IP · date */
+.session-meta {
+  font-size: 13px;
+  color: #6B7385;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.session-meta-sep {
+  margin: 0 2px;
+}
+
+/* "Current" label (replaces revoke button on current session) */
+.session-current-label {
+  font-size: 13px;
+  color: #097E52;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 575px) {
+  .session-item {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .session-action {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+}

@@ -1,0 +1,131 @@
+<!-- Header -->
+<header [class]="headerClass"
+        [class.fixed-top]="!isHome"
+        [style.background]="isHome && isScrolled() ? '#177c82' : null">
+  <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg header-nav">
+
+      <div class="navbar-header">
+        <a id="mobile_btn" href="javascript:void(0);" (click)="toggleMobileMenu()">
+          <span class="bar-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </a>
+        <a routerLink="/home" class="navbar-brand logo">
+          <img [src]="logoSrc" class="img-fluid" alt="Logo">
+        </a>
+      </div>
+
+      <div class="main-menu-wrapper" [class.open]="isMobileMenuOpen()">
+        <div class="menu-header">
+          <a routerLink="/home" class="menu-logo">
+            <img src="assets/img/logo-black.svg" class="img-fluid" alt="Logo">
+          </a>
+          <a id="menu_close" class="menu-close" href="javascript:void(0);" (click)="closeMobileMenu()">
+            <i class="fas fa-times"></i>
+          </a>
+        </div>
+        <ul class="main-nav">
+          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            <a routerLink="/home">Home</a>
+          </li>
+          <li class="has-submenu">
+            <a href="javascript:void(0);">Coaches <i class="fas fa-chevron-down"></i></a>
+            <ul class="submenu">
+              <li><a href="javascript:void(0);">Coaches Grid</a></li>
+              <li><a href="javascript:void(0);">Coaches List</a></li>
+            </ul>
+          </li>
+          <li class="has-submenu">
+            <a href="javascript:void(0);">User <i class="fas fa-chevron-down"></i></a>
+            <ul class="submenu">
+              <li routerLinkActive="active"><a routerLink="/home">User Dashboard</a></li>
+              <li routerLinkActive="active"><a routerLink="/profile">My Profile</a></li>
+            </ul>
+          </li>
+          <li class="login-link">
+            <a routerLink="/register">Sign Up</a>
+          </li>
+          <li class="login-link">
+            <a routerLink="/login">Sign In</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Right nav — unauthenticated: Login / Register -->
+      @if (!isAuthenticated) {
+        <ul class="nav header-navbar-rht">
+          <li class="nav-item">
+            <div class="nav-link btn btn-white log-register">
+              <a routerLink="/login"><span><i class="feather-users"></i></span>Login</a> / <a routerLink="/register">Register</a>
+            </div>
+          </li>
+        </ul>
+      }
+
+      <!-- Right nav — authenticated: notifications + user avatar -->
+      @if (isAuthenticated) {
+        <ul class="nav header-navbar-rht logged-in">
+
+          <!-- Notifications -->
+          <li class="nav-item dropdown noti-nav">
+            <a href="javascript:void(0);" class="dropdown-toggle nav-link position-relative" data-bs-toggle="dropdown">
+              <i class="feather-bell"></i> <span class="alert-bg"></span>
+            </a>
+            <div class="dropdown-menu notifications dropdown-menu-end">
+              <div class="topnav-dropdown-header">
+                <span class="notification-title">Notifications</span>
+              </div>
+              <div class="noti-content">
+                <ul class="notification-list">
+                  <li class="notification-message">
+                    <a href="javascript:void(0);">
+                      <div class="media d-flex">
+                        <span class="avatar">
+                          <img class="avatar-img" src="assets/img/profiles/avatar-01.jpg" alt="User">
+                        </span>
+                        <div class="media-body">
+                          <h6>No new notifications</h6>
+                          <p class="noti-details">You're all caught up</p>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+          <!-- /Notifications -->
+
+          <!-- User Menu -->
+          <li class="nav-item dropdown has-arrow logged-item">
+            <a href="javascript:void(0);" class="dropdown-toggle nav-link" data-bs-toggle="dropdown">
+              <span class="user-img">
+                <img class="rounded-circle" [src]="avatarUrl()" style="width:31px;height:31px;object-fit:cover;" [alt]="username">
+              </span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-end">
+              <div class="user-header">
+                <div class="avatar avatar-sm">
+                  <img [src]="avatarUrl()" alt="User" class="avatar-img rounded-circle" style="width:100%;height:100%;object-fit:cover;">
+                </div>
+                <div class="user-text">
+                  <h6>{{ username }}</h6>
+                  <a routerLink="/profile" class="text-profile mb-0">Go to Profile</a>
+                </div>
+              </div>
+              <p><a class="dropdown-item" routerLink="/profile">My Profile</a></p>
+              <p><a class="dropdown-item" href="javascript:void(0);" (click)="onLogout()">Logout</a></p>
+            </div>
+          </li>
+          <!-- /User Menu -->
+
+        </ul>
+      }
+
+    </nav>
+  </div>
+</header>
+<!-- /Header -->

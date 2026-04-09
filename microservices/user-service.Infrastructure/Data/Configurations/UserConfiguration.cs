@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using user_service.Application.Entities;
-using user_service.Application.Enums;
+using user_service.Application.Domain.Entities;
+using user_service.Application.Domain.Enums;
 
 namespace user_service.Infrastructure.Data.Configurations
 
@@ -56,6 +56,9 @@ namespace user_service.Infrastructure.Data.Configurations
 
             builder.HasIndex(u => u.Role);
             builder.HasIndex(u => u.Status);
+
+            builder.Property(u => u.TwoFactorSecret)
+       .HasMaxLength(200);
         }
     }
 }

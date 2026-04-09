@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using user_service.Application.Entities;
+using user_service.Application.Domain.Entities;
 
 namespace user_service.Infrastructure.Data.Configurations
 
@@ -31,6 +31,12 @@ namespace user_service.Infrastructure.Data.Configurations
 
             builder.Property(t => t.IpAddress)
                 .HasMaxLength(45);
+
+            // Immediate Session Invalidation — JTI Blacklist  author: Anas
+            builder.Property(t => t.AccessTokenJti)
+                .HasMaxLength(36);
+
+            builder.Property(t => t.AccessTokenExpiresAt);
 
             builder.HasIndex(t => t.UserId);
             builder.HasIndex(t => t.TokenHash);
