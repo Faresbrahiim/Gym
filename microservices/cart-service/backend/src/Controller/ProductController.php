@@ -16,7 +16,15 @@ final class ProductController extends AbstractController
     public function __construct(
         private readonly ProductServiceInterface $productService,
     ) {}
-
+    #[Route('/ping', methods: ['GET'])]
+    public function ping(): JsonResponse
+    {
+        return new JsonResponse([
+            'status' => 'OK',
+            'message' => 'Controller is reachable',
+            'timestamp' => date('Y-m-d H:i:s')
+        ], 200);
+    }
     #[Route('', name: 'app_product_list', methods: ['GET'])]
     public function list(): JsonResponse
     {
