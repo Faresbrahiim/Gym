@@ -25,7 +25,7 @@ public class SubscriptionScheduler {
     }
 
     // --- Expire subscriptions ---
-    @Scheduled(fixedRate = 100000) // every 10s for testing
+    @Scheduled(fixedRate = 100000)
     @Transactional
     public void expireSubscriptions() {
         LocalDateTime now = LocalDateTime.now();

@@ -1,5 +1,6 @@
 package com.gym.membershipservice.application.service.membership;
 
+import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
@@ -32,7 +33,7 @@ public class MembershipServiceImpl implements MembershipService {
     public SubscriptionResponseDTO getActiveSubscription(UUID userId) {
         Subscription sub = subscriptionRepository
                 .findTopByUserIdOrderByStartDateDesc(userId)
-                .orElseThrow(() -> new RuntimeException("No subscription found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("No subscription found for user: " + userId));
 
         Plan plan = sub.getPlan(); // Plan info
 
@@ -53,7 +54,7 @@ public class MembershipServiceImpl implements MembershipService {
     public List<String> getPermissions(UUID userId) {
         Subscription sub = subscriptionRepository
                 .findTopByUserIdOrderByStartDateDesc(userId)
-                .orElseThrow(() -> new RuntimeException("No subscription found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("No subscription found for user: " + userId));
 
         if (sub.getStatus() != SubscriptionStatus.ACTIVE) return List.of();
 
@@ -64,7 +65,7 @@ public class MembershipServiceImpl implements MembershipService {
     public boolean validateMembership(UUID userId, String action) {
         Subscription sub = subscriptionRepository
                 .findTopByUserIdOrderByStartDateDesc(userId)
-                .orElseThrow(() -> new RuntimeException("No subscription found for user: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("No subscription found for user: " + userId));
 
         return sub.getStatus() == SubscriptionStatus.ACTIVE && action.equals("ENTER_GYM");
     }

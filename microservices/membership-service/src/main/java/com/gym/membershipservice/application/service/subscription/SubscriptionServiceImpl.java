@@ -1,5 +1,8 @@
 package com.gym.membershipservice.application.service.subscription;
 
+import com.gym.membershipservice.api.exception.BadRequestException;
+import com.gym.membershipservice.api.exception.ConflictException;
+import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
@@ -53,9 +56,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public Subscription getSubscriptionById(UUID subscriptionId) {
         Subscription sub = subscriptionRepository.findById(subscriptionId)
-                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
-        // Auto-expire logic
         if (sub.getEndDate() != null &&
                 sub.getEndDate().isBefore(LocalDateTime.now()) &&
                 sub.getStatus() == SubscriptionStatus.ACTIVE) {
@@ -76,14 +78,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription createSubscription(UUID userId, UUID planId) {
 
         if (subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)) {
-            throw new RuntimeException("User already has an active subscription");
+            throw new ConflictException("User already has an active subscription");
         }
 
         Plan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
         if (plan.getStatus() == PlanStatus.INACTIVE) {
-            throw new RuntimeException("Cannot subscribe to inactive plan");
+            throw new BadRequestException("Cannot subscribe to inactive plan");
         }
 
         validatePlanDuration(plan);
@@ -121,13 +123,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription sub = getSubscriptionById(subscriptionId);
 
         if (sub.getStatus() == SubscriptionStatus.CANCELLED) {
-            throw new RuntimeException("Already cancelled");
+            throw new BadRequestException("Already Cancelled");
         }
 
         LocalDateTime now = LocalDateTime.now();
         if (sub.getStartDate() != null &&
                 sub.getStartDate().plusDays(2).isBefore(now)) {
-            throw new RuntimeException("Cannot cancel after 2 days of start");
+            throw new BadRequestException("Cannot cancel  before 2 days");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -151,7 +153,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription pauseSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
-            throw new RuntimeException("Only ACTIVE subscriptions can request pause");
+            throw new BadRequestException("Only paused subscriptions can pause");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -171,7 +173,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription approvePause(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.PAUSE_REQUESTED) {
-            throw new RuntimeException("No pause request to approve");
+            throw new BadRequestException("no pause request to approve");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -191,7 +193,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription rejectPause(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.PAUSE_REQUESTED) {
-            throw new RuntimeException("No pause request to reject");
+            throw new BadRequestException("no pause request to reject");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -211,7 +213,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription resumeSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.PAUSED) {
-            throw new RuntimeException("Only PAUSED subscriptions can be resumed");
+            throw new BadRequestException("Only PAUSED subscriptions can be resumed");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -235,7 +237,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription renewSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         if (sub.getStatus() == SubscriptionStatus.CANCELLED) {
-            throw new RuntimeException("Cannot renew cancelled subscription");
+            throw new BadRequestException("Cannot renew cancelled subscription");
         }
 
         Plan plan = sub.getPlan();
@@ -266,14 +268,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription changePlan(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
-            throw new RuntimeException("Only ACTIVE subscriptions can change plan");
+            throw new BadRequestException("Only ACTIVE subscriptions can change plan");
         }
 
         Plan newPlan = planRepository.findById(newPlanId)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
         if (newPlan.getStatus() == PlanStatus.INACTIVE) {
-            throw new RuntimeException("Cannot switch to inactive plan");
+            throw new BadRequestException("Cannot switch to inactive plan");
         }
 
         validatePlanDuration(newPlan);
@@ -303,10 +305,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription upgradeSubscription(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         Plan newPlan = planRepository.findById(newPlanId)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
         if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) <= 0) {
-            throw new RuntimeException("New plan must be more expensive");
+            throw new BadRequestException("New plan must be more expensive");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -325,10 +327,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription downgradeSubscription(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = getSubscriptionById(subscriptionId);
         Plan newPlan = planRepository.findById(newPlanId)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
         if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) >= 0) {
-            throw new RuntimeException("New plan must be cheaper");
+            throw new BadRequestException("New plan must be cheaper");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -349,11 +351,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional
     public Subscription extendSubscription(UUID subscriptionId, int extraDays) {
-        if (extraDays <= 0) throw new RuntimeException("Extra days must be > 0");
+        if (extraDays <= 0) throw new BadRequestException("Extra days must be > 0");
 
         Subscription sub = getSubscriptionById(subscriptionId);
         if (sub.getStatus() == SubscriptionStatus.CANCELLED) {
-            throw new RuntimeException("Cannot extend cancelled subscription");
+            throw new BadRequestException("Cannot extend cancelled subscription");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -378,7 +380,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public Subscription activateSubscription(UUID subscriptionId) {
         Subscription sub = getSubscriptionById(subscriptionId);
-        if (sub.getStatus() == SubscriptionStatus.ACTIVE) throw new RuntimeException("Already active");
+        if (sub.getStatus() == SubscriptionStatus.ACTIVE) throw new BadRequestException("Already active");
 
         SubscriptionStatus previous = sub.getStatus();
         sub.setStatus(SubscriptionStatus.ACTIVE);
@@ -402,8 +404,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public Subscription freezeSubscription(UUID subscriptionId, LocalDateTime freezeEnd) {
         Subscription sub = getSubscriptionById(subscriptionId);
 
-        if (sub.getStatus() != SubscriptionStatus.ACTIVE) throw new RuntimeException("Only ACTIVE subscriptions can be frozen");
-        if (freezeEnd.isBefore(LocalDateTime.now())) throw new RuntimeException("Freeze end must be in the future");
+        if (sub.getStatus() != SubscriptionStatus.ACTIVE) throw new BadRequestException("Only ACTIVE subscriptions can be frozen");
+        if (freezeEnd.isBefore(LocalDateTime.now())) throw new BadRequestException("Freeze end must be in the future");
 
         SubscriptionStatus previous = sub.getStatus();
         sub.setPreviousStatusBeforeFreeze(previous);
@@ -433,7 +435,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     private void validatePlanDuration(Plan plan) {
         if (plan.getDurationInDays() == null || plan.getDurationInDays() < 0) {
-            throw new RuntimeException("Invalid plan duration");
+            throw new BadRequestException("Invalid plan duration");
         }
     }
 }
