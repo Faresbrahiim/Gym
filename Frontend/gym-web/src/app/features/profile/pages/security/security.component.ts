@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../services/session.service';
 import { AuthService } from '../../../auth/services/auth.service';
+import { TokenService } from '../../../../core/auth/token.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { Session } from '../../models/session.model';
@@ -53,11 +54,16 @@ export class SecurityComponent implements OnInit {
   isLoggingOutAll   = signal(false);
   showLogoutConfirm = signal(false);
 
+  isSendingReset   = signal(false);
+  resetSent        = signal(false);
+  resetError       = signal<string | null>(null);
+
   private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private sessionService: SessionService,
     private authService: AuthService,
+    private tokenService: TokenService,
     private errorService: ErrorService,
     private toastService: ToastService,
     private router: Router
@@ -183,6 +189,33 @@ export class SecurityComponent implements OnInit {
     this.authService.logoutAll().subscribe({
       next:  () => this.router.navigate(['/login']),
       error: () => this.router.navigate(['/login'])
+    });
+  }
+
+  // -------------------------------------------------------
+  // Change password
+  // -------------------------------------------------------
+
+  requestPasswordChange(): void {
+    if (this.isSendingReset()) return;
+    const email = this.tokenService.getEmail();
+    if (!email) return;
+
+    this.isSendingReset.set(true);
+    this.resetError.set(null);
+    this.resetSent.set(false);
+
+    this.authService.requestPasswordReset(email).pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: () => {
+        this.isSendingReset.set(false);
+        this.resetSent.set(true);
+      },
+      error: (err) => {
+        this.isSendingReset.set(false);
+        this.resetError.set(this.errorService.extractMessage(err));
+      }
     });
   }
 

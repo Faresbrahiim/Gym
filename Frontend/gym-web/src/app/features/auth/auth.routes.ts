@@ -23,7 +23,6 @@ export const authRoutes: Routes = [
   },
   {
     path: 'change-password',
-    canActivate: [publicGuard],
     loadComponent: () =>
       import('./pages/change-password/change-password.component').then(m => m.ChangePasswordComponent)
   },
