@@ -1,5 +1,8 @@
 package com.gym.membershipservice.application.service.plan;
 
+import com.gym.membershipservice.api.exception.BadRequestException;
+import com.gym.membershipservice.api.exception.ConflictException;
+import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.application.dto.Plan.PlanUpdateRequestDTO;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.enums.PlanStatus;
@@ -31,7 +34,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public PlanResponseDTO getPlanById(UUID id) {
         Plan plan = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
         return PlanMapper.toDTO(plan);
     }
 
@@ -44,25 +47,59 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public Plan getFreePlan() {
         return repository.findByStatusAndName(PlanStatus.ACTIVE, "Free")
-                .orElseThrow(() -> new RuntimeException("Free plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Free plan not found"));
     }
 
     @Override
     public PlanResponseDTO createPlan(PlanRequestDTO dto) {
-        // Handle Free Plan defaults
+
+        if (dto.getName() == null || dto.getName().isBlank()) {
+            throw new BadRequestException("Plan name is required");
+        }
+
+        if (dto.getPrice() == null || dto.getPrice() < 0) {
+            throw new BadRequestException("Price must be positive");
+        }
+
+        if (dto.getDurationInDays() == null || dto.getDurationInDays() < 0) {
+            throw new BadRequestException("Duration must be greater than 0");
+        }
+
+        if (repository.existsByName(dto.getName())) {
+            throw new ConflictException("Plan with this name already exists");
+        }
+
         if ("Free".equalsIgnoreCase(dto.getName())) {
-            if (dto.getPrice() == null) dto.setPrice(0.0);
-            if (dto.getDurationInDays() == null) dto.setDurationInDays(Integer.MAX_VALUE);
+            dto.setPrice(0.0);
+            dto.setDurationInDays(Integer.MAX_VALUE);
         }
 
         Plan plan = PlanMapper.toEntity(dto);
+
         Plan saved = repository.save(plan);
         return PlanMapper.toDTO(saved);
     }
     @Override
     public PlanResponseDTO updatePlan(UUID id, PlanUpdateRequestDTO dto) {
+
         Plan plan = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
+
+        if (dto.getName() == null || dto.getName().isBlank()) {
+            throw new BadRequestException("Plan name is required");
+        }
+
+        if (dto.getPrice() == null || dto.getPrice() < 0) {
+            throw new BadRequestException("Price must be positive");
+        }
+
+        if (dto.getDurationInDays() == null || dto.getDurationInDays() < 0) {
+            throw new BadRequestException("Duration must be greater than 0");
+        }
+
+        if (!plan.getName().equals(dto.getName()) && repository.existsByName(dto.getName())) {
+            throw new BadRequestException("Plan with this name already exists");
+        }
 
         plan.setName(dto.getName());
         plan.setDescription(dto.getDescription());
@@ -72,11 +109,10 @@ public class PlanServiceImpl implements PlanService {
 
         return PlanMapper.toDTO(repository.save(plan));
     }
-
     @Override
     public void deletePlan(UUID id) {
         Plan plan = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
         plan.setStatus(PlanStatus.INACTIVE);
         repository.save(plan);
     }
@@ -84,7 +120,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public PlanResponseDTO enablePlan(UUID id) {
         Plan plan = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Plan not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
         plan.setStatus(PlanStatus.ACTIVE);
         return PlanMapper.toDTO(repository.save(plan));
     }
