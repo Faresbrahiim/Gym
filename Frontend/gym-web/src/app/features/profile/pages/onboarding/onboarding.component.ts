@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../../../core/auth/token.service';
@@ -53,17 +53,17 @@ export class OnboardingComponent implements OnInit {
     this.memberForm = this.fb.group({
       gender:         [''],
       dateOfBirth:    [''],
-      heightCm:       [null],
-      weightKg:       [null],
-      fitnessGoal:    [''],
+      heightCm:       [null, [Validators.min(50), Validators.max(300)]],
+      weightKg:       [null, [Validators.min(20), Validators.max(500)]],
+      fitnessGoal:    ['', Validators.maxLength(255)],
       experienceLevel:['']
     });
 
     this.coachForm = this.fb.group({
-      bio:              [''],
-      yearsOfExperience:[null],
-      certifications:   [''],
-      language:         ['']
+      bio:              ['', Validators.maxLength(1000)],
+      yearsOfExperience:[null, [Validators.min(0), Validators.max(60)]],
+      certifications:   ['', Validators.maxLength(500)],
+      language:         ['', Validators.maxLength(100)]
     });
   }
 

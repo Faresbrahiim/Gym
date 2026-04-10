@@ -114,6 +114,9 @@ namespace user_service.Controllers
         CancellationToken cancellationToken
         )
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             var user = await _passwordCredentialService.AcceptInvitationAsync(
                 dto.Token,
                 dto.Password,
@@ -123,9 +126,12 @@ namespace user_service.Controllers
         }
 
         [HttpPost("resend-invitation")]
-        public async Task <IActionResult> resendinvitation([FromBody] ResendInvitationDto invitationDto ,CancellationToken cancellationToken)
+        public async Task<IActionResult> resendinvitation([FromBody] ResendInvitationDto invitationDto, CancellationToken cancellationToken)
         {
-            await _authService.ResendInvitationAsync(invitationDto.email, cancellationToken);
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
+            await _authService.ResendInvitationAsync(invitationDto.Email, cancellationToken);
 
             return Ok(new
             {
@@ -139,6 +145,9 @@ namespace user_service.Controllers
         CancellationToken cancellationToken
             )
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             await _passwordCredentialService.VerifyEmailAsync(
                 dto.Token,
                 cancellationToken);
@@ -163,9 +172,12 @@ namespace user_service.Controllers
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerification(
         [FromBody] ResendVerificationDto dto,
-         CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
         {
-            await _authService.ResendEmailVerificationAsync(dto.email, cancellationToken);
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
+            await _authService.ResendEmailVerificationAsync(dto.Email, cancellationToken);
 
             return Ok(new
             {
@@ -226,6 +238,9 @@ namespace user_service.Controllers
         [HttpPost("2fa/confirm")]
         public async Task<IActionResult> ConfirmTwoFactor([FromBody] ConfirmTwoFactorDto dto)
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (userId == null)
@@ -243,6 +258,9 @@ namespace user_service.Controllers
         [HttpPost("2fa/verify")]
         public async Task<IActionResult> VerifyTwoFactor([FromBody] VerifyTwoFactorDto dto)
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             var result = await _authService.VerifyTwoFactorLogin(dto.UserId, dto.Code);
 
             return Ok(result);
