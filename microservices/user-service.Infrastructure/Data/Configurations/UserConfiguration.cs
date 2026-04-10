@@ -56,9 +56,6 @@ namespace user_service.Infrastructure.Data.Configurations
 
             builder.HasIndex(u => u.Role);
             builder.HasIndex(u => u.Status);
-
-            builder.Property(u => u.TwoFactorSecret)
-       .HasMaxLength(200);
         }
     }
 }

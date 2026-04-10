@@ -7,6 +7,7 @@ import { LoadingButtonComponent } from '../../../../shared/components/loading-bu
 import { AuthService } from '../../services/auth.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { TwoFactorStateService } from '../../services/two-factor-state.service';
+import { CurrentUserService } from '../../../../core/services/current-user.service';
 
 @Component({
   standalone: true,
@@ -30,6 +31,7 @@ export class VerifyTwoFactorComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private tokenService: TokenService,
     private twoFactorStateService: TwoFactorStateService,
+    private currentUserService: CurrentUserService,
     private router: Router
   ) {
     this.codeForm = this.fb.group({
@@ -85,6 +87,7 @@ export class VerifyTwoFactorComponent implements OnInit, OnDestroy {
 
         const returnUrl = this.twoFactorStateService.getReturnUrl() || '/home';
         this.tokenService.setTokens(response.accessToken, response.refreshToken);
+        this.currentUserService.hydrate();
         this.twoFactorStateService.clear();
         this.router.navigateByUrl(returnUrl);
       },

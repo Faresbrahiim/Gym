@@ -18,6 +18,7 @@ namespace user_service.Infrastructure.Data
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
         public DbSet<RecoveryCode> RecoveryCodes => Set<RecoveryCode>();
+        public DbSet<UserTwoFactor> UserTwoFactors => Set<UserTwoFactor>();
         public DbSet<ExternalLogin> ExternalLogins { get; set; } = null!;
 
         public DbSet<UserToken> UserTokens => Set<UserToken>();

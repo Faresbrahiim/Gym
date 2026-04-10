@@ -90,7 +90,7 @@ namespace user_service.Application.Services
             if (user.Status != UserStatus.ACTIVE)
                 throw new AccountNotActivatedException();
 
-            if (user.TwoFactorEnabled)
+            if (user.TwoFactor?.IsEnabled == true)
             {
                 return new LoginResponse
                 {
@@ -144,7 +144,7 @@ namespace user_service.Application.Services
                     cancellationToken);
             }
 
-            if (user.TwoFactorEnabled)
+            if (user.TwoFactor?.IsEnabled == true)
             {
                 return new LoginResponse
                 {

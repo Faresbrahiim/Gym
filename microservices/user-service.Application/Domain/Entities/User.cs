@@ -39,9 +39,8 @@ namespace user_service.Application.Domain.Entities
 
         public ICollection<RecoveryCode> RecoveryCodes { get; set; } = new List<RecoveryCode>();
 
-        public bool TwoFactorEnabled { get; set; } = false;
-
-        public string? TwoFactorSecret { get; set; }
+        // Navigation — 2FA config lives in its own table
+        public UserTwoFactor? TwoFactor { get; set; }
     }
 }
 
