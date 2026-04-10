@@ -1,0 +1,10 @@
+_format_version: "3.0"
+
+services:
+  - name: membership-service
+    url: http://membership-service:8080
+    routes:
+      - name: membership-route
+        paths:
+          - /api/membership
+        strip_path: true
