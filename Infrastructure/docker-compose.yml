@@ -160,6 +160,68 @@ services:
     networks:
       - gym-network
 
+  # ==============================
+  # 🟢 KONG API GATEWAY (NEW)
+  # ==============================
+
+  kong-db:
+    image: postgres:15
+    container_name: kong-db
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kongpass
+    ports:
+      - "5435:5432"
+    networks:
+      - gym-network
+    volumes:
+      - kong-db-data:/var/lib/postgresql/data
+
+  kong-migrations:
+    image: kong:3.6
+    command: kong migrations bootstrap
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kongpass
+      KONG_PG_DATABASE: kong
+    depends_on:
+      - kong-db
+    networks:
+      - gym-network
+
+  kong:
+    image: kong:3.6
+    container_name: kong
+    restart: always
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kongpass
+      KONG_PG_DATABASE: kong
+
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+
+    depends_on:
+      - kong-db
+      - kong-migrations
+
+    networks:
+      - gym-network
+
 # ==============================
 # Networks and Volumes
 # ==============================
@@ -170,3 +232,4 @@ networks:
 volumes:
   gym-user-db-data:
   membership-db-data:
+  kong-db-data:
