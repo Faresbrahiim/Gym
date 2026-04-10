@@ -33,9 +33,14 @@ namespace user_service.Infrastructure.Auth
         public TokenResult GenerateToken(UserDto user)
         {
             var permissions = RolePermissionMapping.GetPermissions(user.Role);
+           var securityKey = new RsaSecurityKey(_privateKey)
+            {
+                KeyId = "gym-auth-key-1"
+            };
+
             var credentials = new SigningCredentials(
-                new RsaSecurityKey(_privateKey),
-                SecurityAlgorithms.RsaSha256
+            securityKey,
+            SecurityAlgorithms.RsaSha256
             );
 
             // Immediate Session Invalidation — JTI Blacklist  author: Anas
