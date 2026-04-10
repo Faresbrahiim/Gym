@@ -23,7 +23,6 @@ namespace user_service.Application.Services
 
         public AdminService(
           IUserRepository userRepository,
-          IPasswordResetTokenRepository passwordResetTokenRepository,
           IEmailService emailService,
           IPasswordCredentialService passwordCredentialService,
           IUserTokenRepository userTokenRepository,

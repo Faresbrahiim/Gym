@@ -37,7 +37,6 @@ namespace user_service.Application.Services
             ITokenService tokenService,
             IPasswordHasher passwordHasher,
             IUserProfileRepository userProfileRepository,
-            IPasswordResetTokenRepository passwordResetTokenRepository,
             IEmailService emailService,
             IGoogleAuthValidator googleAuthValidator,
             IRefreshTokenRepository refreshTokenRepository,
