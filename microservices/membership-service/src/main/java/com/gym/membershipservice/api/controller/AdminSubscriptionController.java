@@ -3,6 +3,7 @@ package com.gym.membershipservice.api.controller;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/admin/subscriptions")
 @Tag(name = "adminSubscriptions", description = "admin subscription operations")
-
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminSubscriptionController {
 
     private final SubscriptionService subscriptionService;

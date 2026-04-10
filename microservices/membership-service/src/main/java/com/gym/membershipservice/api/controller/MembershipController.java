@@ -3,12 +3,14 @@ package com.gym.membershipservice.api.controller;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.MembershipService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-
 @RestController
+
+@PreAuthorize("hasRole('SERVICE')")
 @RequestMapping("/internal/memberships")
 public class MembershipController {
 
