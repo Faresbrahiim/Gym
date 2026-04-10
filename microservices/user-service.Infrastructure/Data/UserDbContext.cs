@@ -17,7 +17,6 @@ namespace user_service.Infrastructure.Data
         public DbSet<CoachProfile> CoachProfiles => Set<CoachProfile>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
-        public DbSet<CoachAvailability> CoachAvailabilities => Set<CoachAvailability>();
         public DbSet<RecoveryCode> RecoveryCodes => Set<RecoveryCode>();
         public DbSet<ExternalLogin> ExternalLogins { get; set; } = null!;
 

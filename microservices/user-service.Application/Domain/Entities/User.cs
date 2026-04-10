@@ -37,8 +37,6 @@ namespace user_service.Application.Domain.Entities
 
         public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
 
-        public ICollection<CoachAvailability> CoachAvailabilities { get; set; } = new List<CoachAvailability>();
-
         public ICollection<RecoveryCode> RecoveryCodes { get; set; } = new List<RecoveryCode>();
 
         public bool TwoFactorEnabled { get; set; } = false;
