@@ -31,6 +31,30 @@ export const routes: Routes = [
           import('./features/home/home.component').then(m => m.HomeComponent)
       },
       {
+        // Products feature
+        path: 'products',
+        loadChildren: () =>
+          import('./features/products/products.routes').then(m => m.productsRoutes)
+      },
+      {
+        // Cart feature
+        path: 'cart',
+        loadChildren: () =>
+          import('./features/cart/cart.routes').then(m => m.cartRoutes)
+      },
+      {
+        // Checkout feature
+        path: 'checkout',
+        loadChildren: () =>
+          import('./features/checkout/checkout.routes').then(m => m.checkoutRoutes)
+      },
+      {
+        // Orders feature
+        path: 'orders',
+        loadChildren: () =>
+          import('./features/orders/orders.routes').then(m => m.ordersRoutes)
+      },
+      {
         // Profile feature — delegates to profile.routes.ts
         // authGuard here covers all child routes (/profile and /profile/edit)
         path: 'profile',

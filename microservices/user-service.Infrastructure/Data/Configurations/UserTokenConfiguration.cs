@@ -21,7 +21,8 @@ public class UserTokenConfiguration : IEntityTypeConfiguration<UserToken>
 
         builder.HasOne(t => t.User)
             .WithMany()
-            .HasForeignKey(t => t.UserId);
+            .HasForeignKey(t => t.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(t => t.Type)
        .HasConversion<int>()

@@ -21,6 +21,7 @@ namespace user_service.Infrastructure.Repositories
                 .AsNoTracking()
                 .Include(u => u.Profile)
                 .Include(u => u.ExternalLogins)
+                .Include(u => u.TwoFactor)
                 .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
         }
 
@@ -30,6 +31,7 @@ namespace user_service.Infrastructure.Repositories
                 //.AsNoTracking()
                 .Include(u => u.Profile)
                 .Include(u => u.ExternalLogins)
+                .Include(u => u.TwoFactor)
                 .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         }
 
@@ -82,6 +84,25 @@ namespace user_service.Infrastructure.Repositories
                 .Include(u => u.MemberProfile)
                 .Include(u => u.CoachProfile)
                 .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        }
+
+        public async Task UpsertTwoFactor(UserTwoFactor twoFactor, CancellationToken cancellationToken = default)
+        {
+            var existing = await _context.UserTwoFactors
+                .FirstOrDefaultAsync(t => t.UserId == twoFactor.UserId, cancellationToken);
+
+            if (existing == null)
+            {
+                await _context.UserTwoFactors.AddAsync(twoFactor, cancellationToken);
+            }
+            else
+            {
+                existing.Secret    = twoFactor.Secret;
+                existing.IsEnabled = twoFactor.IsEnabled;
+                existing.UpdatedAt = twoFactor.UpdatedAt;
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

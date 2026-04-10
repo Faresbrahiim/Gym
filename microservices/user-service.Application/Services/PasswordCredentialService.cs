@@ -23,7 +23,6 @@ namespace user_service.Application.Services
         public PasswordCredentialService(
             IUserTokenRepository userTokenRepository,
             IUserRepository userRepository,
-            IPasswordResetTokenRepository passwordResetTokenRepository,
             IPasswordHasher passwordHasher,
             IEventPublisher eventPublisher)
         {

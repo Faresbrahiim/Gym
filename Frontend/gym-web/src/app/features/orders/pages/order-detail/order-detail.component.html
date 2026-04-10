@@ -1,0 +1,323 @@
+<section class="order-detail-section">
+  <div class="container py-5">
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Order Detail -->
+    <div *ngIf="!isLoading() && order()" class="order-detail">
+      <!-- Header -->
+      <div class="order-header">
+        <div>
+          <h2>Order {{ order()!.orderNumber }}</h2>
+          <p class="order-date">{{ order()!.createdAt | date:'medium' }}</p>
+        </div>
+        <div class="order-status">
+          <span [ngClass]="'badge ' + getStatusBadgeClass(order()!.status)">
+            {{ order()!.status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="row mt-4">
+        <!-- Order Items -->
+        <div class="col-lg-8">
+          <div class="order-items-card">
+            <h5>Order Items</h5>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of order()!.items">
+                  <td>{{ item.productName }}</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>${{ item.price.toFixed(2) }}</td>
+                  <td><strong>${{ (item.quantity * item.price).toFixed(2) }}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="shipping-card mt-4">
+            <h5>Shipping Address</h5>
+            <p class="address-text">
+              {{ order()!.shippingAddress || 'No shipping address provided' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+          <div class="summary-card">
+            <h5>Order Summary</h5>
+
+            <div class="summary-row">
+              <span>Subtotal:</span>
+              <span>${{ order()!.totalPrice.toFixed(2) }}</span>
+            </div>
+
+            <div class="summary-row">
+              <span>Shipping:</span>
+              <span>Free</span>
+            </div>
+
+            <div class="summary-row">
+              <span>Tax (10%):</span>
+              <span>${{ (order()!.totalPrice * 0.1).toFixed(2) }}</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="summary-row total">
+              <span>Total:</span>
+              <span>${{ (order()!.totalPrice * 1.1).toFixed(2) }}</span>
+            </div>
+
+            <!-- Order Info -->
+            <div class="info-section mt-4">
+              <div class="info-row">
+                <label>Order ID:</label>
+                <span>{{ order()!.id }}</span>
+              </div>
+              <div class="info-row">
+                <label>Items:</label>
+                <span>{{ order()!.totalItems }}</span>
+              </div>
+              <div class="info-row">
+                <label>Status:</label>
+                <span [ngClass]="'badge ' + getStatusBadgeClass(order()!.status)">
+                  {{ order()!.status }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions mt-4">
+              <button 
+                class="btn btn-outline-danger w-100"
+                (click)="onCancelOrder()"
+                *ngIf="order()!.status !== 'CANCELLED' && order()!.status !== 'DELIVERED'">
+                <i class="fas fa-times"></i> Cancel Order
+              </button>
+              <a routerLink="/orders" class="btn btn-primary w-100 mt-2">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && !order()" class="text-center py-5">
+      <p class="text-muted">Order not found</p>
+      <a routerLink="/orders" class="btn btn-primary mt-3">Back to Orders</a>
+    </div>
+  </div>
+</section>
+
+<style scoped>
+.order-detail-section {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.order-detail {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #ff6b35;
+}
+
+.order-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.order-date {
+  color: #666;
+  margin: 5px 0 0 0;
+  font-size: 0.9rem;
+}
+
+.order-status .badge {
+  font-size: 0.95rem;
+  padding: 8px 15px;
+}
+
+.order-items-card,
+.shipping-card,
+.summary-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.order-items-card h5,
+.shipping-card h5,
+.summary-card h5 {
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #1a1a2e;
+}
+
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.items-table thead {
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.items-table th,
+.items-table td {
+  padding: 12px;
+  text-align: left;
+}
+
+.items-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.address-text {
+  color: #666;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  color: #666;
+}
+
+.summary-row.total {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  padding-top: 15px;
+}
+
+.divider {
+  height: 1px;
+  background: #eee;
+  margin: 10px 0;
+}
+
+.info-section {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+
+.info-row label {
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.info-row span {
+  color: #666;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn {
+  padding: 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #e55a2b;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  background: white;
+}
+
+.btn-outline-danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.badge-warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-info {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-primary {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.badge-success {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-danger {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.spinner-border {
+  color: #ff6b35;
+}
+</style>

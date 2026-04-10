@@ -1,0 +1,175 @@
+<section class="orders-section">
+  <div class="container py-5">
+    <div class="section-title text-center mb-5">
+      <h2>My Orders</h2>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div *ngIf="!isLoading() && orders().length > 0" class="orders-table-container">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order #</th>
+            <th>Date</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders()">
+            <td><strong>{{ order.orderNumber }}</strong></td>
+            <td>{{ order.createdAt | date:'short' }}</td>
+            <td>{{ order.totalItems }} items</td>
+            <td>${{ order.totalPrice.toFixed(2) }}</td>
+            <td>
+              <span [ngClass]="'badge ' + getStatusBadgeClass(order.status)">
+                {{ order.status }}
+              </span>
+            </td>
+            <td>
+              <a [routerLink]="['/orders', order.id]" class="btn-view">
+                <i class="fas fa-eye"></i> View
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && orders().length === 0" class="text-center py-5">
+      <div class="empty-state-icon mb-3">
+        <i class="fas fa-box-open"></i>
+      </div>
+      <p class="text-muted">No orders yet</p>
+      <a routerLink="/products" class="btn btn-primary mt-3">
+        <i class="fas fa-shopping-cart"></i> Start Shopping
+      </a>
+    </div>
+  </div>
+</section>
+
+<style scoped>
+.orders-section {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.section-title h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.orders-table-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orders-table thead {
+  background: #f5f5f5;
+  border-bottom: 2px solid #ff6b35;
+}
+
+.orders-table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.orders-table td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.orders-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.badge-warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-info {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge-primary {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.badge-success {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-danger {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.btn-view {
+  color: #ff6b35;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-view:hover {
+  color: #e55a2b;
+  text-decoration: underline;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  color: #ddd;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #ff6b35;
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #e55a2b;
+}
+
+.spinner-border {
+  color: #ff6b35;
+}
+</style>

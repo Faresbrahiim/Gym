@@ -1,0 +1,7 @@
+.cart-item {
+  transition: background 0.3s ease;
+}
+
+.cart-item:hover {
+  background: #f9f9f9;
+}

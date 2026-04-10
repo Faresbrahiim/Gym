@@ -1,0 +1,3 @@
+.orders-table tbody tr {
+  transition: background 0.3s ease;
+}

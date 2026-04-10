@@ -1,4 +1,4 @@
-﻿using OtpNet;
+using OtpNet;
 using QRCoder;
 using System;
 using System.Collections.Generic;
@@ -13,12 +13,12 @@ using user_service.Application.Helpers;
 
 namespace user_service.Infrastructure.Services
 {
-    public class TwoFactorService:ITwoFactorService
+    public class TwoFactorService : ITwoFactorService
     {
         private readonly IUserRepository _userRepository;
         private readonly IRecoveryCodeRepository _recoveryCodeRepository;
 
-        public TwoFactorService(IUserRepository userRepository , IRecoveryCodeRepository recoveryCodeRepository)
+        public TwoFactorService(IUserRepository userRepository, IRecoveryCodeRepository recoveryCodeRepository)
         {
             _userRepository = userRepository;
             _recoveryCodeRepository = recoveryCodeRepository;
@@ -29,33 +29,33 @@ namespace user_service.Infrastructure.Services
             var user = await _userRepository.GetById(userId);
 
             if (user == null)
-            {
                 throw new Exception("User not found");
-            }
 
             var secretBytes = KeyGeneration.GenerateRandomKey(20);
             var secret = Base32Encoding.ToString(secretBytes);
 
             var issuer = "GymApp";
-            var email = user.Email;
-
-            var uri = $"otpauth://totp/{issuer}:{email}?secret={secret}&issuer={issuer}";
+            var uri = $"otpauth://totp/{issuer}:{user.Email}?secret={secret}&issuer={issuer}";
 
             var qrGenerator = new QRCodeGenerator();
             var qrData = qrGenerator.CreateQrCode(uri, QRCodeGenerator.ECCLevel.Q);
             var qrCode = new PngByteQRCode(qrData);
-            var qrBytes = qrCode.GetGraphic(20);
+            var qrBase64 = Convert.ToBase64String(qrCode.GetGraphic(20));
 
-            var qrBase64 = Convert.ToBase64String(qrBytes);
-
-            user.TwoFactorSecret = secret;
-
-            await _userRepository.Update(user);
+            // Persist the secret — insert if first setup, update if reconfiguring
+            await _userRepository.UpsertTwoFactor(new UserTwoFactor
+            {
+                UserId    = user.Id,
+                IsEnabled = user.TwoFactor?.IsEnabled ?? false,
+                Secret    = secret,
+                CreatedAt = user.TwoFactor?.CreatedAt ?? DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            });
 
             return new TwoFactorSetupDto
             {
                 QrCodeImage = qrBase64,
-                ManualKey = secret
+                ManualKey   = secret
             };
         }
 
@@ -66,55 +66,38 @@ namespace user_service.Infrastructure.Services
             if (user == null)
                 throw new Exception("User not found");
 
-            if (string.IsNullOrEmpty(user.TwoFactorSecret))
+            if (user.TwoFactor == null || string.IsNullOrEmpty(user.TwoFactor.Secret))
                 throw new Exception("2FA setup not initiated");
 
-            var secretBytes = Base32Encoding.ToBytes(user.TwoFactorSecret);
-
+            var secretBytes = Base32Encoding.ToBytes(user.TwoFactor.Secret);
             var totp = new Totp(secretBytes);
-
-            bool isValid = totp.VerifyTotp(code, out long timeStepMatched, VerificationWindow.RfcSpecifiedNetworkDelay);
+            bool isValid = totp.VerifyTotp(code, out _, VerificationWindow.RfcSpecifiedNetworkDelay);
 
             if (!isValid)
                 throw new Exception("Invalid 2FA code");
 
-            user.TwoFactorEnabled = true;
-            await _userRepository.Update(user);
+            // Enable 2FA — the secret was already stored in GenerateSetupAsync
+            await _userRepository.UpsertTwoFactor(new UserTwoFactor
+            {
+                UserId    = user.Id,
+                IsEnabled = true,
+                Secret    = user.TwoFactor.Secret,
+                CreatedAt = user.TwoFactor.CreatedAt,
+                UpdatedAt = DateTime.UtcNow
+            });
 
-            var recoveryCodes = await GenerateAndStoreRecoveryCodes(userId);
-
-            return recoveryCodes;
+            return await GenerateAndStoreRecoveryCodes(userId);
         }
-
-        
 
         public async Task<bool> VerifyCodeAsync(User user, string code)
         {
-            if (!user.TwoFactorEnabled || string.IsNullOrEmpty(user.TwoFactorSecret))
+            if (user.TwoFactor == null || !user.TwoFactor.IsEnabled || string.IsNullOrEmpty(user.TwoFactor.Secret))
                 return false;
 
-            var secretBytes = Base32Encoding.ToBytes(user.TwoFactorSecret);
-
+            var secretBytes = Base32Encoding.ToBytes(user.TwoFactor.Secret);
             var totp = new Totp(secretBytes);
 
-            return  totp.VerifyTotp(
-                code,
-                out long timeStepMatched,
-                VerificationWindow.RfcSpecifiedNetworkDelay
-            );
-        }
-
-        private List<string> GenerateRecoveryCodes(int count = 10)
-        {
-            var codes = new List<string>();
-
-            for (int i = 0; i < count; i++)
-            {
-                var code = RandomNumberGenerator.GetInt32(10000000, 99999999).ToString();
-                codes.Add(code);
-            }
-
-            return codes;
+            return totp.VerifyTotp(code, out _, VerificationWindow.RfcSpecifiedNetworkDelay);
         }
 
         public async Task<List<string>> GenerateAndStoreRecoveryCodes(Guid userId)
@@ -123,18 +106,25 @@ namespace user_service.Infrastructure.Services
 
             var entities = rawCodes.Select(code => new RecoveryCode
             {
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                CodeHash = TokenHelper.HashToken(code),
+                Id        = Guid.NewGuid(),
+                UserId    = userId,
+                CodeHash  = TokenHelper.HashToken(code),
                 CreatedAt = DateTime.UtcNow,
-                Used = false
+                Used      = false
             }).ToList();
 
             await _recoveryCodeRepository.InvalidateAll(userId);
-
             await _recoveryCodeRepository.CreateMany(entities);
 
             return rawCodes;
+        }
+
+        private static List<string> GenerateRecoveryCodes(int count = 10)
+        {
+            var codes = new List<string>();
+            for (int i = 0; i < count; i++)
+                codes.Add(RandomNumberGenerator.GetInt32(10000000, 99999999).ToString());
+            return codes;
         }
     }
 }

@@ -1,0 +1,335 @@
+<section class="product-detail-section">
+  <div class="container py-5">
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Product Detail -->
+    <div *ngIf="!isLoading() && product()" class="product-detail">
+      <div class="row">
+        <!-- Product Image -->
+        <div class="col-lg-6">
+          <div class="product-image-container">
+            <img [src]="product()!.image" [alt]="product()!.name" class="img-fluid main-image">
+            <div *ngIf="product()!.discountPrice" class="discount-badge">
+              -{{ getDiscountPercentage(product()!.price, product()!.discountPrice) }}%
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+          <div class="product-details">
+            <p class="breadcrumb-text">
+              <a routerLink="/products">Products</a> / {{ product()!.category }}
+            </p>
+            
+            <h1>{{ product()!.name }}</h1>
+            
+            <div class="product-meta">
+              <div class="rating-section" *ngIf="product() && product()!.rating">
+                <div class="stars">
+                  <i class="fas fa-star" *ngFor="let i of [1,2,3,4,5]" [class.half]="i > (product()!.rating || 0)"></i>
+                </div>
+                <span class="review-count">({{ product()!.reviews }} reviews)</span>
+              </div>
+              
+              <p class="stock-status" [class.in-stock]="product()!.stock > 0" [class.out-of-stock]="product()!.stock === 0">
+                <span *ngIf="product()!.stock > 0">✓ In Stock ({{ product()!.stock }} available)</span>
+                <span *ngIf="product()!.stock === 0">Out of Stock</span>
+              </p>
+            </div>
+
+            <!-- Price -->
+            <div class="price-section">
+              <span class="current-price">${{ product()!.discountPrice || product()!.price }}</span>
+              <span *ngIf="product()!.discountPrice" class="original-price">${{ product()!.price }}</span>
+            </div>
+
+            <!-- Description -->
+            <div class="description-section">
+              <h5>Description</h5>
+              <p>{{ product()!.description }}</p>
+            </div>
+
+            <!-- Quantity Selector -->
+            <div class="quantity-section">
+              <label>Quantity:</label>
+              <div class="quantity-selector">
+                <button class="btn-qty" (click)="decreaseQuantity()" [disabled]="quantity() === 1">-</button>
+                <input type="text" [value]="quantity()" readonly class="qty-input">
+                <button class="btn-qty" (click)="increaseQuantity()" [disabled]="quantity() === product()!.stock">+</button>
+              </div>
+            </div>
+
+            <!-- Add to Cart -->
+            <div class="action-section">
+              <button 
+                class="btn btn-add-to-cart"
+                (click)="onAddToCart()"
+                [disabled]="product()!.stock === 0">
+                <i class="fas fa-shopping-cart"></i> Add to Cart
+              </button>
+              <button class="btn btn-wishlist">
+                <i class="far fa-heart"></i> Add to Wishlist
+              </button>
+            </div>
+
+            <!-- Product Info Table -->
+            <div class="info-table mt-4">
+              <table>
+                <tr>
+                  <td><strong>Category:</strong></td>
+                  <td>{{ product()!.category }}</td>
+                </tr>
+                <tr>
+                  <td><strong>SKU:</strong></td>
+                  <td>#{{ product()!.id }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Stock:</strong></td>
+                  <td>{{ product()!.stock }} items</td>
+                </tr>
+                <tr>
+                  <td><strong>Availability:</strong></td>
+                  <td>
+                    <span *ngIf="product()!.stock > 0" class="badge bg-success">In Stock</span>
+                    <span *ngIf="product()!.stock === 0" class="badge bg-danger">Out of Stock</span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && !product()" class="text-center py-5">
+      <p class="text-muted">Product not found.</p>
+      <a routerLink="/products" class="btn btn-primary mt-3">Back to Products</a>
+    </div>
+  </div>
+</section>
+
+<style scoped>
+.product-detail-section {
+  background: #f8f9fa;
+  min-height: 100vh;
+  padding: 40px 0;
+}
+
+.breadcrumb-text {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.breadcrumb-text a {
+  color: #ff6b35;
+  text-decoration: none;
+}
+
+.breadcrumb-text a:hover {
+  text-decoration: underline;
+}
+
+.product-details h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.product-meta {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.rating-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  color: #ffc107;
+}
+
+.review-count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.stock-status {
+  margin: 0;
+  font-weight: 500;
+}
+
+.stock-status.in-stock {
+  color: #28a745;
+}
+
+.stock-status.out-of-stock {
+  color: #dc3545;
+}
+
+.price-section {
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #ddd;
+}
+
+.current-price {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff6b35;
+  margin-right: 15px;
+}
+
+.original-price {
+  font-size: 1.2rem;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.description-section {
+  margin-bottom: 30px;
+}
+
+.description-section h5 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.description-section p {
+  color: #666;
+  line-height: 1.6;
+}
+
+.quantity-section {
+  margin-bottom: 30px;
+}
+
+.quantity-section label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.quantity-selector {
+  display: inline-flex;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 120px;
+}
+
+.btn-qty {
+  flex: 1;
+  background: white;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-qty:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.btn-qty:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qty-input {
+  flex: 1;
+  border: none;
+  text-align: center;
+  padding: 8px;
+  font-weight: bold;
+}
+
+.action-section {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.btn-add-to-cart,
+.btn-wishlist {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-add-to-cart {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn-add-to-cart:hover:not(:disabled) {
+  background: #e55a2b;
+}
+
+.btn-add-to-cart:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-wishlist {
+  background: white;
+  color: #ff6b35;
+  border: 1px solid #ff6b35;
+}
+
+.btn-wishlist:hover {
+  background: #ff6b35;
+  color: white;
+}
+
+.info-table {
+  background: white;
+  border-radius: 4px;
+  padding: 20px;
+}
+
+.info-table table {
+  width: 100%;
+}
+
+.info-table tr {
+  border-bottom: 1px solid #eee;
+}
+
+.info-table tr:last-child {
+  border-bottom: none;
+}
+
+.info-table td {
+  padding: 12px 0;
+}
+
+.info-table td:first-child {
+  width: 30%;
+  color: #666;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+</style>

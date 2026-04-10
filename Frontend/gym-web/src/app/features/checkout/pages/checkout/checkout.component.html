@@ -1,0 +1,559 @@
+<section class="checkout-section">
+  <div class="container py-5">
+    <h2 class="section-title">Checkout</h2>
+
+    <div class="row mt-4">
+      <!-- Checkout Form -->
+      <div class="col-lg-8">
+        <!-- Step Indicator -->
+        <div class="step-indicator mb-4">
+          <div class="step" [class.active]="currentStep() === 1">
+            <span class="step-number">1</span>
+            <span class="step-label">Shipping</span>
+          </div>
+          <div class="step-line" [class.active]="currentStep() > 1"></div>
+          <div class="step" [class.active]="currentStep() === 2">
+            <span class="step-number">2</span>
+            <span class="step-label">Payment</span>
+          </div>
+          <div class="step-line" [class.active]="currentStep() > 2"></div>
+          <div class="step" [class.active]="currentStep() === 3">
+            <span class="step-number">3</span>
+            <span class="step-label">Review</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Shipping -->
+        <div *ngIf="currentStep() === 1" class="checkout-step">
+          <div class="step-title">
+            <h4>Shipping Address</h4>
+          </div>
+          <form [formGroup]="checkoutForm">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>First Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    formControlName="firstName"
+                    [class.is-invalid]="checkoutForm.get('firstName')?.invalid && checkoutForm.get('firstName')?.touched">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Last Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    formControlName="lastName"
+                    [class.is-invalid]="checkoutForm.get('lastName')?.invalid && checkoutForm.get('lastName')?.touched">
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Email *</label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    formControlName="email"
+                    [class.is-invalid]="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Phone *</label>
+                  <input 
+                    type="tel" 
+                    class="form-control" 
+                    formControlName="phone"
+                    [class.is-invalid]="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Address *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                formControlName="address"
+                [class.is-invalid]="checkoutForm.get('address')?.invalid && checkoutForm.get('address')?.touched">
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>City *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    formControlName="city"
+                    [class.is-invalid]="checkoutForm.get('city')?.invalid && checkoutForm.get('city')?.touched">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label>Postal Code *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    formControlName="postalCode"
+                    [class.is-invalid]="checkoutForm.get('postalCode')?.invalid && checkoutForm.get('postalCode')?.touched">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Country *</label>
+              <select class="form-control" formControlName="country">
+                <option value="">Select a country</option>
+                <option value="United States">United States</option>
+                <option value="Canada">Canada</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Germany">Germany</option>
+                <option value="France">France</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-primary" (click)="nextStep()">
+                <i class="fas fa-arrow-right"></i> Continue
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 2: Payment -->
+        <div *ngIf="currentStep() === 2" class="checkout-step">
+          <div class="step-title">
+            <h4>Payment Method</h4>
+          </div>
+          <form [formGroup]="checkoutForm">
+            <div class="payment-methods">
+              <label class="payment-option">
+                <input 
+                  type="radio" 
+                  value="credit-card" 
+                  formControlName="paymentMethod">
+                <span class="option-label">
+                  <i class="fas fa-credit-card"></i> Credit Card
+                </span>
+              </label>
+              <label class="payment-option">
+                <input 
+                  type="radio" 
+                  value="paypal" 
+                  formControlName="paymentMethod">
+                <span class="option-label">
+                  <i class="fab fa-paypal"></i> PayPal
+                </span>
+              </label>
+              <label class="payment-option">
+                <input 
+                  type="radio" 
+                  value="bank-transfer" 
+                  formControlName="paymentMethod">
+                <span class="option-label">
+                  <i class="fas fa-university"></i> Bank Transfer
+                </span>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline-secondary" (click)="prevStep()">
+                <i class="fas fa-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()">
+                <i class="fas fa-arrow-right"></i> Continue
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 3: Review -->
+        <div *ngIf="currentStep() === 3" class="checkout-step">
+          <div class="step-title">
+            <h4>Review Order</h4>
+          </div>
+          
+          <!-- Order Items Summary -->
+          <div class="review-section">
+            <h5>Order Items</h5>
+            <div class="items-summary" *ngIf="cart()">
+              <div *ngFor="let item of cart()!.items" class="item-summary">
+                <span>{{ item.product?.name }} x{{ item.quantity }}</span>
+                <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Summary -->
+          <div class="review-section">
+            <h5>Shipping Address</h5>
+            <p class="address-display">
+              {{ checkoutForm.get('firstName')?.value }} {{ checkoutForm.get('lastName')?.value }}<br>
+              {{ checkoutForm.get('address')?.value }}<br>
+              {{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('postalCode')?.value }}<br>
+              {{ checkoutForm.get('country')?.value }}
+            </p>
+          </div>
+
+          <!-- Payment Method Summary -->
+          <div class="review-section">
+            <h5>Payment Method</h5>
+            <p>{{ checkoutForm.get('paymentMethod')?.value | titlecase }}</p>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline-secondary" (click)="prevStep()">
+              <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <button 
+              type="button" 
+              class="btn btn-success" 
+              (click)="onPlaceOrder()"
+              [disabled]="isLoading()">
+              <span *ngIf="!isLoading()"><i class="fas fa-check"></i> Place Order</span>
+              <span *ngIf="isLoading()"><i class="fas fa-spinner fa-spin"></i> Processing...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary Sidebar -->
+      <div class="col-lg-4">
+        <div class="order-summary-card">
+          <h5>Order Summary</h5>
+
+          <div class="summary-items" *ngIf="cart()">
+            <div class="item" *ngFor="let item of cart()!.items">
+              <span>{{ item.product?.name }} x{{ item.quantity }}</span>
+              <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="summary-section">
+            <div class="summary-row">
+              <span>Subtotal:</span>
+              <span>${{ cart() ? cart()!.totalPrice.toFixed(2) : '0.00' }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping:</span>
+              <span>Free</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax (10%):</span>
+              <span>${{ getTaxAmount().toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="summary-row total">
+            <span>Total:</span>
+            <span>${{ getTotalAmount().toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style scoped>
+.checkout-section {
+  background: #f8f9fa;
+  min-height: 100vh;
+  padding: 40px 0;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 30px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #ddd;
+  font-weight: bold;
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+  background: #ff6b35;
+  color: white;
+  border-color: #ff6b35;
+}
+
+.step-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #ddd;
+  margin: 0 10px;
+  transition: all 0.3s ease;
+}
+
+.step-line.active {
+  background: #ff6b35;
+}
+
+.checkout-step {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.step-title h4 {
+  color: #1a1a2e;
+  font-weight: bold;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ff6b35;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #ff6b35;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.payment-option {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.payment-option input[type="radio"] {
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.payment-option:has(input:checked) {
+  border-color: #ff6b35;
+  background: #fff7f2;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 4px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #ff6b35;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #e55a2b;
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+}
+
+.btn-outline-secondary {
+  background: white;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.btn-outline-secondary:hover {
+  background: #f5f5f5;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #218838;
+}
+
+.review-section {
+  margin-bottom: 25px;
+}
+
+.review-section h5 {
+  font-weight: bold;
+  color: #1a1a2e;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.items-summary {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.item-summary {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.item-summary:last-child {
+  border-bottom: none;
+}
+
+.address-display {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.order-summary-card {
+  background: white;
+  border-radius: 8px;
+  padding: 25px;
+  position: sticky;
+  top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.order-summary-card h5 {
+  font-weight: bold;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ff6b35;
+}
+
+.summary-items {
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.summary-items .item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  color: #666;
+  border-bottom: 1px solid #eee;
+}
+
+.summary-items .item:last-child {
+  border-bottom: none;
+}
+
+.summary-section {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.summary-row.total {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  padding-top: 15px;
+}
+
+.divider {
+  height: 1px;
+  background: #eee;
+  margin: 15px 0;
+}
+</style>

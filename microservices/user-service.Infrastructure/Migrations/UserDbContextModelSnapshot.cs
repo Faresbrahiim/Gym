@@ -24,41 +24,6 @@ namespace user_service.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_status", "user_status", new[] { "pending", "active", "suspended" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("user_service.Application.Domain.Entities.CoachAvailability", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CoachId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CoachId");
-
-                    b.ToTable("coach_availability", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_CoachAvailability_Day", "\"DayOfWeek\" BETWEEN 0 AND 6");
-
-                            t.HasCheckConstraint("CK_CoachAvailability_Time", "\"StartTime\" < \"EndTime\"");
-                        });
-                });
-
             modelBuilder.Entity("user_service.Application.Domain.Entities.CoachProfile", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -340,13 +305,6 @@ namespace user_service.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("TwoFactorSecret")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -442,15 +400,33 @@ namespace user_service.Migrations
                     b.ToTable("user_tokens", (string)null);
                 });
 
-            modelBuilder.Entity("user_service.Application.Domain.Entities.CoachAvailability", b =>
+            modelBuilder.Entity("user_service.Application.Domain.Entities.UserTwoFactor", b =>
                 {
-                    b.HasOne("user_service.Application.Domain.Entities.User", "Coach")
-                        .WithMany("CoachAvailabilities")
-                        .HasForeignKey("CoachId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.Navigation("Coach");
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Secret")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("user_two_factor", (string)null);
                 });
 
             modelBuilder.Entity("user_service.Application.Domain.Entities.CoachProfile", b =>
@@ -541,10 +517,19 @@ namespace user_service.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("user_service.Application.Domain.Entities.UserTwoFactor", b =>
+                {
+                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
+                        .WithOne("TwoFactor")
+                        .HasForeignKey("user_service.Application.Domain.Entities.UserTwoFactor", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("user_service.Application.Domain.Entities.User", b =>
                 {
-                    b.Navigation("CoachAvailabilities");
-
                     b.Navigation("CoachProfile");
 
                     b.Navigation("ExternalLogins");
@@ -558,6 +543,8 @@ namespace user_service.Migrations
                     b.Navigation("RecoveryCodes");
 
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("TwoFactor");
                 });
 #pragma warning restore 612, 618
         }

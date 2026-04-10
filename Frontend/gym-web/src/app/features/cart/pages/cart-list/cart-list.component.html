@@ -1,0 +1,344 @@
+<section class="cart-section">
+  <div class="container py-5">
+    <div class="section-title text-center mb-5">
+      <h2>Shopping Cart</h2>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Cart Items -->
+    <div *ngIf="!isLoading() && cart() && cart()!.items.length > 0" class="row">
+      <div class="col-lg-8">
+        <div class="cart-items">
+          <div *ngFor="let item of cart()!.items" class="cart-item">
+            <div class="item-image">
+              <img [src]="item.product?.image" [alt]="item.product?.name" class="img-fluid">
+            </div>
+            
+            <div class="item-details">
+              <h5>
+                <a [routerLink]="['/products', item.productId]">{{ item.product?.name }}</a>
+              </h5>
+              <p class="item-sku">SKU: #{{ item.productId }}</p>
+              <p class="item-price">${{ item.price }}</p>
+            </div>
+
+            <div class="item-quantity">
+              <div class="quantity-selector">
+                <button class="btn-qty" (click)="onQuantityChange(item.id, item.quantity - 1)" [disabled]="item.quantity === 1">-</button>
+                <input type="text" [value]="item.quantity" readonly class="qty-input">
+                <button class="btn-qty" (click)="onQuantityChange(item.id, item.quantity + 1)">+</button>
+              </div>
+            </div>
+
+            <div class="item-total">
+              <p class="total-price">${{ formatPrice(item.price * item.quantity) }}</p>
+            </div>
+
+            <div class="item-actions">
+              <button class="btn-remove" (click)="onRemoveItem(item.id)" title="Remove from cart">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Clear Cart Button -->
+        <div class="mt-4">
+          <button class="btn btn-outline-danger" (click)="onClearCart()">
+            <i class="fas fa-trash"></i> Clear Cart
+          </button>
+        </div>
+      </div>
+
+      <!-- Cart Summary -->
+      <div class="col-lg-4">
+        <div class="cart-summary">
+          <h5>Order Summary</h5>
+          
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>${{ formatPrice(cart()!.totalPrice) }}</span>
+          </div>
+          
+          <div class="summary-row">
+            <span>Shipping:</span>
+            <span>Free</span>
+          </div>
+          
+          <div class="summary-row">
+            <span>Tax:</span>
+            <span>${{ formatPrice(cart()!.totalPrice * 0.1) }}</span>
+          </div>
+          
+          <div class="summary-divider"></div>
+          
+          <div class="summary-row total">
+            <span>Total:</span>
+            <span>${{ formatPrice(cart()!.totalPrice * 1.1) }}</span>
+          </div>
+
+          <button class="btn btn-primary w-100 mt-4" (click)="onCheckout()">
+            <i class="fas fa-credit-card"></i> Proceed to Checkout
+          </button>
+          
+          <button class="btn btn-outline-secondary w-100 mt-2" (click)="onContinueShopping()">
+            <i class="fas fa-arrow-left"></i> Continue Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty Cart State -->
+    <div *ngIf="!isLoading() && (!cart() || cart()!.items.length === 0)" class="text-center py-5">
+      <div class="empty-cart-icon mb-3">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <p class="text-muted mb-3">Your cart is empty</p>
+      <button class="btn btn-primary" (click)="onContinueShopping()">
+        <i class="fas fa-arrow-left"></i> Continue Shopping
+      </button>
+    </div>
+  </div>
+</section>
+
+<style scoped>
+.cart-section {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.section-title h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.cart-items {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.item-image {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-details h5 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.item-details h5 a {
+  color: #1a1a2e;
+  text-decoration: none;
+}
+
+.item-details h5 a:hover {
+  color: #ff6b35;
+}
+
+.item-sku {
+  color: #999;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.item-price {
+  color: #ff6b35;
+  font-weight: bold;
+  margin: 5px 0 0 0;
+}
+
+.item-quantity {
+  flex-shrink: 0;
+}
+
+.quantity-selector {
+  display: inline-flex;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.btn-qty {
+  background: white;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.btn-qty:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+
+.btn-qty:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.qty-input {
+  border: none;
+  text-align: center;
+  padding: 6px 10px;
+  width: 40px;
+  font-weight: bold;
+}
+
+.item-total {
+  flex-shrink: 0;
+  text-align: right;
+  min-width: 80px;
+}
+
+.total-price {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.item-actions {
+  flex-shrink: 0;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 5px;
+  transition: all 0.3s ease;
+}
+
+.btn-remove:hover {
+  color: #c82333;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.cart-summary {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  position: sticky;
+  top: 20px;
+}
+
+.cart-summary h5 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ff6b35;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  color: #666;
+}
+
+.summary-row.total {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  padding-top: 15px;
+}
+
+.summary-divider {
+  height: 1px;
+  background: #eee;
+  margin: 10px 0;
+}
+
+.btn-primary {
+  background: #ff6b35;
+  border: none;
+  color: white;
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #e55a2b;
+}
+
+.btn-outline-secondary {
+  color: #666;
+  border: 1px solid #ddd;
+  background: white;
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+  border-color: #666;
+}
+
+.empty-cart-icon {
+  font-size: 3rem;
+  color: #ddd;
+}
+
+.spinner-border {
+  color: #ff6b35;
+}
+</style>

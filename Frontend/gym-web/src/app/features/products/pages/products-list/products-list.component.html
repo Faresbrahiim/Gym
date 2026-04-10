@@ -1,0 +1,331 @@
+<section class="products-section">
+  <div class="container py-5">
+    <div class="section-title text-center mb-5">
+      <h2>Our Products</h2>
+      <p class="sub-title">Premium fitness equipment and supplements for your training needs</p>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section mb-4">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <div class="search-box">
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Search products..."
+              [(ngModel)]="searchQuery"
+              (keyup.enter)="onSearch()">
+            <button class="btn btn-search" (click)="onSearch()">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="categories-filter">
+            <button 
+              *ngFor="let category of categories" 
+              class="btn btn-category"
+              [class.active]="selectedCategory() === category"
+              (click)="onCategoryChange(category)">
+              {{ category }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div *ngIf="!isLoading()" class="products-grid">
+      <div class="row g-4">
+        <div *ngFor="let product of products()" class="col-lg-3 col-md-4 col-sm-6">
+          <div class="product-card">
+            <div class="product-image">
+              <img [src]="product.image" [alt]="product.name" class="img-fluid">
+              <div *ngIf="product.discountPrice" class="discount-badge">
+                -{{ getDiscountPercentage(product.price, product.discountPrice) }}%
+              </div>
+              <button class="btn btn-add-cart" (click)="onAddToCart(product)">
+                <i class="fas fa-shopping-cart"></i> Add to Cart
+              </button>
+            </div>
+            <div class="product-info">
+              <h5>
+                <a [routerLink]="['/products', product.id]">{{ product.name }}</a>
+              </h5>
+              <p class="product-category">{{ product.category }}</p>
+              <p class="product-description">{{ product.description }}</p>
+              
+              <div class="product-rating" *ngIf="product.rating">
+                <div class="stars">
+                  <i class="fas fa-star" *ngFor="let i of [1,2,3,4,5]" [class.half]="i > product.rating"></i>
+                </div>
+                <span class="review-count">({{ product.reviews }} reviews)</span>
+              </div>
+
+              <div class="product-price mt-3">
+                <span class="current-price">${{ product.discountPrice || product.price }}</span>
+                <span *ngIf="product.discountPrice" class="original-price">${{ product.price }}</span>
+              </div>
+
+              <button 
+                class="btn btn-primary mt-2 w-100"
+                [disabled]="product.stock === 0"
+                [routerLink]="['/products', product.id]">
+                <span *ngIf="product.stock > 0">View Details</span>
+                <span *ngIf="product.stock === 0">Out of Stock</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && products().length === 0" class="text-center py-5">
+      <p class="text-muted">No products found. Try adjusting your search or filters.</p>
+    </div>
+  </div>
+</section>
+
+<style scoped>
+.products-section {
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.section-title h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #1a1a2e;
+  margin-bottom: 10px;
+}
+
+.sub-title {
+  color: #666;
+  font-size: 1rem;
+}
+
+.filters-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.95rem;
+}
+
+.btn-search {
+  padding: 12px 20px;
+  background: #ff6b35;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+.btn-search:hover {
+  background: #e55a2b;
+}
+
+.categories-filter {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-category {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-category:hover,
+.btn-category.active {
+  background: #ff6b35;
+  color: white;
+  border-color: #ff6b35;
+}
+
+.products-grid {
+  margin-top: 30px;
+}
+
+.product-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.product-image {
+  position: relative;
+  overflow: hidden;
+  height: 250px;
+  background: #f5f5f5;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.discount-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff6b35;
+  color: white;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.btn-add-cart {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  background: rgba(255, 107, 53, 0.9);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.product-card:hover .btn-add-cart {
+  opacity: 1;
+}
+
+.product-info {
+  padding: 15px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-info h5 {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 1rem;
+}
+
+.product-info h5 a {
+  color: #1a1a2e;
+  text-decoration: none;
+}
+
+.product-info h5 a:hover {
+  color: #ff6b35;
+}
+
+.product-category {
+  color: #ff6b35;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.product-description {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  color: #ffc107;
+}
+
+.stars i {
+  font-size: 0.8rem;
+}
+
+.review-count {
+  color: #999;
+  font-size: 0.85rem;
+}
+
+.product-price {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.current-price {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #ff6b35;
+}
+
+.original-price {
+  font-size: 0.95rem;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.btn-primary {
+  background: #ff6b35;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #e55a2b;
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.spinner-border {
+  color: #ff6b35;
+}
+</style>
