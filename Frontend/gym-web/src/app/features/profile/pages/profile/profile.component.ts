@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, switchMap, of } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
@@ -17,7 +18,7 @@ const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
 @Component({
   standalone: true,
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, DashboardMenuComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })

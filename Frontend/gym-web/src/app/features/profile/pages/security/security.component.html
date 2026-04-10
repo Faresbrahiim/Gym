@@ -1,149 +1,109 @@
-<!-- ===================== LOADING ===================== -->
-@if (isLoading()) {
-  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
+<!-- Breadcrumb — always visible -->
+<section class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container">
+    <h1 class="text-white">Security</h1>
+    <ul>
+      <li><a routerLink="/home">Home</a></li>
+      <li><a routerLink="/profile">Profile</a></li>
+      <li>Security</li>
+    </ul>
   </div>
-}
+</section>
 
-<!-- ===================== ERROR ===================== -->
-@if (!isLoading() && hasError()) {
-  <div class="content court-bg">
-    <div class="container">
-      <div class="text-center py-5">
-        <p class="text-muted mb-3">Unable to load sessions. Please try again.</p>
-        <button class="btn btn-secondary" (click)="retry()">Retry</button>
-      </div>
-    </div>
-  </div>
-}
+<!-- Dashboard Menu — always visible -->
+<app-dashboard-menu />
 
-<!-- ===================== CONTENT ===================== -->
-@if (!isLoading() && !hasError()) {
+<!-- Page Content -->
+<div class="content court-bg">
+  <div class="container">
 
-  <!-- Breadcrumb -->
-  <section class="breadcrumb breadcrumb-list mb-0">
-    <span class="primary-right-round"></span>
-    <div class="container">
-      <h1 class="text-white">Security</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/profile">Profile</a></li>
-        <li>Security</li>
-      </ul>
-    </div>
-  </section>
-  <!-- /Breadcrumb -->
-
-  <!-- Dashboard Menu -->
-  <div class="dashboard-section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="dashboard-menu">
-            <ul>
-              <li>
-                <a routerLink="/home">
-                  <img src="assets/img/icons/dashboard-icon.svg" alt="Icon">
-                  <span>Dashboard</span>
-                </a>
-              </li>
-              <li>
-                <a routerLink="/profile">
-                  <img src="assets/img/icons/profile-icon.svg" alt="Icon">
-                  <span>Profile</span>
-                </a>
-              </li>
-              <li>
-                <a routerLink="/profile/security" class="active">
-                  <img src="assets/img/icons/sessions.svg" alt="Icon">
-                  <span>Security</span>
-                </a>
-              </li>
-            </ul>
-          </div>
+    <!-- Logout-all confirmation banner -->
+    @if (showLogoutConfirm()) {
+      <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4" role="alert">
+        <span>
+          <i class="feather-alert-circle me-2"></i>
+          This will sign you out of <strong>all devices</strong>, including this one. Are you sure?
+        </span>
+        <div class="d-flex gap-2 flex-shrink-0 ms-3">
+          <button class="btn btn-sm btn-danger" (click)="confirmLogoutAll()" [disabled]="isLoggingOutAll()">
+            @if (isLoggingOutAll()) {
+              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+            }
+            Sign out all
+          </button>
+          <button class="btn btn-sm btn-secondary" (click)="cancelLogoutAll()" [disabled]="isLoggingOutAll()">
+            Cancel
+          </button>
         </div>
       </div>
+    }
+
+    <!-- 2FA card — static, no data dependency -->
+    <div class="profile-card mb-4">
+      <div class="profile-card-title d-flex align-items-center justify-content-between">
+        <div>
+          <h4 class="mb-1">Two-Factor Authentication</h4>
+          <p class="text-muted small mb-0">Add an extra layer of security. Use an authenticator app to generate a login code.</p>
+        </div>
+        <a routerLink="/setup-2fa" class="btn btn-sm btn-outline-secondary flex-shrink-0 ms-3">
+          <i class="feather-shield me-1"></i>Set up / Reconfigure 2FA
+        </a>
+      </div>
     </div>
-  </div>
-  <!-- /Dashboard Menu -->
 
-  <!-- Page Content -->
-  <div class="content court-bg">
-    <div class="container">
+    <!-- Change Password card — static, no data dependency -->
+    <div class="profile-card mb-4">
+      <div class="profile-card-title d-flex align-items-center justify-content-between">
+        <div>
+          <h4 class="mb-1">Change Password</h4>
+          <p class="text-muted small mb-0">We'll send a reset link to your email address.</p>
+        </div>
+        <button
+          class="btn btn-sm btn-outline-secondary flex-shrink-0 ms-3"
+          (click)="requestPasswordChange()"
+          [disabled]="isSendingReset() || resetSent()">
+          @if (isSendingReset()) {
+            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+          } @else {
+            <i class="feather-lock me-1"></i>
+          }
+          {{ resetSent() ? 'Email sent' : 'Send reset link' }}
+        </button>
+      </div>
+      @if (resetSent()) {
+        <div class="alert alert-success py-2 mt-3 mb-0">
+          <i class="feather-check-circle me-2"></i>
+          A password reset link has been sent to your email. Check your inbox.
+        </div>
+      }
+      @if (resetError()) {
+        <div class="alert alert-danger py-2 mt-3 mb-0">
+          <i class="feather-alert-circle me-2"></i>
+          {{ resetError() }}
+        </div>
+      }
+    </div>
 
-      <!-- Logout-all confirmation banner -->
-      @if (showLogoutConfirm()) {
-        <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4" role="alert">
-          <span>
-            <i class="feather-alert-circle me-2"></i>
-            This will sign you out of <strong>all devices</strong>, including this one. Are you sure?
-          </span>
-          <div class="d-flex gap-2 flex-shrink-0 ms-3">
-            <button class="btn btn-sm btn-danger" (click)="confirmLogoutAll()" [disabled]="isLoggingOutAll()">
-              @if (isLoggingOutAll()) {
-                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-              }
-              Sign out all
-            </button>
-            <button class="btn btn-sm btn-secondary" (click)="cancelLogoutAll()" [disabled]="isLoggingOutAll()">
-              Cancel
-            </button>
+    <!-- Sessions card — loading scoped here only -->
+    <div class="profile-card">
+
+      @if (isLoading()) {
+        <div class="d-flex justify-content-center align-items-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
           </div>
         </div>
       }
 
-      <!-- 2FA card -->
-      <div class="profile-card mb-4">
-        <div class="profile-card-title d-flex align-items-center justify-content-between">
-          <div>
-            <h4 class="mb-1">Two-Factor Authentication</h4>
-            <p class="text-muted small mb-0">Add an extra layer of security. Use an authenticator app to generate a login code.</p>
-          </div>
-          <a routerLink="/setup-2fa" class="btn btn-sm btn-outline-secondary flex-shrink-0 ms-3">
-            <i class="feather-shield me-1"></i>Set up / Reconfigure 2FA
-          </a>
+      @if (!isLoading() && hasError()) {
+        <div class="text-center py-5">
+          <p class="text-muted mb-3">Unable to load sessions. Please try again.</p>
+          <button class="btn btn-secondary" (click)="retry()">Retry</button>
         </div>
-      </div>
-      <!-- /2FA card -->
+      }
 
-      <!-- Change password card -->
-      <div class="profile-card mb-4">
-        <div class="profile-card-title d-flex align-items-center justify-content-between">
-          <div>
-            <h4 class="mb-1">Change Password</h4>
-            <p class="text-muted small mb-0">We'll send a reset link to your email address.</p>
-          </div>
-          <button
-            class="btn btn-sm btn-outline-secondary flex-shrink-0 ms-3"
-            (click)="requestPasswordChange()"
-            [disabled]="isSendingReset() || resetSent()">
-            @if (isSendingReset()) {
-              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-            } @else {
-              <i class="feather-lock me-1"></i>
-            }
-            {{ resetSent() ? 'Email sent' : 'Send reset link' }}
-          </button>
-        </div>
-        @if (resetSent()) {
-          <div class="alert alert-success py-2 mt-3 mb-0">
-            <i class="feather-check-circle me-2"></i>
-            A password reset link has been sent to your email. Check your inbox.
-          </div>
-        }
-        @if (resetError()) {
-          <div class="alert alert-danger py-2 mt-3 mb-0">
-            <i class="feather-alert-circle me-2"></i>
-            {{ resetError() }}
-          </div>
-        }
-      </div>
-      <!-- /Change password card -->
-
-      <!-- Sessions card -->
-      <div class="profile-card">
+      @if (!isLoading() && !hasError()) {
         <div class="profile-card-title d-flex align-items-center justify-content-between">
           <h4 class="mb-0">Active Sessions</h4>
           <button
@@ -169,7 +129,6 @@
             @for (session of sessions(); track session.tokenId) {
               <div class="session-item">
 
-                <!-- Device icon -->
                 <div class="session-icon">
                   @if (parseAgent(session.userAgent).isMobile) {
                     <i class="feather-smartphone"></i>
@@ -178,17 +137,14 @@
                   }
                 </div>
 
-                <!-- Session info -->
                 <div class="session-info">
                   <div class="session-name">
                     {{ parseAgent(session.userAgent).browser }}
                     <span class="session-os">on {{ parseAgent(session.userAgent).os }}</span>
-
                     @if (isCurrentSession(session)) {
                       <span class="badge session-current-badge ms-2">This device</span>
                     }
                   </div>
-
                   <div class="session-meta">
                     <span>
                       <i class="feather-map-pin me-1"></i>
@@ -202,7 +158,6 @@
                   </div>
                 </div>
 
-                <!-- Revoke button -->
                 <div class="session-action flex-shrink-0">
                   @if (!isCurrentSession(session)) {
                     <button
@@ -225,11 +180,10 @@
             }
           </div>
         }
-      </div>
-      <!-- /Sessions card -->
+      }
 
     </div>
-  </div>
-  <!-- /Page Content -->
+    <!-- /Sessions card -->
 
-}
+  </div>
+</div>
