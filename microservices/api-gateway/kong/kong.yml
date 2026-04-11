@@ -135,6 +135,12 @@ services:
                 - 10.0.0.0/8
                 - 192.168.0.0/16
 
+      # --- Static file uploads ---
+      - name: user-uploads-route
+        paths:
+          - /uploads
+        strip_path: false
+
       # --- Swagger (no plugins) ---
       - name: user-swagger-route
         paths:

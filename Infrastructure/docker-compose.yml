@@ -50,6 +50,7 @@ services:
       Email__SmtpUser: ${EMAIL_SMTP_USER}
       Email__SmtpPass: ${EMAIL_SMTP_PASS}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PublicBaseUrl: http://localhost:8000
     depends_on:
       gym-user-db:
         condition: service_healthy
