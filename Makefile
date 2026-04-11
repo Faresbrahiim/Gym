@@ -37,14 +37,26 @@ help:
 	@echo "make git-pull b=x    -> git pull"
 	@echo "make git-logs        -> git log"
 
+
+# =========================
+# start  backend 
+# =========================
+
+backend:
+	$(COMPOSE) up --build
+
+# =========================
+# start  frontend 
+# =========================
+
+frontend:
+	cd $(FRONTEND_DIR) && ng serve
+
 # =========================
 # DOCKER CORE
 # =========================
 build:
 	$(COMPOSE) build
-
-up:
-	$(COMPOSE) up --build
 
 up-d:
 	$(COMPOSE) up --build -d
@@ -100,9 +112,6 @@ bash-gateway:
 ng-install:
 	cd $(FRONTEND_DIR) && npm install
 
-ng:
-	cd $(FRONTEND_DIR) && ng serve
-
 ng-build:
 	cd $(FRONTEND_DIR) && ng build --configuration production
 
@@ -113,7 +122,12 @@ add:
 	git add .
 
 commit:
-	git commit -m "$(m)"
+	@if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
+		echo " Missing commit message"; \
+		echo "Usage: make commit your message here"; \
+		exit 1; \
+	fi; \
+	git commit -m "$(filter-out $@,$(MAKECMDGOALS))"
 
 push:
 	git push origin $(b)
