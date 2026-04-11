@@ -32,6 +32,9 @@ namespace user_service.Controllers
             [FromBody] UpdateUserProfileDto dto,
             CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             var userId = GetUserId();
             await _service.UpdateMeAsync(userId, dto, cancellationToken);
             return NoContent();
@@ -42,6 +45,9 @@ namespace user_service.Controllers
             [FromBody] UpdateMemberProfileDto dto,
             CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             var userId = GetUserId();
             await _service.UpdateMemberProfileAsync(userId, dto, cancellationToken);
             return NoContent();
@@ -52,6 +58,9 @@ namespace user_service.Controllers
             [FromBody] UpdateCoachProfileDto dto,
             CancellationToken cancellationToken)
         {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
             var userId = GetUserId();
             await _service.UpdateCoachProfileAsync(userId, dto, cancellationToken);
             return NoContent();

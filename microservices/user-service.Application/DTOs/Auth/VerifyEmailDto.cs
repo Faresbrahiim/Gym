@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace user_service.Application.DTOs
 {
     public class VerifyEmailDto
     {
+        [Required]
         public string Token { get; set; } = null!;
     }
 }

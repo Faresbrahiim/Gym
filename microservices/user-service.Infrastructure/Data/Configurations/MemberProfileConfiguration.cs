@@ -33,6 +33,7 @@ namespace user_service.Infrastructure.Data.Configurations
             
             builder.HasCheckConstraint("CK_MemberProfile_Height", "\"HeightCm\" > 0");
             builder.HasCheckConstraint("CK_MemberProfile_Weight", "\"WeightKg\" > 0");
+            builder.HasCheckConstraint("CK_MemberProfile_Gender", "\"Gender\" IN ('Male', 'Female', 'Other')");
 
             builder.HasOne(p => p.User)
                 .WithOne(u => u.MemberProfile)

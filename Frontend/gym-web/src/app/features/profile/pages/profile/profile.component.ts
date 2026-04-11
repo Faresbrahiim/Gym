@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, switchMap, of } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
@@ -11,13 +12,14 @@ import { UserMe } from '../../models/user-me.model';
 import { UpdateProfileRequest } from '../../models/update-profile-request.model';
 import { UpdateMemberProfileRequest } from '../../models/update-member-profile-request.model';
 import { UpdateCoachProfileRequest } from '../../models/update-coach-profile-request.model';
+import { moroccanPhoneValidators } from '../../../../shared/validators/phone.validator';
 
 const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
 
 @Component({
   standalone: true,
   selector: 'app-profile',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, DashboardMenuComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -65,23 +67,23 @@ export class ProfileComponent implements OnInit {
     this.profileForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName:  ['', Validators.required],
-      phone:     ['']
+      phone:     ['', moroccanPhoneValidators]
     });
 
     this.memberForm = this.fb.group({
       gender:         [''],
       dateOfBirth:    [''],
-      heightCm:       [null],
-      weightKg:       [null],
-      fitnessGoal:    [''],
+      heightCm:       [null, [Validators.min(50), Validators.max(300)]],
+      weightKg:       [null, [Validators.min(20), Validators.max(500)]],
+      fitnessGoal:    ['', Validators.maxLength(255)],
       experienceLevel:['']
     });
 
     this.coachForm = this.fb.group({
-      bio:              [''],
-      yearsOfExperience:[null],
-      certifications:   [''],
-      language:         ['']
+      bio:              ['', Validators.maxLength(1000)],
+      yearsOfExperience:[null, [Validators.min(0), Validators.max(60)]],
+      certifications:   ['', Validators.maxLength(500)],
+      language:         ['', Validators.maxLength(100)]
     });
   }
 

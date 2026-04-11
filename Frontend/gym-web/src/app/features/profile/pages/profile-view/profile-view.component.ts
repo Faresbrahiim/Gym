@@ -5,13 +5,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { UserMe } from '../../models/user-me.model';
+import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 
 const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
 
 @Component({
   standalone: true,
   selector: 'app-profile-view',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, DashboardMenuComponent],
   templateUrl: './profile-view.component.html'
 })
 export class ProfileViewComponent implements OnInit {

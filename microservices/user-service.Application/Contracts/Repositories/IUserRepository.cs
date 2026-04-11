@@ -35,5 +35,9 @@ namespace user_service.Application.Contracts.Repositories
         Task<User?> GetFullById(
         Guid userId,
         CancellationToken cancellationToken = default);
+
+        Task UpsertTwoFactor(
+            UserTwoFactor twoFactor,
+            CancellationToken cancellationToken = default);
     }
 }
