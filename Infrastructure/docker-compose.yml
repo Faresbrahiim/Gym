@@ -15,7 +15,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "5433:5432"       # keep — for DBeaver/pgAdmin local DB access
     volumes:
       - gym-user-db-data:/var/lib/postgresql/data
     networks:
@@ -33,8 +33,7 @@ services:
     container_name: gym-user-service
     env_file:
       - ../microservices/user-service/.env
-    ports:
-      - "5000:8080"
+    #  REMOVED ports: 5000:8080
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Host=gym-user-db;Port=5432;Database=user_service_db;Username=postgres;Password=${POSTGRES_PASSWORD}
@@ -73,7 +72,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${MEMBERSHIP_DB_PASSWORD}
     ports:
-      - "5434:5432"
+      - "5434:5432"       
     volumes:
       - membership-db-data:/var/lib/postgresql/data
     networks:
@@ -91,8 +90,7 @@ services:
       context: ../microservices/membership-service
       dockerfile: Dockerfile
     container_name: membership-service
-    ports:
-      - "8080:8080"
+    #  REMOVED ports: 8080:8080 
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_DATASOURCE_URL: jdbc:postgresql://membership-db:5432/membership_db
@@ -106,13 +104,12 @@ services:
       - gym-network
 
   # ==============================
-  # Kafka (KRaft — no ZooKeeper)
+  # Kafka 
   # ==============================
   kafka:
     image: apache/kafka:3.9.0
     container_name: kafka
-    ports:
-      - "9092:9092"
+    # REMOVED ports
     environment:
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
       KAFKA_NODE_ID: 1
@@ -142,7 +139,7 @@ services:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
     ports:
-      - "8085:8080"
+      - "8085:8080"       
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
@@ -156,20 +153,16 @@ services:
     image: kong:3.6
     container_name: kong
     restart: always
-
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /kong/kong.yml
       KONG_PROXY_LISTEN: 0.0.0.0:8000
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001
-
+      KONG_ADMIN_LISTEN: 127.0.0.1:8001  # localhost only
     volumes:
-        - ../microservices/api-gateway/kong:/kong
-
+      - ../microservices/api-gateway/kong:/kong
     ports:
-      - "8000:8000"
-      - "8001:8001"
-
+      - "8000:8000"       # main entry point for all traffic
+      - "127.0.0.1:8001:8001" # admin API — only accessible from host machine, not other containers
     networks:
       - gym-network
 
