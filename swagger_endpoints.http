@@ -1,0 +1,5 @@
+// ps need authorization token to access these endpoints 
+// just to see the swagger documentation for membership and user management
+// user postman don't be lazy maaan
+http://localhost:8000/api/membership/swagger-ui/index.html#/
+http://localhost:8000/api/user/swagger/index.html
