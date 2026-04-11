@@ -5,9 +5,11 @@ using user_service.Application.Domain.Events;
 using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
 using user_service.Application.Mappers;
+
 using user_service.Application.Domain.Exceptions;
 using user_service.Application.Helpers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace user_service.Application.Services
 {
@@ -31,6 +33,7 @@ namespace user_service.Application.Services
         private readonly IRevokedTokenRepository _revokedTokenRepository;
 
         private readonly int _passwordResetExpiryMinutes;
+        private readonly string _frontendBaseUrl;
 
         public AuthService(
             IUserRepository userRepository,
@@ -48,7 +51,8 @@ namespace user_service.Application.Services
             IRecoveryCodeRepository recoveryCodeRepository,
             IEventPublisher eventPublisher,
             // Immediate Session Invalidation — JTI Blacklist  author: Anas
-            IRevokedTokenRepository revokedTokenRepository)
+            IRevokedTokenRepository revokedTokenRepository,
+            IConfiguration configuration)
 
         {
             _userRepository = userRepository;
@@ -73,6 +77,7 @@ namespace user_service.Application.Services
             _eventPublisher = eventPublisher;
             // Immediate Session Invalidation — JTI Blacklist  author: Anas
             _revokedTokenRepository = revokedTokenRepository;
+            _frontendBaseUrl = configuration["FrontendBaseUrl"] ?? "http://localhost:4200";
         }
 
         // -----------------------------------------------------
@@ -90,13 +95,7 @@ namespace user_service.Application.Services
                 throw new AccountNotActivatedException();
 
             if (user.TwoFactor?.IsEnabled == true)
-            {
-                return new LoginResponse
-                {
-                    RequiresTwoFactor = true,
-                    UserId = user.Id
-                };
-            }
+                return AuthMapper.ToPendingTwoFactorResponse(user.Id);
 
             return await CompleteLoginAsync(user, request.Password, cancellationToken);
         }
@@ -144,13 +143,7 @@ namespace user_service.Application.Services
             }
 
             if (user.TwoFactor?.IsEnabled == true)
-            {
-                return new LoginResponse
-                {
-                    RequiresTwoFactor = true,
-                    UserId = user.Id
-                };
-            }
+                return AuthMapper.ToPendingTwoFactorResponse(user.Id);
 
             return await CompleteLoginAsync(user, null, cancellationToken);
         }
@@ -170,26 +163,8 @@ namespace user_service.Application.Services
 
             var passwordHash = _passwordHasher.Hash(request.Password);
 
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = email,
-                Username = request.Username,
-                PasswordHash = passwordHash,
-                Role = UserRole.MEMBER,
-                Status = UserStatus.PENDING, // LATER CHANGE TO PENDING AND REQUIRE EMAIL VERIFICATION
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-
-            var profile = new UserProfile
-            {
-                UserId = user.Id,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var user    = UserMapper.FromRegisterRequest(email, request.Username, passwordHash);
+            var profile = ProfileMapper.NewUserProfile(user.Id, request.FirstName, request.LastName, DateTime.UtcNow);
 
             await _userRepository.Create(user, cancellationToken);
             await _userProfileRepository.Create(profile, cancellationToken);
@@ -197,7 +172,7 @@ namespace user_service.Application.Services
             var rawToken = await _passwordCredentialService
                 .CreateEmailVerificationTokenAsync(user.Id, cancellationToken);
 
-            var verificationLink = $"http://localhost:4200/verify-email?token={Uri.EscapeDataString(rawToken)}";
+            var verificationLink = $"{_frontendBaseUrl}/verify-email?token={Uri.EscapeDataString(rawToken)}";
 
             await _emailService.SendEmailVerification(user.Email, verificationLink);
 
@@ -230,7 +205,7 @@ namespace user_service.Application.Services
                     _passwordResetExpiryMinutes,
                     cancellationToken);
 
-            var resetLink = $"http://localhost:4200/change-password?token={rawToken}";
+            var resetLink = $"{_frontendBaseUrl}/change-password?token={rawToken}";
             await _emailService.SendPasswordResetEmail(user.Email, resetLink);
             await _fileAuditService.LogAsync(
          action: "request reset password  ",
@@ -258,19 +233,11 @@ namespace user_service.Application.Services
         // -----------------------------------------------------
         private async Task<LoginResponse> CompleteLoginAsync(User user, string? password, CancellationToken cancellationToken)
         {
-            bool updated = false;
-
             if (password != null && _passwordHasher.NeedsRehash(user.PasswordHash))
-            {
                 user.PasswordHash = _passwordHasher.Hash(password);
-                updated = true;
-            }
 
             user.LastLoginAt = DateTime.UtcNow;
-            updated = true;
-
-            if (updated)
-                await _userRepository.Update(user, cancellationToken);
+            await _userRepository.Update(user, cancellationToken);
 
             var userDto = UserMapper.ToDto(user);
             // Immediate Session Invalidation — JTI Blacklist  author: Anas
@@ -281,31 +248,22 @@ namespace user_service.Application.Services
             var httpContext = _httpContextAccessor.HttpContext;
             var ip = httpContext?.Connection.RemoteIpAddress?.ToString();
             var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
-            await _refreshTokenRepository.Create(new RefreshToken
-            {
-                Id = Guid.NewGuid(),
-                UserId = user.Id,
-                TokenHash = hash,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
-                UserAgent = userAgent,
-                IpAddress = ip,
-                // Immediate Session Invalidation — JTI Blacklist  author: Anas
-                AccessTokenJti = tokenResult.Jti,
-                AccessTokenExpiresAt = tokenResult.ExpiresAt
-            }, cancellationToken);
+
+            // fix session revoke
+            if (!string.IsNullOrEmpty(userAgent))
+                await _refreshTokenRepository.RevokeByUserAgent(user.Id, userAgent, cancellationToken);
+
+            await _refreshTokenRepository.Create(
+                AuthMapper.ToRefreshTokenEntity(Guid.NewGuid(), user.Id, hash, ip, userAgent, tokenResult),
+                cancellationToken);
+
             await _fileAuditService.LogAsync(
-            action: "log in  ",
-            performedBy: user.Username,
-            details: "User logged successfully"
+                action: "log in  ",
+                performedBy: user.Username,
+                details: "User logged successfully"
             );
-            return new LoginResponse
-            {
-                RequiresTwoFactor = false,
-                AccessToken = tokenResult.Token,
-                RefreshToken = rawRefresh,
-                UserId = user.Id
-            };
+
+            return AuthMapper.ToLoginResponse(user.Id, tokenResult.Token, rawRefresh);
         }
 
         // -----------------------------------------------------
@@ -336,26 +294,11 @@ namespace user_service.Application.Services
             var userDto = UserMapper.ToDto(user);
             var tokenResult = _tokenService.GenerateToken(userDto);
 
-            await _refreshTokenRepository.Create(new RefreshToken
-            {
-                Id = user.Id,
-                TokenHash = newHash,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddDays(7),
-                UserAgent = userAgent,
-                IpAddress = ip,
-                // Immediate Session Invalidation — JTI Blacklist  author: Anas
-                AccessTokenJti = tokenResult.Jti,
-                AccessTokenExpiresAt = tokenResult.ExpiresAt
-            }, cancellationToken);
+            await _refreshTokenRepository.Create(
+                AuthMapper.ToRefreshTokenEntity(Guid.NewGuid(), user.Id, newHash, ip, userAgent, tokenResult),
+                cancellationToken);
 
-            return new LoginResponse
-            {
-                RequiresTwoFactor = false,
-                AccessToken = tokenResult.Token,
-                RefreshToken = newRaw,
-                UserId = user.Id
-            };
+            return AuthMapper.ToLoginResponse(user.Id, tokenResult.Token, newRaw);
         }
         public async Task Logout(string refreshToken)
         {
@@ -433,7 +376,7 @@ namespace user_service.Application.Services
                 _ => throw new InvalidOperationException("Unsupported token type")
             };
 
-            var link = $"http://localhost:4200/{frontendPath}?token={rawToken}";
+            var link = $"{_frontendBaseUrl}/{frontendPath}?token={rawToken}";
 
             await sendEmail(user.Email, link);
 
@@ -463,13 +406,7 @@ namespace user_service.Application.Services
         {
             var tokens = await _refreshTokenRepository.GetActiveTokens(userId);
 
-            return tokens.Select(t => new SessionDto
-            {
-                TokenId = t.Id,
-                CreatedAt = t.CreatedAt,
-                IpAddress = t.IpAddress,
-                UserAgent = t.UserAgent
-            }).ToList();
+            return tokens.Select(AuthMapper.ToSessionDto).ToList();
         }
 
         // Immediate Session Invalidation — JTI Blacklist  author: Anas

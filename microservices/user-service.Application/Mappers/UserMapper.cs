@@ -19,6 +19,38 @@ namespace user_service.Application.Mappers
                 Role = user.Role,
             };
         }
+        public static User FromRegisterRequest(string email, string username, string passwordHash)
+        {
+            var now = DateTime.UtcNow;
+            return new User
+            {
+                Id           = Guid.NewGuid(),
+                Email        = email,
+                Username     = username,
+                PasswordHash = passwordHash,
+                Role         = UserRole.MEMBER,
+                Status       = UserStatus.PENDING,
+                CreatedAt    = now,
+                UpdatedAt    = now
+            };
+        }
+
+        public static User FromInvitation(string email, string username, UserRole role)
+        {
+            var now = DateTime.UtcNow;
+            return new User
+            {
+                Id           = Guid.NewGuid(),
+                Email        = email,
+                Username     = username,
+                Role         = role,
+                Status       = UserStatus.PENDING,
+                PasswordHash = null,
+                CreatedAt    = now,
+                UpdatedAt    = now
+            };
+        }
+
         // hadi dyal men google payload l user entity, ghadi t3tiha l auth service bach t create user jdida ila ma kaynach
         public static User FromGooglePayload(GoogleJsonWebSignature.Payload payload)
         {
