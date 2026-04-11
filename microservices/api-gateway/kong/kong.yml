@@ -1,5 +1,4 @@
 _format_version: "3.0"
-
 services:
   - name: membership-service
     url: http://membership-service:8080
@@ -16,6 +15,34 @@ services:
               key_claim_name: kid
               claims_to_verify:
                 - exp
+
+          - name: rate-limiting
+            config:
+              minute: 60          
+              hour: 1000
+              policy: local       
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "*"   
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              exposed_headers:
+                - X-Auth-Token
+              credentials: true
+              max_age: 3600
+              preflight_continue: false
 
       - name: membership-swagger-route
         paths:
