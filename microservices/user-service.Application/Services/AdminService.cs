@@ -10,6 +10,8 @@ using user_service.Application.Domain.Enums;
 using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
 using user_service.Application.Helpers;
+using user_service.Application.Mappers;
+using Microsoft.Extensions.Configuration;
 
 namespace user_service.Application.Services
 {
@@ -20,19 +22,22 @@ namespace user_service.Application.Services
         private readonly IEmailService _emailService;
         private readonly IFileAuditService _fileAuditService;
         private readonly IPasswordCredentialService _passwordCredentialService;
+        private readonly string _frontendBaseUrl;
 
         public AdminService(
           IUserRepository userRepository,
           IEmailService emailService,
           IPasswordCredentialService passwordCredentialService,
           IUserTokenRepository userTokenRepository,
-          IFileAuditService fileAuditService)
+          IFileAuditService fileAuditService,
+          IConfiguration configuration)
         {
             _userRepository = userRepository;
             _emailService = emailService;
             _fileAuditService = fileAuditService;
             _userTokenRepository = userTokenRepository;
             _passwordCredentialService = passwordCredentialService;
+            _frontendBaseUrl = configuration["FrontendBaseUrl"] ?? "http://localhost:4200";
         }
         public async Task CreateMemberAsync(
             CreateMemberByAdminDto dto,
@@ -79,24 +84,14 @@ namespace user_service.Application.Services
             if (await _userRepository.GetByUsername(username, cancellationToken) != null)
                 throw new UsernameAlreadyExistsException(username);
 
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                Email = email,
-                Username = username,
-                Role = role,
-                Status = UserStatus.PENDING,
-                PasswordHash = null,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var user = UserMapper.FromInvitation(email, username, role);
 
             await _userRepository.Create(user, cancellationToken);
 
             var rawToken = await _passwordCredentialService
                     .CreateInvitationTokenAsync(user.Id, cancellationToken);
 
-            var invitationLink = $"http://localhost:4200/setup-password?token={rawToken}";
+            var invitationLink = $"{_frontendBaseUrl}/setup-password?token={rawToken}";
 
             await _emailService.SendInvitationEmail(user.Email, invitationLink);
 

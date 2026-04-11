@@ -71,5 +71,25 @@ namespace user_service.Infrastructure.Repositories
                     t.RevokedAt == null &&
                     t.ExpiresAt > DateTime.UtcNow);
         }
+
+        public async Task RevokeByUserAgent(Guid userId, string userAgent, CancellationToken cancellationToken = default)
+        {
+            var tokens = await _context.RefreshTokens
+                .Where(t =>
+                    t.UserId == userId &&
+                    t.UserAgent == userAgent &&
+                    t.RevokedAt == null &&
+                    t.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync(cancellationToken);
+
+            foreach (var token in tokens)
+                token.RevokedAt = DateTime.UtcNow;
+
+            if (tokens.Count > 0)
+            {
+                _context.RefreshTokens.UpdateRange(tokens);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+        }
     }
 }

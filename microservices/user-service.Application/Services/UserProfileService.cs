@@ -5,6 +5,7 @@ using user_service.Application.Domain.Entities;
 using user_service.Application.Domain.Enums;
 using user_service.Application.Domain.Exceptions;
 using user_service.Application.DTOs;
+using user_service.Application.Mappers;
 
 namespace user_service.Application.Services
 {
@@ -40,47 +41,7 @@ namespace user_service.Application.Services
             if (user.Status != UserStatus.ACTIVE)
                 throw new AccountNotActivatedException();
 
-            var result = new UserMeDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Username = user.Username,
-                Role = user.Role.ToString(),
-
-                Profile = user.Profile == null ? null : new UserProfileDto
-                {
-                    FirstName = user.Profile.FirstName,
-                    LastName = user.Profile.LastName,
-                    Phone = user.Profile.Phone,
-                    ProfilePictureUrl = user.Profile.ProfilePictureUrl
-                }
-            };
-
-            if (user.Role == UserRole.MEMBER && user.MemberProfile != null)
-            {
-                result.MemberProfile = new MemberProfileDto
-                {
-                    Gender = user.MemberProfile.Gender,
-                    DateOfBirth = user.MemberProfile.DateOfBirth,
-                    FitnessGoal = user.MemberProfile.FitnessGoal,
-                    ExperienceLevel = (int?)user.MemberProfile.ExperienceLevel,
-                    HeightCm = user.MemberProfile.HeightCm,
-                    WeightKg = user.MemberProfile.WeightKg
-                };
-            }
-
-            if (user.Role == UserRole.COACH && user.CoachProfile != null)
-            {
-                result.CoachProfile = new CoachProfileDto
-                {
-                    Language = user.CoachProfile.Language,
-                    YearsOfExperience = user.CoachProfile.YearsOfExperience,
-                    Bio = user.CoachProfile.Bio,
-                    Certifications = user.CoachProfile.Certifications
-                };
-            }
-
-            return result;
+            return ProfileMapper.ToUserMeDto(user);
         }
 
         public async Task UpdateMeAsync(
@@ -99,26 +60,11 @@ namespace user_service.Application.Services
 
             if (profile == null)
             {
-                await _userProfileRepository.Create(new UserProfile
-                {
-                    UserId     = userId,
-                    FirstName  = dto.FirstName ?? string.Empty,
-                    LastName   = dto.LastName  ?? string.Empty,
-                    Phone      = dto.Phone,
-                    ProfilePictureUrl = dto.ProfilePictureUrl,
-                    CreatedAt  = now,
-                    UpdatedAt  = now
-                }, cancellationToken);
+                await _userProfileRepository.Create(ProfileMapper.NewUserProfile(userId, dto, now), cancellationToken);
             }
             else
             {
-                if (dto.FirstName != null)        profile.FirstName         = dto.FirstName;
-                if (dto.LastName != null)         profile.LastName          = dto.LastName;
-                if (dto.Phone != null)            profile.Phone             = dto.Phone;
-                if (dto.ProfilePictureUrl != null) profile.ProfilePictureUrl = dto.ProfilePictureUrl;
-
-                profile.UpdatedAt = now;
-
+                ProfileMapper.ApplyUpdate(profile, dto, now);
                 await _userProfileRepository.Update(profile, cancellationToken);
             }
         }
@@ -142,35 +88,11 @@ namespace user_service.Application.Services
 
             if (existing == null)
             {
-                await _memberProfileRepository.Create(new MemberProfile
-                {
-                    UserId        = userId,
-                    Gender        = dto.Gender,
-                    DateOfBirth   = dto.DateOfBirth.HasValue
-                        ? DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc)
-                        : null,
-                    HeightCm      = dto.HeightCm,
-                    WeightKg      = dto.WeightKg,
-                    FitnessGoal   = dto.FitnessGoal,
-                    ExperienceLevel = dto.ExperienceLevel.HasValue
-                        ? (ExperienceLevel?)dto.ExperienceLevel.Value
-                        : null,
-                    CreatedAt = now,
-                    UpdatedAt = now
-                }, cancellationToken);
+                await _memberProfileRepository.Create(ProfileMapper.NewMemberProfile(userId, dto, now), cancellationToken);
             }
             else
             {
-                if (dto.Gender != null)         existing.Gender       = dto.Gender;
-                if (dto.DateOfBirth.HasValue)   existing.DateOfBirth  = DateTime.SpecifyKind(dto.DateOfBirth.Value, DateTimeKind.Utc);
-                if (dto.HeightCm.HasValue)      existing.HeightCm     = dto.HeightCm;
-                if (dto.WeightKg.HasValue)      existing.WeightKg     = dto.WeightKg;
-                if (dto.FitnessGoal != null)    existing.FitnessGoal  = dto.FitnessGoal;
-                if (dto.ExperienceLevel.HasValue)
-                    existing.ExperienceLevel = (ExperienceLevel?)dto.ExperienceLevel.Value;
-
-                existing.UpdatedAt = now;
-
+                ProfileMapper.ApplyUpdate(existing, dto, now);
                 await _memberProfileRepository.Update(existing, cancellationToken);
             }
         }
@@ -194,26 +116,11 @@ namespace user_service.Application.Services
 
             if (existing == null)
             {
-                await _coachProfileRepository.Create(new CoachProfile
-                {
-                    UserId            = userId,
-                    Bio               = dto.Bio,
-                    YearsOfExperience = dto.YearsOfExperience,
-                    Certifications    = dto.Certifications,
-                    Language          = dto.Language ?? string.Empty,
-                    CreatedAt         = now,
-                    UpdatedAt         = now
-                }, cancellationToken);
+                await _coachProfileRepository.Create(ProfileMapper.NewCoachProfile(userId, dto, now), cancellationToken);
             }
             else
             {
-                if (dto.Bio != null)                 existing.Bio               = dto.Bio;
-                if (dto.YearsOfExperience.HasValue)  existing.YearsOfExperience = dto.YearsOfExperience;
-                if (dto.Certifications != null)      existing.Certifications    = dto.Certifications;
-                if (dto.Language != null)            existing.Language          = dto.Language;
-
-                existing.UpdatedAt = now;
-
+                ProfileMapper.ApplyUpdate(existing, dto, now);
                 await _coachProfileRepository.Update(existing, cancellationToken);
             }
         }
@@ -235,15 +142,9 @@ namespace user_service.Application.Services
 
             if (profile == null)
             {
-                await _userProfileRepository.Create(new UserProfile
-                {
-                    UserId            = userId,
-                    FirstName         = string.Empty,
-                    LastName          = string.Empty,
-                    ProfilePictureUrl = url,
-                    CreatedAt         = now,
-                    UpdatedAt         = now
-                }, cancellationToken);
+                await _userProfileRepository.Create(
+                    ProfileMapper.NewUserProfile(userId, string.Empty, string.Empty, now, url),
+                    cancellationToken);
             }
             else
             {

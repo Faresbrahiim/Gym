@@ -14,5 +14,6 @@ namespace user_service.Application.Contracts.Repositories
         Task<List<RefreshToken>> GetActiveTokens(Guid userId);
 
         Task<RefreshToken?> GetById(Guid userId, Guid tokenId);
+        Task RevokeByUserAgent(Guid userId, string userAgent, CancellationToken cancellationToken = default);
     }
 }
