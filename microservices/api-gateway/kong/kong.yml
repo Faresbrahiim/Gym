@@ -75,7 +75,7 @@ services:
           - name: cors
             config:
               origins:
-                - "*"
+                - "http://localhost:4200"
               methods:
                 - GET
                 - POST
