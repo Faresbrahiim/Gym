@@ -1,5 +1,9 @@
 _format_version: "3.0"
+
 services:
+  # ==============================
+  # Membership Service
+  # ==============================
   - name: membership-service
     url: http://membership-service:8080
     routes:
@@ -18,35 +22,123 @@ services:
 
           - name: rate-limiting
             config:
-              minute: 60          
+              minute: 60
               hour: 1000
-              policy: local       
+              policy: local
               fault_tolerant: true
               hide_client_headers: false
 
           - name: cors
             config:
               origins:
-                - "*"   
+                - "*"
               methods:
                 - GET
                 - POST
                 - PUT
                 - DELETE
+                - PATCH
                 - OPTIONS
               headers:
                 - Authorization
                 - Content-Type
                 - Accept
-              exposed_headers:
-                - X-Auth-Token
-              credentials: true
+              credentials: false
               max_age: 3600
               preflight_continue: false
 
       - name: membership-swagger-route
         paths:
           - /api/membership
+        strip_path: true
+
+  # ==============================
+  # User Service
+  # ==============================
+  - name: user-service
+    url: http://gym-user-service:8080
+    routes:
+      # --- Public auth endpoints (no JWT needed) ---
+      - name: user-auth-route
+        paths:
+          - /api/auth
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 20
+              hour: 200
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "*"
+              methods:
+                - GET
+                - POST
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
+      # --- Protected user endpoints (JWT handled by user-service itself) ---
+      - name: user-protected-route
+        paths:
+          - /api/users
+          - /api/admin
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 60
+              hour: 1000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "*"
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
+      # --- Internal endpoints (block from outside) ---
+      - name: user-internal-route
+        paths:
+          - /internal
+        strip_path: false
+        plugins:
+          - name: ip-restriction
+            config:
+              allow:
+                - 172.16.0.0/12   # Docker bridge networks
+                - 10.0.0.0/8
+                - 192.168.0.0/16
+
+      # --- Swagger (no plugins) ---
+      - name: user-swagger-route
+        paths:
+          - /api/user
         strip_path: true
 
 consumers:
