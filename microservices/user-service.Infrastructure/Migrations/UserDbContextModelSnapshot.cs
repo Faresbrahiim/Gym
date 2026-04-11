@@ -140,42 +140,9 @@ namespace user_service.Migrations
                             t.HasCheckConstraint("CK_MemberProfile_Height", "\"HeightCm\" > 0");
 
                             t.HasCheckConstraint("CK_MemberProfile_Weight", "\"WeightKg\" > 0");
+
+                            t.HasCheckConstraint("CK_MemberProfile_Gender", "\"Gender\" IN ('Male', 'Female', 'Other')");
                         });
-                });
-
-            modelBuilder.Entity("user_service.Application.Domain.Entities.PasswordResetToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UsedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExpiresAt");
-
-                    b.HasIndex("TokenHash");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("password_reset_tokens", (string)null);
                 });
 
             modelBuilder.Entity("user_service.Application.Domain.Entities.RecoveryCode", b =>
@@ -320,10 +287,6 @@ namespace user_service.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("Role");
-
-                    b.HasIndex("Status");
-
                     b.HasIndex("Username")
                         .IsUnique();
 
@@ -462,17 +425,6 @@ namespace user_service.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("user_service.Application.Domain.Entities.PasswordResetToken", b =>
-                {
-                    b.HasOne("user_service.Application.Domain.Entities.User", "User")
-                        .WithMany("PasswordResetTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("user_service.Application.Domain.Entities.RecoveryCode", b =>
                 {
                     b.HasOne("user_service.Application.Domain.Entities.User", "User")
@@ -535,8 +487,6 @@ namespace user_service.Migrations
                     b.Navigation("ExternalLogins");
 
                     b.Navigation("MemberProfile");
-
-                    b.Navigation("PasswordResetTokens");
 
                     b.Navigation("Profile");
 
