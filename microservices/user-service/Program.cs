@@ -45,17 +45,6 @@ builder.Services.AddHostedService<RevokedTokenCleanupService>();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFront", policy =>
-    {
-        policy
-            .WithOrigins("http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
 #endregion
 
 #region JWT CONFIGURATION
@@ -152,7 +141,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
-app.UseCors("AllowFront");
 
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
 Directory.CreateDirectory(uploadsPath);

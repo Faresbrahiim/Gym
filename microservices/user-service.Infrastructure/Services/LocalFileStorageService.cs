@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using user_service.Application.Contracts.Services;
 
 namespace user_service.Infrastructure.Services
@@ -12,12 +13,12 @@ namespace user_service.Infrastructure.Services
         };
 
         private readonly IWebHostEnvironment _env;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly string _publicBaseUrl;
 
-        public LocalFileStorageService(IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        public LocalFileStorageService(IWebHostEnvironment env, IConfiguration configuration)
         {
             _env = env;
-            _httpContextAccessor = httpContextAccessor;
+            _publicBaseUrl = (configuration["PublicBaseUrl"] ?? "http://localhost:5000").TrimEnd('/');
         }
 
         public async Task<string> SaveAvatarAsync(IFormFile file, Guid userId, CancellationToken cancellationToken = default)
@@ -36,8 +37,7 @@ namespace user_service.Infrastructure.Services
             using var stream = new FileStream(filePath, FileMode.Create);
             await file.CopyToAsync(stream, cancellationToken);
 
-            var request = _httpContextAccessor.HttpContext!.Request;
-            return $"{request.Scheme}://{request.Host}/uploads/avatars/{fileName}";
+            return $"{_publicBaseUrl}/uploads/avatars/{fileName}";
         }
     }
 }
