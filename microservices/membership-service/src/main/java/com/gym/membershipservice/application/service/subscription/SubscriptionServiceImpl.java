@@ -11,7 +11,7 @@ import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.PlanService;
 import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import com.gym.membershipservice.application.port.SubscriptionService;
-import com.gym.membershipservice.application.service.PlanServiceImpl;
+import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.stereotype.Service;

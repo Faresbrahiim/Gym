@@ -1,6 +1,6 @@
 package com.gym.membershipservice.api.controller;
 
-import com.gym.membershipservice.application.service.PlanServiceImpl;
+import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.application.dto.Plan.PlanRequestDTO;
 import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
 import com.gym.membershipservice.application.dto.Plan.PlanUpdateRequestDTO;

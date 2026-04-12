@@ -6,7 +6,6 @@ import com.gym.membershipservice.application.dto.Plan.PlanRequestDTO;
 import com.gym.membershipservice.application.dto.Plan.PlanUpdateRequestDTO;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.enums.PlanStatus;
-import com.gym.membershipservice.application.service.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
