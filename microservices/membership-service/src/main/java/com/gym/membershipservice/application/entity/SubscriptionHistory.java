@@ -25,6 +25,7 @@ public class SubscriptionHistory {
     @Column(name = "previous_status")
     private SubscriptionStatus previousStatus;
 
+
     @Enumerated(EnumType.STRING)
     @Column(name = "new_status", nullable = false)
     private SubscriptionStatus newStatus;

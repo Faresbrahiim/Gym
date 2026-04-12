@@ -1,5 +1,7 @@
 package com.gym.membershipservice.application.service.subscription;
 
+import com.gym.membershipservice.api.mapper.SubscriptionMapper;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
@@ -21,13 +23,11 @@ public class SubscriptionHistoryServiceImpl implements SubscriptionHistoryServic
     }
 
     @Override
-    public SubscriptionHistory recordChange(
-            Subscription subscription,
-            SubscriptionStatus previousStatus,
-            SubscriptionStatus newStatus,
-            UUID changedBy,
-            String note
-    ) {
+    public SubscriptionHistory recordChange(Subscription subscription,
+                                            SubscriptionStatus previousStatus,
+                                            SubscriptionStatus newStatus,
+                                            UUID changedBy,
+                                            String note) {
         SubscriptionHistory history = new SubscriptionHistory();
         history.setSubscription(subscription);
         history.setPreviousStatus(previousStatus);
@@ -39,7 +39,9 @@ public class SubscriptionHistoryServiceImpl implements SubscriptionHistoryServic
     }
 
     @Override
-    public List<SubscriptionHistory> getHistory(UUID subscriptionId) {
-        return repository.findBySubscription_Id(subscriptionId);
+    public List<SubscriptionHistoryResponseDTO> getHistory(UUID subscriptionId) {
+        return SubscriptionMapper.toHistoryDTOList(
+                repository.findBySubscription_Id(subscriptionId)
+        );
     }
 }

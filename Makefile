@@ -140,3 +140,12 @@ status:
 
 git-logs:
 	git log --oneline --graph --decorate --all
+
+
+# =========================
+# MAVEN COMMANDS
+# =========================
+test:
+	mvn clean test -f ./microservices/membership-service/pom.xml
+install:
+	mvn clean install -f ./microservices/membership-service/pom.xml
