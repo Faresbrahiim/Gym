@@ -53,6 +53,107 @@ services:
         strip_path: true
 
   # ==============================
+  # Payment Service
+  # ==============================
+  - name: payment-service
+    url: http://payment-service:8080
+    routes:
+      # --- Member endpoints (JWT required) ---
+      - name: payment-member-route
+        paths:
+          - /api/payments
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: kid
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 30
+              hour: 500
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - POST
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
+      # --- Admin endpoints (JWT required, role checked in service) ---
+      - name: payment-admin-route
+        paths:
+          - /api/admin/payments
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: kid
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 60
+              hour: 1000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
+      # --- Stripe webhook (NO JWT — Stripe-Signature header used instead) ---
+      - name: payment-webhook-route
+        paths:
+          - /api/payments/webhook
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              hour: 2000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+      # --- Swagger ---
+      - name: payment-swagger-route
+        paths:
+          - /api/payment
+        strip_path: true
+
+  # --- Internal endpoint is NOT routed through Kong ---
+  # /internal/payments/** is only reachable inside gym-network
+  # payment-service binds it on 8080 but no Kong route exposes it publicly
+
+  # ==============================
   # User Service
   # ==============================
   - name: user-service
