@@ -1,6 +1,6 @@
 package com.gym.membershipservice.api.controller;
 
-import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
+import com.gym.membershipservice.application.service.PlanServiceImpl;
 import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;

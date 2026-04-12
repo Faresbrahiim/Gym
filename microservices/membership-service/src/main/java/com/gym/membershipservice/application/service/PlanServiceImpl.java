@@ -1,4 +1,4 @@
-package com.gym.membershipservice.application.service.plan;
+package com.gym.membershipservice.application.service;
 
 import com.gym.membershipservice.api.exception.BadRequestException;
 import com.gym.membershipservice.api.exception.ConflictException;

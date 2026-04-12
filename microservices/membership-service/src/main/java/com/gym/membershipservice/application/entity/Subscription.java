@@ -78,4 +78,7 @@ public class Subscription {
     }
 
 
+    public void setId(UUID subId) {
+        this.id = subId ;
+    }
 }
