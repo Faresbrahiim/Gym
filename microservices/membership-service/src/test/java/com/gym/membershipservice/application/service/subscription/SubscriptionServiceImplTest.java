@@ -2,16 +2,18 @@ package com.gym.membershipservice.application.service.subscription;
 
 import com.gym.membershipservice.api.exception.BadRequestException;
 import com.gym.membershipservice.api.exception.ConflictException;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.entity.*;
 import com.gym.membershipservice.application.enums.*;
-import com.gym.membershipservice.application.port.PlanService;
 import com.gym.membershipservice.application.port.SubscriptionHistoryService;
+import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -20,7 +22,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
+@ExtendWith(MockitoExtension.class)
 class SubscriptionServiceImplTest {
 
     @Mock
@@ -33,7 +35,7 @@ class SubscriptionServiceImplTest {
     private SubscriptionHistoryService historyService;
 
     @Mock
-    private PlanService planService;
+    private PlanServiceImpl planService;
 
     @InjectMocks
     private SubscriptionServiceImpl service;
@@ -49,7 +51,7 @@ class SubscriptionServiceImplTest {
     void setUp() {
         userId = UUID.randomUUID();
         planId = UUID.randomUUID();
-        subId = UUID.randomUUID();
+        subId  = UUID.randomUUID();
 
         plan = new Plan();
         plan.setId(planId);
@@ -73,17 +75,14 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldCreateSubscription() {
-
         when(subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE))
                 .thenReturn(false);
-
         when(planRepository.findById(planId))
                 .thenReturn(Optional.of(plan));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.createSubscription(userId, planId);
+        SubscriptionResponseDTO result = service.createSubscription(userId, planId);
 
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
@@ -96,7 +95,6 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldNotCreateIfActiveExists() {
-
         when(subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE))
                 .thenReturn(true);
 
@@ -110,14 +108,12 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldCancelSubscription() {
-
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.cancelSubscription(subId);
+        SubscriptionResponseDTO result = service.cancelSubscription(subId);
 
         assertEquals(SubscriptionStatus.CANCELLED, result.getStatus());
 
@@ -135,46 +131,40 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldPauseSubscription() {
-
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.pauseSubscription(subId);
+        SubscriptionResponseDTO result = service.pauseSubscription(subId);
 
         assertEquals(SubscriptionStatus.PAUSE_REQUESTED, result.getStatus());
     }
 
     @Test
     void shouldApprovePause() {
-
         subscription.setStatus(SubscriptionStatus.PAUSE_REQUESTED);
 
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.approvePause(subId);
+        SubscriptionResponseDTO result = service.approvePause(subId);
 
         assertEquals(SubscriptionStatus.PAUSED, result.getStatus());
     }
 
     @Test
     void shouldRejectPause() {
-
         subscription.setStatus(SubscriptionStatus.PAUSE_REQUESTED);
 
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.rejectPause(subId);
+        SubscriptionResponseDTO result = service.rejectPause(subId);
 
         assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
     }
@@ -185,14 +175,12 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldRenewSubscription() {
-
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.renewSubscription(subId);
+        SubscriptionResponseDTO result = service.renewSubscription(subId);
 
         assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
     }
@@ -203,7 +191,6 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldChangePlan() {
-
         Plan newPlan = new Plan();
         newPlan.setId(UUID.randomUUID());
         newPlan.setName("Premium");
@@ -213,16 +200,15 @@ class SubscriptionServiceImplTest {
 
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(planRepository.findById(newPlan.getId()))
                 .thenReturn(Optional.of(newPlan));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.changePlan(subId, newPlan.getId());
+        SubscriptionResponseDTO result = service.changePlan(subId, newPlan.getId());
 
-        assertEquals(newPlan, result.getPlan());
+        assertEquals(newPlan.getId(), result.getPlanId());
+        assertEquals("Premium", result.getPlanName());
     }
 
     // =========================
@@ -231,24 +217,39 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldUpgradePlan() {
-
         Plan expensive = new Plan();
         expensive.setId(UUID.randomUUID());
+        expensive.setName("VIP");
         expensive.setPrice(200.0);
         expensive.setDurationInDays(30);
 
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(planRepository.findById(expensive.getId()))
                 .thenReturn(Optional.of(expensive));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.upgradeSubscription(subId, expensive.getId());
+        SubscriptionResponseDTO result = service.upgradeSubscription(subId, expensive.getId());
 
-        assertEquals(expensive, result.getPlan());
+        assertEquals(expensive.getId(), result.getPlanId());
+        assertEquals("VIP", result.getPlanName());
+    }
+
+    @Test
+    void shouldFailUpgrade_whenNewPlanCheaper() {
+        Plan cheaper = new Plan();
+        cheaper.setId(UUID.randomUUID());
+        cheaper.setPrice(10.0);
+        cheaper.setDurationInDays(30);
+
+        when(subscriptionRepository.findById(subId))
+                .thenReturn(Optional.of(subscription));
+        when(planRepository.findById(cheaper.getId()))
+                .thenReturn(Optional.of(cheaper));
+
+        assertThrows(BadRequestException.class,
+                () -> service.upgradeSubscription(subId, cheaper.getId()));
     }
 
     // =========================
@@ -257,16 +258,21 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldExtendSubscription() {
-
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.extendSubscription(subId, 5);
+        SubscriptionResponseDTO result = service.extendSubscription(subId, 5);
 
+        assertNotNull(result.getEndDate());
         assertTrue(result.getEndDate().isAfter(LocalDateTime.now()));
+    }
+
+    @Test
+    void shouldFailExtend_whenExtraDaysZero() {
+        assertThrows(BadRequestException.class,
+                () -> service.extendSubscription(subId, 0));
     }
 
     // =========================
@@ -275,15 +281,22 @@ class SubscriptionServiceImplTest {
 
     @Test
     void shouldFreezeSubscription() {
-
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-
         when(subscriptionRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        Subscription result = service.freezeSubscription(subId, LocalDateTime.now().plusDays(2));
+        SubscriptionResponseDTO result = service.freezeSubscription(subId, LocalDateTime.now().plusDays(2));
 
         assertEquals(SubscriptionStatus.FROZEN, result.getStatus());
+    }
+
+    @Test
+    void shouldFailFreeze_whenFreezeEndInPast() {
+        when(subscriptionRepository.findById(subId))
+                .thenReturn(Optional.of(subscription));
+
+        assertThrows(BadRequestException.class,
+                () -> service.freezeSubscription(subId, LocalDateTime.now().minusDays(1)));
     }
 }

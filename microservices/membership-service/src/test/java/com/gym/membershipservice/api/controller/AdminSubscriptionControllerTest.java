@@ -2,8 +2,7 @@ package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.api.exception.BadRequestException;
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
-import com.gym.membershipservice.application.entity.Plan;
-import com.gym.membershipservice.application.entity.Subscription;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,32 +30,28 @@ class AdminSubscriptionControllerTest {
 
     private UUID userId;
     private UUID subscriptionId;
-    private Subscription subscription;
+    private SubscriptionResponseDTO responseDTO;
 
     @BeforeEach
     void setUp() {
         userId         = UUID.randomUUID();
         subscriptionId = UUID.randomUUID();
 
-        Plan plan = new Plan();
-        plan.setName("Gold");
-
-        subscription = new Subscription();
-        subscription.setId(subscriptionId);
-        subscription.setUserId(userId);
-        subscription.setPlan(plan);
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setStartDate(LocalDateTime.now());
-        subscription.setEndDate(LocalDateTime.now().plusDays(30));
+        responseDTO = new SubscriptionResponseDTO(
+                subscriptionId, userId, UUID.randomUUID(), "Gold",
+                SubscriptionStatus.ACTIVE,
+                LocalDateTime.now(), LocalDateTime.now().plusDays(30),
+                null, null
+        );
     }
 
     // ── getAll ──────────────────────────────────────
 
     @Test
     void getAll_returnsAllSubscriptions() {
-        when(subscriptionService.getAllSubscriptions()).thenReturn(List.of(subscription));
+        when(subscriptionService.getAllSubscriptions()).thenReturn(List.of(responseDTO));
 
-        List<Subscription> result = controller.getAll();
+        List<SubscriptionResponseDTO> result = controller.getAll();
 
         assertThat(result).hasSize(1);
         verify(subscriptionService).getAllSubscriptions();
@@ -73,9 +68,9 @@ class AdminSubscriptionControllerTest {
 
     @Test
     void getUserSubscriptions_returnsSubscriptionsForUser() {
-        when(subscriptionService.getUserSubscriptions(userId)).thenReturn(List.of(subscription));
+        when(subscriptionService.getUserSubscriptions(userId)).thenReturn(List.of(responseDTO));
 
-        List<Subscription> result = controller.getUserSubscriptions(userId);
+        List<SubscriptionResponseDTO> result = controller.getUserSubscriptions(userId);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getUserId()).isEqualTo(userId);
@@ -86,10 +81,15 @@ class AdminSubscriptionControllerTest {
 
     @Test
     void cancel_returnsCancelledSubscription() {
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
-        when(subscriptionService.cancelSubscription(subscriptionId)).thenReturn(subscription);
+        SubscriptionResponseDTO cancelled = new SubscriptionResponseDTO(
+                subscriptionId, userId, UUID.randomUUID(), "Gold",
+                SubscriptionStatus.CANCELLED,
+                LocalDateTime.now(), LocalDateTime.now(),
+                null, null
+        );
+        when(subscriptionService.cancelSubscription(subscriptionId)).thenReturn(cancelled);
 
-        Subscription result = controller.cancel(subscriptionId);
+        SubscriptionResponseDTO result = controller.cancel(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
         verify(subscriptionService).cancelSubscription(subscriptionId);
@@ -100,12 +100,17 @@ class AdminSubscriptionControllerTest {
     @Test
     void freezeSubscription_returnsFrozenSubscription() {
         String freezeEnd = LocalDateTime.now().plusDays(7).toString();
-        subscription.setStatus(SubscriptionStatus.FROZEN);
+        SubscriptionResponseDTO frozen = new SubscriptionResponseDTO(
+                subscriptionId, userId, UUID.randomUUID(), "Gold",
+                SubscriptionStatus.FROZEN,
+                LocalDateTime.now(), LocalDateTime.now().plusDays(30),
+                LocalDateTime.now(), LocalDateTime.now().plusDays(7)
+        );
 
         when(subscriptionService.freezeSubscription(eq(subscriptionId), any(LocalDateTime.class)))
-                .thenReturn(subscription);
+                .thenReturn(frozen);
 
-        Subscription result = controller.freezeSubscription(subscriptionId, freezeEnd);
+        SubscriptionResponseDTO result = controller.freezeSubscription(subscriptionId, freezeEnd);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.FROZEN);
         verify(subscriptionService).freezeSubscription(eq(subscriptionId), any(LocalDateTime.class));
@@ -127,9 +132,9 @@ class AdminSubscriptionControllerTest {
 
     @Test
     void extend_returnsExtendedSubscription() {
-        when(subscriptionService.extendSubscription(subscriptionId, 10)).thenReturn(subscription);
+        when(subscriptionService.extendSubscription(subscriptionId, 10)).thenReturn(responseDTO);
 
-        Subscription result = controller.extend(subscriptionId, 10);
+        SubscriptionResponseDTO result = controller.extend(subscriptionId, 10);
 
         assertThat(result).isNotNull();
         verify(subscriptionService).extendSubscription(subscriptionId, 10);
@@ -149,10 +154,9 @@ class AdminSubscriptionControllerTest {
 
     @Test
     void activate_returnsActivatedSubscription() {
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        when(subscriptionService.activateSubscription(subscriptionId)).thenReturn(subscription);
+        when(subscriptionService.activateSubscription(subscriptionId)).thenReturn(responseDTO);
 
-        Subscription result = controller.activate(subscriptionId);
+        SubscriptionResponseDTO result = controller.activate(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         verify(subscriptionService).activateSubscription(subscriptionId);
@@ -172,10 +176,15 @@ class AdminSubscriptionControllerTest {
 
     @Test
     void approvePause_returnsPausedSubscription() {
-        subscription.setStatus(SubscriptionStatus.PAUSED);
-        when(subscriptionService.approvePause(subscriptionId)).thenReturn(subscription);
+        SubscriptionResponseDTO paused = new SubscriptionResponseDTO(
+                subscriptionId, userId, UUID.randomUUID(), "Gold",
+                SubscriptionStatus.PAUSED,
+                LocalDateTime.now(), LocalDateTime.now().plusDays(30),
+                null, null
+        );
+        when(subscriptionService.approvePause(subscriptionId)).thenReturn(paused);
 
-        Subscription result = controller.approvePause(subscriptionId);
+        SubscriptionResponseDTO result = controller.approvePause(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.PAUSED);
         verify(subscriptionService).approvePause(subscriptionId);
@@ -194,10 +203,9 @@ class AdminSubscriptionControllerTest {
 
     @Test
     void rejectPause_returnsActiveSubscription() {
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        when(subscriptionService.rejectPause(subscriptionId)).thenReturn(subscription);
+        when(subscriptionService.rejectPause(subscriptionId)).thenReturn(responseDTO);
 
-        Subscription result = controller.rejectPause(subscriptionId);
+        SubscriptionResponseDTO result = controller.rejectPause(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         verify(subscriptionService).rejectPause(subscriptionId);

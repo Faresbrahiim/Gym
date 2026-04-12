@@ -1,9 +1,9 @@
 package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
-import com.gym.membershipservice.application.entity.Plan;
-import com.gym.membershipservice.application.entity.Subscription;
-import com.gym.membershipservice.application.entity.SubscriptionHistory;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionRequestDTO;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)  // ← fixes UnnecessaryStubbing
+@MockitoSettings(strictness = Strictness.LENIENT)
 class UserSubscriptionControllerTest {
 
     @Mock
@@ -39,7 +39,7 @@ class UserSubscriptionControllerTest {
     private UUID userId;
     private UUID planId;
     private UUID subscriptionId;
-    private Subscription subscription;
+    private SubscriptionResponseDTO responseDTO;
 
     @BeforeEach
     void setUp() {
@@ -47,18 +47,13 @@ class UserSubscriptionControllerTest {
         planId         = UUID.randomUUID();
         subscriptionId = UUID.randomUUID();
 
-        Plan plan = new Plan();
-        plan.setName("Gold");
+        responseDTO = new SubscriptionResponseDTO(
+                subscriptionId, userId, UUID.randomUUID(), "Gold",
+                SubscriptionStatus.ACTIVE,
+                LocalDateTime.now(), LocalDateTime.now().plusDays(30),
+                null, null
+        );
 
-        subscription = new Subscription();
-        subscription.setId(subscriptionId);
-        subscription.setUserId(userId);
-        subscription.setPlan(plan);
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        subscription.setStartDate(LocalDateTime.now());
-        subscription.setEndDate(LocalDateTime.now().plusDays(30));
-
-        // LENIENT because only jwt-based tests use this
         when(jwt.getSubject()).thenReturn(userId.toString());
     }
 
@@ -66,9 +61,12 @@ class UserSubscriptionControllerTest {
 
     @Test
     void createSubscription_returnsCreatedSubscription() {
-        when(subscriptionService.createSubscription(userId, planId)).thenReturn(subscription);
+        SubscriptionRequestDTO request = new SubscriptionRequestDTO();
+        request.setPlanId(planId);
 
-        Subscription result = controller.createSubscription(jwt, planId);
+        when(subscriptionService.createSubscription(userId, planId)).thenReturn(responseDTO);
+
+        SubscriptionResponseDTO result = controller.createSubscription(jwt, request);
 
         assertThat(result.getUserId()).isEqualTo(userId);
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
@@ -79,9 +77,9 @@ class UserSubscriptionControllerTest {
 
     @Test
     void getMySubscriptions_returnsUserSubscriptions() {
-        when(subscriptionService.getUserSubscriptions(userId)).thenReturn(List.of(subscription));
+        when(subscriptionService.getUserSubscriptions(userId)).thenReturn(List.of(responseDTO));
 
-        List<Subscription> result = controller.getMySubscriptions(jwt);
+        List<SubscriptionResponseDTO> result = controller.getMySubscriptions(jwt);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getUserId()).isEqualTo(userId);
@@ -92,7 +90,7 @@ class UserSubscriptionControllerTest {
     void getMySubscriptions_returnsEmptyList_whenNone() {
         when(subscriptionService.getUserSubscriptions(userId)).thenReturn(List.of());
 
-        List<Subscription> result = controller.getMySubscriptions(jwt);
+        List<SubscriptionResponseDTO> result = controller.getMySubscriptions(jwt);
 
         assertThat(result).isEmpty();
     }
@@ -101,10 +99,15 @@ class UserSubscriptionControllerTest {
 
     @Test
     void cancelSubscription_returnsCancelledSubscription() {
-        subscription.setStatus(SubscriptionStatus.CANCELLED);
-        when(subscriptionService.cancelSubscription(subscriptionId)).thenReturn(subscription);
+        SubscriptionResponseDTO cancelled = new SubscriptionResponseDTO(
+                subscriptionId, userId, UUID.randomUUID(), "Gold",
+                SubscriptionStatus.CANCELLED,
+                LocalDateTime.now(), LocalDateTime.now(),
+                null, null
+        );
+        when(subscriptionService.cancelSubscription(subscriptionId)).thenReturn(cancelled);
 
-        Subscription result = controller.cancelSubscription(subscriptionId);
+        SubscriptionResponseDTO result = controller.cancelSubscription(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
         verify(subscriptionService).cancelSubscription(subscriptionId);
@@ -123,10 +126,15 @@ class UserSubscriptionControllerTest {
 
     @Test
     void requestPause_returnsPauseRequestedSubscription() {
-        subscription.setStatus(SubscriptionStatus.PAUSE_REQUESTED);
-        when(subscriptionService.pauseSubscription(subscriptionId)).thenReturn(subscription);
+        SubscriptionResponseDTO paused = new SubscriptionResponseDTO(
+                subscriptionId, userId, UUID.randomUUID(), "Gold",
+                SubscriptionStatus.PAUSE_REQUESTED,
+                LocalDateTime.now(), LocalDateTime.now().plusDays(30),
+                null, null
+        );
+        when(subscriptionService.pauseSubscription(subscriptionId)).thenReturn(paused);
 
-        Subscription result = controller.requestPause(subscriptionId);
+        SubscriptionResponseDTO result = controller.requestPause(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.PAUSE_REQUESTED);
         verify(subscriptionService).pauseSubscription(subscriptionId);
@@ -136,10 +144,9 @@ class UserSubscriptionControllerTest {
 
     @Test
     void resumeSubscription_returnsActiveSubscription() {
-        subscription.setStatus(SubscriptionStatus.ACTIVE);
-        when(subscriptionService.resumeSubscription(subscriptionId)).thenReturn(subscription);
+        when(subscriptionService.resumeSubscription(subscriptionId)).thenReturn(responseDTO);
 
-        Subscription result = controller.resumeSubscription(subscriptionId);
+        SubscriptionResponseDTO result = controller.resumeSubscription(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         verify(subscriptionService).resumeSubscription(subscriptionId);
@@ -149,9 +156,9 @@ class UserSubscriptionControllerTest {
 
     @Test
     void renewSubscription_returnsRenewedSubscription() {
-        when(subscriptionService.renewSubscription(subscriptionId)).thenReturn(subscription);
+        when(subscriptionService.renewSubscription(subscriptionId)).thenReturn(responseDTO);
 
-        Subscription result = controller.renewSubscription(subscriptionId);
+        SubscriptionResponseDTO result = controller.renewSubscription(subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
         verify(subscriptionService).renewSubscription(subscriptionId);
@@ -162,9 +169,9 @@ class UserSubscriptionControllerTest {
     @Test
     void upgradeSubscription_returnsUpgradedSubscription() {
         UUID newPlanId = UUID.randomUUID();
-        when(subscriptionService.upgradeSubscription(subscriptionId, newPlanId)).thenReturn(subscription);
+        when(subscriptionService.upgradeSubscription(subscriptionId, newPlanId)).thenReturn(responseDTO);
 
-        Subscription result = controller.upgradeSubscription(subscriptionId, newPlanId);
+        SubscriptionResponseDTO result = controller.upgradeSubscription(subscriptionId, newPlanId);
 
         assertThat(result).isNotNull();
         verify(subscriptionService).upgradeSubscription(subscriptionId, newPlanId);
@@ -175,9 +182,9 @@ class UserSubscriptionControllerTest {
     @Test
     void downgradeSubscription_returnsDowngradedSubscription() {
         UUID newPlanId = UUID.randomUUID();
-        when(subscriptionService.downgradeSubscription(subscriptionId, newPlanId)).thenReturn(subscription);
+        when(subscriptionService.downgradeSubscription(subscriptionId, newPlanId)).thenReturn(responseDTO);
 
-        Subscription result = controller.downgradeSubscription(subscriptionId, newPlanId);
+        SubscriptionResponseDTO result = controller.downgradeSubscription(subscriptionId, newPlanId);
 
         assertThat(result).isNotNull();
         verify(subscriptionService).downgradeSubscription(subscriptionId, newPlanId);
@@ -188,9 +195,9 @@ class UserSubscriptionControllerTest {
     @Test
     void changePlan_returnsSubscriptionWithNewPlan() {
         UUID newPlanId = UUID.randomUUID();
-        when(subscriptionService.changePlan(subscriptionId, newPlanId)).thenReturn(subscription);
+        when(subscriptionService.changePlan(subscriptionId, newPlanId)).thenReturn(responseDTO);
 
-        Subscription result = controller.changePlan(subscriptionId, newPlanId);
+        SubscriptionResponseDTO result = controller.changePlan(subscriptionId, newPlanId);
 
         assertThat(result).isNotNull();
         verify(subscriptionService).changePlan(subscriptionId, newPlanId);
@@ -200,11 +207,11 @@ class UserSubscriptionControllerTest {
 
     @Test
     void getSubscription_returnsSubscription() {
-        when(subscriptionService.getSubscriptionById(subscriptionId)).thenReturn(subscription);
+        when(subscriptionService.getSubscriptionById(subscriptionId)).thenReturn(responseDTO);
 
-        Subscription result = controller.getSubscription(subscriptionId);
+        SubscriptionResponseDTO result = controller.getSubscription(subscriptionId);
 
-        assertThat(result.getId()).isEqualTo(subscriptionId);
+        assertThat(result.getSubscriptionId()).isEqualTo(subscriptionId);
         verify(subscriptionService).getSubscriptionById(subscriptionId);
     }
 
@@ -221,13 +228,18 @@ class UserSubscriptionControllerTest {
 
     @Test
     void getHistory_returnsSubscriptionHistory() {
-        SubscriptionHistory history = new SubscriptionHistory();
+        SubscriptionHistoryResponseDTO history = new SubscriptionHistoryResponseDTO(
+                UUID.randomUUID(), subscriptionId,
+                null, SubscriptionStatus.ACTIVE,
+                LocalDateTime.now(), null, "Created"
+        );
         when(subscriptionService.getSubscriptionHistory(subscriptionId))
                 .thenReturn(List.of(history));
 
-        List<SubscriptionHistory> result = controller.getHistory(subscriptionId);
+        List<SubscriptionHistoryResponseDTO> result = controller.getHistory(subscriptionId);
 
         assertThat(result).hasSize(1);
+        assertThat(result.get(0).getNote()).isEqualTo("Created");
         verify(subscriptionService).getSubscriptionHistory(subscriptionId);
     }
 }

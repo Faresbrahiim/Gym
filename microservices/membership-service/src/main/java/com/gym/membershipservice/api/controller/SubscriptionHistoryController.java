@@ -1,6 +1,6 @@
 package com.gym.membershipservice.api.controller;
 
-import com.gym.membershipservice.application.entity.SubscriptionHistory;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,13 +23,10 @@ public class SubscriptionHistoryController {
         this.historyService = historyService;
     }
 
-    @Operation(
-            summary = "Get subscription history",
-            description = "Retrieve the full history of a specific subscription by its UUID"
-    )
+    @Operation(summary = "Get subscription history")
     @Parameter(name = "subscriptionId", description = "UUID of the subscription", required = true)
     @GetMapping("/{subscriptionId}")
-    public List<SubscriptionHistory> getHistory(@PathVariable UUID subscriptionId) {
+    public List<SubscriptionHistoryResponseDTO> getHistory(@PathVariable UUID subscriptionId) {
         return historyService.getHistory(subscriptionId);
     }
 }

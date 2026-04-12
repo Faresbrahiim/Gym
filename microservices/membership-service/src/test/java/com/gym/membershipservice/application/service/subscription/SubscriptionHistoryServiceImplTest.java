@@ -1,5 +1,6 @@
 package com.gym.membershipservice.application.service.subscription;
 
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
@@ -38,7 +39,6 @@ class SubscriptionHistoryServiceImplTest {
     // =========================
     // RECORD CHANGE
     // =========================
-
     @Test
     void shouldRecordHistorySuccessfully() {
 
@@ -65,16 +65,23 @@ class SubscriptionHistoryServiceImplTest {
     // =========================
     // GET HISTORY
     // =========================
-
     @Test
     void shouldReturnHistoryList() {
 
+        SubscriptionHistory h1 = new SubscriptionHistory();
+        h1.setSubscription(subscription);
+
+        SubscriptionHistory h2 = new SubscriptionHistory();
+        h2.setSubscription(subscription);
+
         when(repository.findBySubscription_Id(subId))
-                .thenReturn(List.of(new SubscriptionHistory(), new SubscriptionHistory()));
+                .thenReturn(List.of(h1, h2));
 
-        List<SubscriptionHistory> result = service.getHistory(subId);
+        List<SubscriptionHistoryResponseDTO> result = service.getHistory(subId);
 
+        assertNotNull(result);
         assertEquals(2, result.size());
-        verify(repository).findBySubscription_Id(subId);
+
+        verify(repository, times(1)).findBySubscription_Id(subId);
     }
 }

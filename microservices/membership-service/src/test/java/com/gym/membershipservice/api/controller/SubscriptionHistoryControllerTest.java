@@ -1,8 +1,7 @@
 package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
-import com.gym.membershipservice.application.entity.Subscription;
-import com.gym.membershipservice.application.entity.SubscriptionHistory;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,49 +28,58 @@ class SubscriptionHistoryControllerTest {
     private SubscriptionHistoryController controller;
 
     private UUID subscriptionId;
-    private SubscriptionHistory history;
 
     @BeforeEach
     void setUp() {
         subscriptionId = UUID.randomUUID();
-
-        Subscription sub = new Subscription();
-        sub.setId(subscriptionId);
-
-        history = new SubscriptionHistory();
-        history.setSubscription(sub);
-        history.setPreviousStatus(null);
-        history.setNewStatus(SubscriptionStatus.ACTIVE);
-        history.setChangedAt(LocalDateTime.now());
-        history.setNote("Created");
     }
 
-    // ── getHistory ──────────────────────────────────
+    // ── getHistory ─────────────────────────────
 
     @Test
     void getHistory_returnsHistoryList() {
-        when(historyService.getHistory(subscriptionId)).thenReturn(List.of(history));
 
-        List<SubscriptionHistory> result = controller.getHistory(subscriptionId);
+        SubscriptionHistoryResponseDTO dto =
+                new SubscriptionHistoryResponseDTO(
+                        UUID.randomUUID(),
+                        subscriptionId,
+                        null,
+                        SubscriptionStatus.ACTIVE,
+                        LocalDateTime.now(),
+                        UUID.randomUUID(),
+                        "Created"
+                );
+
+        when(historyService.getHistory(subscriptionId))
+                .thenReturn(List.of(dto));
+
+        List<SubscriptionHistoryResponseDTO> result =
+                controller.getHistory(subscriptionId);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNote()).isEqualTo("Created");
         assertThat(result.get(0).getNewStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
+
         verify(historyService).getHistory(subscriptionId);
     }
 
     @Test
     void getHistory_returnsEmptyList_whenNoHistory() {
-        when(historyService.getHistory(subscriptionId)).thenReturn(List.of());
 
-        List<SubscriptionHistory> result = controller.getHistory(subscriptionId);
+        when(historyService.getHistory(subscriptionId))
+                .thenReturn(List.of());
+
+        List<SubscriptionHistoryResponseDTO> result =
+                controller.getHistory(subscriptionId);
 
         assertThat(result).isEmpty();
+
         verify(historyService).getHistory(subscriptionId);
     }
 
     @Test
     void getHistory_throwsException_whenSubscriptionNotFound() {
+
         when(historyService.getHistory(subscriptionId))
                 .thenThrow(new ResourceNotFoundException("Subscription not found"));
 
