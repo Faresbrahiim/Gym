@@ -229,12 +229,15 @@ services:
     networks:
       - gym-network
   chat-service:
+    
     build:
       context: ../microservices/chat-service
       dockerfile: Dockerfile
     container_name: chat-service
     env_file:
       - ../microservices/chat-service/.env
+    ports:
+    - "5000:5000"
     environment:
       PORT: 5000
       MONGO_URI: mongodb://chat-db:27017/chatdb
