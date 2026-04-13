@@ -216,6 +216,35 @@ services:
       - gym-network
 
 # ==============================
+# Chat Service + MongoDB
+# ==============================
+  chat-db:
+    image: mongo:6
+    container_name: chat-db
+    restart: always
+    ports:
+      - "27018:27017"   # optional (for local access)
+    volumes:
+      - chat-db-data:/data/db
+    networks:
+      - gym-network
+  chat-service:
+    build:
+      context: ../microservices/chat-service
+      dockerfile: Dockerfile
+    container_name: chat-service
+    env_file:
+      - ../microservices/chat-service/.env
+    environment:
+      PORT: 5000
+      MONGO_URI: mongodb://chat-db:27017/chatdb
+    depends_on:
+      - chat-db
+      - kafka   
+    networks:
+      - gym-network
+
+# ==============================
 # Networks and Volumes
 # ==============================
 networks:
@@ -227,3 +256,4 @@ volumes:
   membership-db-data:
   payment-db-data:
   kafka-data:
+  chat-db-data:
