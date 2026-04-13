@@ -3,10 +3,12 @@ import { body, param } from "express-validator";
 export const validateSendMessage = [
   body("conversationId")
     .notEmpty().withMessage("conversationId is required")
-    .isMongoId().withMessage("conversationId must be a valid MongoDB ID"),
+    .isMongoId().withMessage("conversationId must be a valid MongoDB ID")
+    .isUUID().withMessage("conversationId must be a valid UUID"),
   body("senderId")
     .notEmpty().withMessage("senderId is required")
-    .isString().withMessage("senderId must be a string"),
+    .isString().withMessage("senderId must be a string")
+    .isUUID().withMessage("senderId must be a valid UUID"),
   body("content")
     .notEmpty().withMessage("content is required")
     .isString().withMessage("content must be a string")
@@ -16,14 +18,18 @@ export const validateSendMessage = [
 export const validateGetMessages = [
   param("conversationId")
     .notEmpty().withMessage("conversationId is required")
-    .isMongoId().withMessage("conversationId must be a valid MongoDB ID"),
+    .isMongoId().withMessage("conversationId must be a valid MongoDB ID")
+    .isUUID().withMessage("conversationId must be a valid UUID"),
+
 ];
 
 export const validateMarkAsRead = [
   param("conversationId")
     .notEmpty().withMessage("conversationId is required")
-    .isMongoId().withMessage("conversationId must be a valid MongoDB ID"),
+    .isMongoId().withMessage("conversationId must be a valid MongoDB ID")
+    .isUUID().withMessage("conversationId must be a valid UUID"),
   body("userId")
     .notEmpty().withMessage("userId is required")
-    .isString().withMessage("userId must be a string"),
+    .isString().withMessage("userId must be a string")
+    .isUUID().withMessage("userId must be a valid UUID"),
 ];
