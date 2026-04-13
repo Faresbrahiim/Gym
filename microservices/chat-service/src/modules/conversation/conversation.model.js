@@ -4,10 +4,22 @@ const conversationSchema = new mongoose.Schema(
   {
     participants: [
       {
-        type: String, // userId as string
+        type: String,
         required: true,
       },
     ],
+    isGroup: {
+      type: Boolean,
+      default: false,
+    },
+    name: {
+      type: String,
+      default: null, // only for group chats
+    },
+    admin: {
+      type: String,
+      default: null, // userId of group admin
+    },
     lastMessage: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",

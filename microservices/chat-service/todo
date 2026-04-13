@@ -1,0 +1,7 @@
+Frontend fetches users list from user-service
+     ↓
+User clicks on someone
+     ↓
+Frontend calls POST /api/conversations { senderId, receiverId }
+     ↓
+Chat opens with that conversationId
