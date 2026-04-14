@@ -66,6 +66,13 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/admin/admin.routes').then(m => m.adminRoutes)
   },
+  // Chat feature — protected, no layout (full-screen chat interface)
+  {
+  path: 'chat',
+  canActivate: [authGuard],
+  loadChildren: () =>
+    import('./features/chat/chat.routes').then(m => m.chatRoutes)
+  },
 
   // 404
   {

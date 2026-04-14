@@ -1,0 +1,123 @@
+<div class="chat-wrapper">
+
+  <!-- Sidebar: conversation list -->
+  <div class="chat-sidebar">
+    <div class="sidebar-header">
+      <h5>Messages</h5>
+    </div>
+
+    <!-- Start new conversation -->
+    <div class="new-chat">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Enter user ID to chat..."
+        [(ngModel)]="newReceiverSearch"
+        (keyup.enter)="startConversation(newReceiverSearch)"
+      />
+      <button class="btn btn-primary btn-sm mt-1 w-100"
+        (click)="startConversation(newReceiverSearch)">
+        Start Chat
+      </button>
+    </div>
+
+    <!-- Conversation list -->
+    <div class="conversation-list">
+      @for (conv of conversations(); track conv._id) {
+        <div
+          class="conversation-item"
+          [class.active]="activeConversation()?._id === conv._id"
+          (click)="openConversation(conv)"
+        >
+          <div class="conv-avatar">
+            <span class="avatar-circle">
+              {{ conv.isGroup ? conv.name?.[0] : getOtherParticipant(conv)[0] }}
+            </span>
+            @if (!conv.isGroup && isOnline(getOtherParticipant(conv))) {
+              <span class="online-dot"></span>
+            }
+          </div>
+          <div class="conv-info">
+            <p class="conv-name">
+              {{ conv.isGroup ? conv.name : getOtherParticipant(conv) }}
+            </p>
+            <p class="conv-last">
+              {{ conv.lastMessage?.content ?? 'No messages yet' }}
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Main chat area -->
+  <div class="chat-main">
+    @if (activeConversation()) {
+
+      <!-- Chat header -->
+      <div class="chat-header">
+        <span class="avatar-circle">
+          {{ activeConversation()!.isGroup
+            ? activeConversation()!.name?.[0]
+            : getOtherParticipant(activeConversation()!)[0] }}
+        </span>
+        <div>
+          <p class="chat-name">
+            {{ activeConversation()!.isGroup
+              ? activeConversation()!.name
+              : getOtherParticipant(activeConversation()!) }}
+          </p>
+          @if (!activeConversation()!.isGroup) {
+            <span class="status-text"
+              [class.online]="isOnline(getOtherParticipant(activeConversation()!))">
+              {{ isOnline(getOtherParticipant(activeConversation()!)) ? 'Online' : 'Offline' }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="chat-messages">
+        @for (msg of messages(); track msg._id) {
+          <div class="message-row"
+            [class.sent]="msg.senderId === currentUserId"
+            [class.received]="msg.senderId !== currentUserId">
+            <div class="message-bubble">
+              <p>{{ msg.content }}</p>
+              <span class="message-time">
+                {{ msg.createdAt | date:'shortTime' }}
+              </span>
+            </div>
+          </div>
+        }
+
+        <!-- Typing indicator -->
+        @if (typingUsers().length > 0) {
+          <div class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        }
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Type a message..."
+          [(ngModel)]="newMessage"
+          (input)="onTyping()"
+          (keyup.enter)="sendMessage()"
+        />
+        <button class="btn btn-primary" (click)="sendMessage()">
+          Send
+        </button>
+      </div>
+
+    } @else {
+      <div class="no-chat-selected">
+        <p>Select a conversation or start a new one</p>
+      </div>
+    }
+  </div>
+</div>
