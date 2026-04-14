@@ -4,5 +4,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface GetLatestSubscriptionPaymentUseCase {
-    Optional<PaymentResponse> execute(UUID subscriptionId);
+    // renamed to avoid ambiguity with GetMyPaymentHistoryUseCase.execute(UUID)
+    Optional<PaymentResponse> executeForSubscription(UUID subscriptionId);
 }

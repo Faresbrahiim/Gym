@@ -43,6 +43,10 @@ public class Payment {
         this.completedAt = completedAt;
     }
 
+    public void assignStripePaymentIntentId(String stripePaymentIntentId) {
+        this.stripePaymentIntentId = stripePaymentIntentId;
+    }
+
     public void markCompleted(String stripePaymentIntentId) {
         if (this.status != PaymentStatus.PENDING) {
             throw new InvalidPaymentStateException("Cannot complete a payment with status: " + this.status);
