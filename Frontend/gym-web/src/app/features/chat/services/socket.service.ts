@@ -44,7 +44,7 @@ export class SocketService implements OnDestroy {
 
   onMessage(): Observable<any> {
     return new Observable(observer => {
-      this.socket?.on('message:received', (message) => {
+      this.socket?.on('message:received', (message: any) => {
         observer.next(message);
       });
     });
@@ -68,13 +68,13 @@ export class SocketService implements OnDestroy {
 
   onTypingStart(): Observable<{ userId: string }> {
     return new Observable(observer => {
-      this.socket?.on('typing:start', (data) => observer.next(data));
+      this.socket?.on('typing:start', (data: { userId: string }) => observer.next(data));
     });
   }
 
   onTypingStop(): Observable<{ userId: string }> {
     return new Observable(observer => {
-      this.socket?.on('typing:stop', (data) => observer.next(data));
+      this.socket?.on('typing:stop', (data: { userId: string }) => observer.next(data));
     });
   }
 

@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
   # ==============================
@@ -153,6 +152,54 @@ services:
       - gym-network
 
   # ==============================
+  # Spring Boot Notification Service + Postgres
+  # ==============================
+  notification-db:
+    image: postgres:15
+    container_name: notification-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
+    ports:
+      - "5436:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    networks:
+      - gym-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notification_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  notification-service:
+    build:
+      context: ../microservices/notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    env_file:
+      - .env
+    environment:
+      NOTIFICATION_DB_URL: jdbc:postgresql://notification-db:5432/notification_db
+      NOTIFICATION_DB_USERNAME: postgres
+      NOTIFICATION_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
+      EMAIL_SMTP_PASS: ${EMAIL_SMTP_PASS}
+    depends_on:
+      notification-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - gym-network
+
+  # ==============================
   # Kafka
   # ==============================
   kafka:
@@ -229,13 +276,10 @@ services:
     networks:
       - gym-network
   chat-service:
-    
     build:
       context: ../microservices/chat-service
       dockerfile: Dockerfile
     container_name: chat-service
-    env_file:
-      - ../microservices/chat-service/.env
     ports:
     - "5000:5000"
     environment:
@@ -258,5 +302,6 @@ volumes:
   gym-user-db-data:
   membership-db-data:
   payment-db-data:
+  notification-db-data:
   kafka-data:
   chat-db-data:
