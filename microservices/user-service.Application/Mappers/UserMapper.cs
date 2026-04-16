@@ -79,6 +79,18 @@ namespace user_service.Application.Mappers
 
             return user;
         }
+        public static UserResponseDTO ToUserResponseDTO(User user)
+        {
+            return new UserResponseDTO
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                FirstName = user.Profile?.FirstName,
+                LastName = user.Profile?.LastName,
+                Role = user.Role.ToString()
+            };
+        }
     }
 
 }

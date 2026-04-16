@@ -39,6 +39,8 @@ builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<IRecoveryCodeRepository, RecoveryCodeRepository>();
 builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 builder.Services.AddScoped<AdminSeeder>();
+builder.Services.AddScoped<IUsersService, UsersService>();
+
 // Immediate Session Invalidation — JTI Blacklist  author: Anas
 builder.Services.AddScoped<IRevokedTokenRepository, RevokedTokenRepository>();
 builder.Services.AddHostedService<RevokedTokenCleanupService>();

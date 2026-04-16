@@ -104,5 +104,13 @@ namespace user_service.Infrastructure.Repositories
 
             await _context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

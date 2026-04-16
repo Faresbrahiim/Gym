@@ -39,5 +39,7 @@ namespace user_service.Application.Contracts.Repositories
         Task UpsertTwoFactor(
             UserTwoFactor twoFactor,
             CancellationToken cancellationToken = default);
+        Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default);
+
     }
 }
