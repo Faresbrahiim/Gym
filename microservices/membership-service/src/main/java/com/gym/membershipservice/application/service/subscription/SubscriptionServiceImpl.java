@@ -82,8 +82,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional
     public SubscriptionResponseDTO createSubscription(UUID userId, UUID planId) {
-        if (subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)) {
-            throw new ConflictException("User already has an active subscription");
+        if (subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE) ||
+            subscriptionRepository.existsByUserIdAndStatus(userId, SubscriptionStatus.PENDING_PAYMENT)) {
+            throw new ConflictException("User already has an active or pending subscription");
         }
 
         Plan plan = planRepository.findById(planId)
@@ -96,15 +97,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         validatePlanDuration(plan);
 
         LocalDateTime now = LocalDateTime.now();
+        boolean isPaid = plan.getPrice() != null && plan.getPrice() > 0;
+
         Subscription sub = new Subscription();
         sub.setUserId(userId);
         sub.setPlan(plan);
-        sub.setStatus(SubscriptionStatus.ACTIVE);
         sub.setStartDate(now);
-        sub.setEndDate(now.plusDays(plan.getDurationInDays()));
+
+        if (isPaid) {
+            sub.setStatus(SubscriptionStatus.PENDING_PAYMENT);
+            sub.setEndDate(now.plusDays(plan.getDurationInDays()));
+        } else {
+            sub.setStatus(SubscriptionStatus.ACTIVE);
+            sub.setEndDate(now.plusDays(plan.getDurationInDays()));
+        }
 
         Subscription saved = subscriptionRepository.save(sub);
-        historyService.recordChange(saved, null, SubscriptionStatus.ACTIVE, null, "Created");
+        historyService.recordChange(saved, null, saved.getStatus(), null,
+                isPaid ? "Created — awaiting payment" : "Created");
 
         return SubscriptionMapper.toDTO(saved);
     }

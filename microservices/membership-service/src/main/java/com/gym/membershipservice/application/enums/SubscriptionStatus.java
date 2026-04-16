@@ -9,5 +9,7 @@ public enum SubscriptionStatus {
     DOWNGRADED,
     PAUSE_REQUESTED,
     FROZEN,
-    CANCEL_REQUESTED
+    CANCEL_REQUESTED,
+    PENDING_PAYMENT,
+    PAYMENT_FAILED
 }
