@@ -3,6 +3,7 @@ package com.gym.payment.adapter.out.persistence;
 import com.gym.payment.domain.model.Payment;
 import com.gym.payment.domain.port.in.GetAllPaymentsQuery;
 import com.gym.payment.domain.port.out.PaymentRepository;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
@@ -62,9 +63,10 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
         return repository.findTopBySubscriptionIdOrderByCreatedAtDesc(subscriptionId).map(mapper::toDomain);
     }
 
-    private org.springframework.data.jpa.domain.Specification<PaymentJpaEntity> buildSpecification(GetAllPaymentsQuery query) {
-        org.springframework.data.jpa.domain.Specification<PaymentJpaEntity> spec =
-                org.springframework.data.jpa.domain.Specification.where(null);
+    private Specification<PaymentJpaEntity> buildSpecification(GetAllPaymentsQuery query) {
+        Specification<PaymentJpaEntity> spec = Specification.where(
+                (Specification<PaymentJpaEntity>) null
+        );
 
         if (query.userId() != null) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("userId"), query.userId()));
