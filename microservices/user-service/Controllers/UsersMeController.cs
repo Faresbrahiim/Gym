@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using user_service.Application.DTOs;
 using user_service.Application.Contracts.Services;
-using Microsoft.AspNetCore.Http;
 
 namespace user_service.Controllers
 {

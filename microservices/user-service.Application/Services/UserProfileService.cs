@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
-using user_service.Application.Domain.Entities;
 using user_service.Application.Domain.Enums;
 using user_service.Application.Domain.Exceptions;
 using user_service.Application.DTOs;

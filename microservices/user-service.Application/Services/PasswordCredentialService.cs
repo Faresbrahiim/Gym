@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using user_service.Application.Domain.Exceptions;
+﻿using user_service.Application.Domain.Exceptions;
 using user_service.Application.Domain.Entities;
 using user_service.Application.Domain.Enums;
 using user_service.Application.Domain.Events;

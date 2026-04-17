@@ -1,16 +1,12 @@
 ﻿using Google.Apis.Auth.OAuth2.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Threading;
 using user_service.Application.DTOs;
-using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
-using user_service.Application.Services;
 using user_service.Filters;
-using user_service.Infrastructure.Repositories;
-using user_service.Infrastructure.Services;
+
+
 namespace user_service.Controllers
 {
     [Route("api/auth")]
@@ -19,17 +15,14 @@ namespace user_service.Controllers
     {
         private readonly IAuthService _authService;
         private readonly IPasswordCredentialService _passwordCredentialService;
-        private readonly IEmailService _emailService;
         private readonly ITwoFactorService _twoFactorService;
 
         public AuthController(IAuthService authService
             , IPasswordCredentialService passwordCredentialService
-            , IEmailService emailService,
-            ITwoFactorService twoFactorService)
+            , ITwoFactorService twoFactorService)
         {
             _authService = authService;
             _passwordCredentialService = passwordCredentialService;
-            _emailService = emailService; ;
             _twoFactorService = twoFactorService;
 
         }
@@ -125,6 +118,7 @@ namespace user_service.Controllers
             return Ok(new { message = "Account activated successfully" });
         }
 
+        // This endpoint is intentionally vague to prevent email enumeration attacks
         [HttpPost("resend-invitation")]
         public async Task<IActionResult> resendinvitation([FromBody] ResendInvitationDto invitationDto, CancellationToken cancellationToken)
         {
@@ -138,7 +132,7 @@ namespace user_service.Controllers
                 message = "If the invitation exists, a new email has been sent."
             });
         }
-
+        
         [HttpPost("verify-email")]
         public async Task<IActionResult> VerifyEmail(
         [FromBody] VerifyEmailDto dto,
@@ -158,6 +152,7 @@ namespace user_service.Controllers
             });
         }
         [HttpPost("refresh")]
+
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.RefreshToken))

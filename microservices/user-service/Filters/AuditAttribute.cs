@@ -1,11 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using System;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
-using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
 
 namespace user_service.Filters
@@ -30,9 +25,6 @@ namespace user_service.Filters
 
                 var maskedArgs = MaskSensitiveProperties(context.ActionArguments);
 
-                //var details = System.Text.Json.JsonSerializer.Serialize(maskedArgs); -> this line is cuasing trouble , because some ASP objects cannot be serialized
-
-                //await auditService.LogAsync(_actionName, username, details);
                 await auditService.LogAsync(_actionName, username);
             }
         }
@@ -78,7 +70,7 @@ namespace user_service.Filters
                         prop.Name.ToLower().Contains("token") ||
                         prop.Name.ToLower().Contains("secret"))
                     {
-                        prop.SetValue(clone, "Nice try DIDI");
+                        prop.SetValue(clone, "Nice try ");
                     }
                     else
                     {

@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using user_service.Application.Domain.Enums;
-using user_service.Application.Domain.Entities;
+﻿using user_service.Application.Domain.Enums;
 
 namespace user_service.Application.Domain.Authorization
 {

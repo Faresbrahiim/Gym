@@ -1,8 +1,6 @@
-﻿using System;
-using System.IO;
+﻿
 using System.Text;
-using System.Threading.Tasks;
-using user_service.Application.Contracts.Repositories;
+
 using user_service.Application.Contracts.Services;
 
 namespace user_service.Application.Services
