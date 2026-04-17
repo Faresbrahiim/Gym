@@ -7,7 +7,6 @@ public class PaymentCompletedMessage {
     private String userId;
     private String amount;
     private String currency;
-    private String planName;
 
     public PaymentCompletedMessage() {}
 
@@ -25,7 +24,4 @@ public class PaymentCompletedMessage {
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
-
-    public String getPlanName() { return planName; }
-    public void setPlanName(String planName) { this.planName = planName; }
 }

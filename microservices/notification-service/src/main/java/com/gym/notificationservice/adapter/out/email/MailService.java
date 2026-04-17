@@ -21,14 +21,14 @@ public class MailService {
         this.mailSender = mailSender;
     }
 
-    public void sendPaymentSuccessEmail(String to, String planName, String amount, String currency) {
+    public void sendPaymentSuccessEmail(String to, String amount, String currency) {
         try {
             SimpleMailMessage mail = new SimpleMailMessage();
             mail.setFrom(from);
             mail.setTo(to);
-            mail.setSubject("Payment Confirmed — " + planName);
+            mail.setSubject("Payment Confirmed");
             mail.setText(
-                    "Your payment of " + amount + " " + currency + " for " + planName +
+                    "Your payment of " + amount + " " + currency +
                     " was successful.\n\nYour membership is now active.\n\nThank you!"
             );
             mailSender.send(mail);

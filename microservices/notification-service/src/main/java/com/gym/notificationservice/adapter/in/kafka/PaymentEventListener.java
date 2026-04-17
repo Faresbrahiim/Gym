@@ -35,13 +35,12 @@ public class PaymentEventListener {
                     userId,
                     "Payment Successful",
                     "Your payment of " + message.getAmount() + " " + message.getCurrency()
-                            + " for " + message.getPlanName() + " was successful. Your subscription is now active.",
+                            + " was successful. Your subscription is now active.",
                     "PAYMENT_COMPLETED"
             );
 
             mailService.sendPaymentSuccessEmail(
                     message.getUserId(),
-                    message.getPlanName(),
                     message.getAmount(),
                     message.getCurrency()
             );
