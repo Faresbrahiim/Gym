@@ -2,7 +2,6 @@
 using user_service.Application.Domain.Entities;
 using user_service.Infrastructure.Data;
 using user_service.Application.Contracts.Repositories;
-using user_service.Application.Contracts.Services;
 
 namespace user_service.Infrastructure.Repositories
 {

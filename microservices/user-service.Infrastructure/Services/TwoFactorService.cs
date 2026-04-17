@@ -1,11 +1,6 @@
 using OtpNet;
 using QRCoder;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using user_service.Application.Domain.Entities;
 using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
