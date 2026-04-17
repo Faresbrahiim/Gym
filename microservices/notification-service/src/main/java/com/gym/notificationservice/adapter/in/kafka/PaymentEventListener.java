@@ -2,7 +2,6 @@ package com.gym.notificationservice.adapter.in.kafka;
 
 import com.gym.notificationservice.adapter.in.kafka.dto.PaymentCompletedMessage;
 import com.gym.notificationservice.adapter.in.kafka.dto.PaymentFailedMessage;
-import com.gym.notificationservice.adapter.out.email.MailService;
 import com.gym.notificationservice.application.NotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -13,11 +12,9 @@ import org.springframework.stereotype.Component;
 public class PaymentEventListener {
 
     private final NotificationService notificationService;
-    private final MailService mailService;
 
-    public PaymentEventListener(NotificationService notificationService, MailService mailService) {
+    public PaymentEventListener(NotificationService notificationService) {
         this.notificationService = notificationService;
-        this.mailService = mailService;
     }
 
     @KafkaListener(
@@ -37,12 +34,6 @@ public class PaymentEventListener {
                     "Your payment of " + message.getAmount() + " " + message.getCurrency()
                             + " was successful. Your subscription is now active.",
                     "PAYMENT_COMPLETED"
-            );
-
-            mailService.sendPaymentSuccessEmail(
-                    message.getUserId(),
-                    message.getAmount(),
-                    message.getCurrency()
             );
 
         } catch (Exception e) {
