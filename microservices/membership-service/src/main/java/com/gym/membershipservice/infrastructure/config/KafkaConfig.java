@@ -1,6 +1,5 @@
 package com.gym.membershipservice.infrastructure.config;
 
-
 import com.gym.membershipservice.application.dto.kafka.PaymentCompletedMessage;
 import com.gym.membershipservice.application.dto.kafka.PaymentFailedMessage;
 import com.gym.membershipservice.application.dto.kafka.UserRegisteredEvent;
@@ -8,26 +7,46 @@ import com.gym.membershipservice.infrastructure.kafka.PaymentCompletedMessageDes
 import com.gym.membershipservice.infrastructure.kafka.PaymentFailedMessageDeserializer;
 import com.gym.membershipservice.infrastructure.kafka.UserRegisteredEventDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
 
-// ------------------------------
-// Kafka Configuration
-// ------------------------------
 @Configuration
 public class KafkaConfig {
 
     private static final String BOOTSTRAP_SERVERS = "kafka:9092";
 
     // ------------------------
-    // JSON Consumer Factory
+    // Producer
+    // ------------------------
+    @Bean
+    public ProducerFactory<String, Object> producerFactory() {
+        Map<String, Object> config = new HashMap<>();
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, Object> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
+
+    // ------------------------
+    // Consumer Factories
     // ------------------------
     @Bean
     public ConsumerFactory<String, UserRegisteredEvent> userRegisteredEventConsumerFactory() {

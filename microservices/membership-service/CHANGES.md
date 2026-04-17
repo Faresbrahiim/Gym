@@ -114,3 +114,38 @@ On `payment.failed` → subscription transitions to `PAYMENT_FAILED`
 - No existing Kafka listeners were modified
 - No existing statuses were removed or renamed
 - No database migrations needed — `ddl-auto: update` handles the new enum values
+
+---
+
+## Second Round of Changes — Notification Service Integration
+
+A second change was made later to support the notification-service. The goal was simple:
+notification-service needs to know when a subscription is created so it can notify the user.
+Membership-service was consumer-only before — it had no Kafka producer at all. No business
+logic was changed.
+
+### `application/dto/kafka/SubscriptionCreatedEvent.java` — new file
+
+New DTO with three fields: `subscriptionId`, `userId`, `planName`. This is the message
+published to the `subscription.created` topic so notification-service can consume it.
+
+### `infrastructure/config/KafkaConfig.java` — producer added
+
+Added a `ProducerFactory<String, Object>` bean and a `KafkaTemplate<String, Object>` bean.
+Membership-service was consumer-only before this change. The producer uses `JsonSerializer`
+for values, same pattern as payment-service.
+
+### `application/service/subscription/SubscriptionServiceImpl.java` — one addition
+
+After saving the new subscription, one call is added:
+
+```java
+kafkaTemplate.send("subscription.created", new SubscriptionCreatedEvent(
+        saved.getId().toString(),
+        userId.toString(),
+        plan.getName()
+));
+```
+
+This fires on every new subscription regardless of status (ACTIVE or PENDING_PAYMENT).
+No existing logic was modified — the publish happens after the save, as a side effect only.

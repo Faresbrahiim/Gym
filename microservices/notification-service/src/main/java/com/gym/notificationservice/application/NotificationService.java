@@ -2,6 +2,7 @@ package com.gym.notificationservice.application;
 
 import com.gym.notificationservice.adapter.in.web.dto.NotificationResponse;
 import com.gym.notificationservice.adapter.out.persistence.NotificationRepository;
+import com.gym.notificationservice.adapter.out.websocket.WebSocketPublisher;
 import com.gym.notificationservice.domain.Notification;
 import com.gym.notificationservice.domain.NotificationStatus;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,12 @@ import java.util.UUID;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final WebSocketPublisher webSocketPublisher;
 
-    public NotificationService(NotificationRepository notificationRepository) {
+    public NotificationService(NotificationRepository notificationRepository,
+                               WebSocketPublisher webSocketPublisher) {
         this.notificationRepository = notificationRepository;
+        this.webSocketPublisher = webSocketPublisher;
     }
 
     public NotificationResponse createNotification(UUID userId, String title, String message, String type) {
@@ -29,7 +33,11 @@ public class NotificationService {
         notification.setType(type);
 
         Notification saved = notificationRepository.save(notification);
-        return toResponse(saved);
+        NotificationResponse response = toResponse(saved);
+
+        webSocketPublisher.pushNotification(userId, response);
+
+        return response;
     }
 
     @Transactional(readOnly = true)

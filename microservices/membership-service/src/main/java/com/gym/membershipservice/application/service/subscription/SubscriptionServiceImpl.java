@@ -6,6 +6,7 @@ import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.api.mapper.SubscriptionMapper;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.kafka.SubscriptionCreatedEvent;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.PlanStatus;
@@ -16,6 +17,7 @@ import com.gym.membershipservice.application.port.SubscriptionService;
 import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +32,18 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final PlanRepository planRepository;
     private final SubscriptionHistoryService historyService;
     private final PlanService planService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository,
                                    PlanRepository planRepository,
                                    SubscriptionHistoryService historyService,
-                                   PlanServiceImpl planService) {
+                                   PlanServiceImpl planService,
+                                   KafkaTemplate<String, Object> kafkaTemplate) {
         this.subscriptionRepository = subscriptionRepository;
         this.planRepository = planRepository;
         this.historyService = historyService;
         this.planService = planService;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     // =========================
@@ -115,6 +120,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, null, saved.getStatus(), null,
                 isPaid ? "Created — awaiting payment" : "Created");
+
+        kafkaTemplate.send("subscription.created", new SubscriptionCreatedEvent(
+                saved.getId().toString(),
+                userId.toString(),
+                plan.getName()
+        ));
 
         return SubscriptionMapper.toDTO(saved);
     }
