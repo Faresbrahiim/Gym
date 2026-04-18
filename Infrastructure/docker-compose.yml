@@ -134,8 +134,8 @@ services:
     container_name: payment-service
     env_file:
       - .env
-    ports:
-      - "8081:8080"
+    # No host port mapping — public traffic goes through Kong (:8000) only.
+    # Internal callers reach this service via docker DNS at payment-service:8080.
     environment:
       PAYMENT_DB_URL: jdbc:postgresql://payment-db:5432/payment
       PAYMENT_DB_USERNAME: payment_user
