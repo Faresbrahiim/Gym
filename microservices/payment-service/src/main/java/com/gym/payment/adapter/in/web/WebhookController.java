@@ -9,6 +9,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.model.StripeObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,37 +35,37 @@ public class WebhookController {
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String sigHeader) {
 
+        Event event;
         try {
-            Event event = StripePaymentGatewayAdapter.verifyWebhookSignature(
+            event = StripePaymentGatewayAdapter.verifyWebhookSignature(
                     payload, sigHeader, stripeAdapter.getWebhookSecret()
             );
-
-            Optional<StripeObject> stripeObjectOpt = event.getDataObjectDeserializer().getObject();
-            if (stripeObjectOpt.isEmpty()) {
-                return ResponseEntity.ok().build();
-            }
-
-            PaymentIntent intent = (PaymentIntent) stripeObjectOpt.get();
-            String failureReason = intent.getLastPaymentError() != null
-                    ? intent.getLastPaymentError().getMessage()
-                    : null;
-
-            WebhookCommand command = new WebhookCommand(
-                    event.getId(),
-                    intent.getId(),
-                    event.getType(),
-                    failureReason,
-                    payload,
-                    sigHeader
-            );
-
-            handleWebhookUseCase.execute(command);
-
         } catch (WebhookSignatureException e) {
-            log.error("Invalid webhook signature: {}", e.getMessage());
-        } catch (Exception e) {
-            log.error("Webhook processing error: {}", e.getMessage());
+            log.warn("Invalid webhook signature: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+
+        Optional<StripeObject> stripeObjectOpt = event.getDataObjectDeserializer().getObject();
+        if (stripeObjectOpt.isEmpty()) {
+            log.warn("Webhook event {} has no deserializable object, acknowledging", event.getId());
+            return ResponseEntity.ok().build();
+        }
+
+        PaymentIntent intent = (PaymentIntent) stripeObjectOpt.get();
+        String failureReason = intent.getLastPaymentError() != null
+                ? intent.getLastPaymentError().getMessage()
+                : null;
+
+        WebhookCommand command = new WebhookCommand(
+                event.getId(),
+                intent.getId(),
+                event.getType(),
+                failureReason,
+                payload,
+                sigHeader
+        );
+
+        handleWebhookUseCase.execute(command);
 
         return ResponseEntity.ok().build();
     }
