@@ -1,4 +1,5 @@
 mod config;
+mod jwt;
 mod presence;
 mod state;
 
