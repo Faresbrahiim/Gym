@@ -11,10 +11,16 @@ pub fn extract_user_id(token: &str, public_key_pem: &str) -> Option<String> {
 
     let mut validation = Validation::new(Algorithm::RS256);
     validation.set_required_spec_claims(&["exp"]);
+    validation.set_audience(&["MyGymUsers"]);
+    validation.set_issuer(&["MyGymApp"]);
 
-    decode::<Claims>(token, &key, &validation)
-        .ok()
-        .map(|data| data.claims.sub)
+    match decode::<Claims>(token, &key, &validation) {
+        Ok(data) => Some(data.claims.sub),
+        Err(e) => {
+            tracing::error!("JWT validation failed: {:?}", e);
+            None
+        }
+    }
 }
 
 pub fn extract_bearer_token(auth_header: &str) -> Option<&str> {
