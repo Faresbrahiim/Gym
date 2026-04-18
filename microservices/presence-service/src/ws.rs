@@ -34,15 +34,12 @@ async fn handle_socket(
 ) {
     tracing::info!("user {} connected", user_id);
 
-    {
-        let mut conn = state.redis.lock().await;
-        presence::set_online(&mut conn, &user_id, ttl).await;
-    }
+    let mut conn = state.redis.clone();
+    presence::set_online(&mut conn, &user_id, ttl).await;
 
     while let Some(Ok(msg)) = socket.recv().await {
         match msg {
             Message::Ping(_) | Message::Text(_) => {
-                let mut conn = state.redis.lock().await;
                 presence::set_online(&mut conn, &user_id, ttl).await;
             }
             Message::Close(_) => break,
@@ -50,10 +47,7 @@ async fn handle_socket(
         }
     }
 
-    {
-        let mut conn = state.redis.lock().await;
-        presence::set_offline(&mut conn, &user_id).await;
-    }
+    presence::set_offline(&mut conn, &user_id).await;
 
     tracing::info!("user {} disconnected", user_id);
 }

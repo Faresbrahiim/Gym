@@ -9,7 +9,6 @@ use axum::{Router, routing::get};
 use redis::{Client, aio::ConnectionManager};
 use state::{AppState, SharedState};
 use std::sync::Arc;
-use tokio::sync::Mutex;
 
 #[tokio::main]
 async fn main() {
@@ -22,7 +21,7 @@ async fn main() {
     let redis_conn = ConnectionManager::new(client).await.expect("Failed to connect to Redis");
 
     let state: SharedState = Arc::new(AppState {
-        redis: Mutex::new(redis_conn),
+        redis: redis_conn,
         presence_ttl_secs: config.presence_ttl_secs,
         jwt_public_key: config.jwt_public_key,
     });
