@@ -292,6 +292,39 @@ services:
       - gym-network
 
 # ==============================
+# Presence Service + Redis
+# ==============================
+  presence-redis:
+    image: redis:7-alpine
+    container_name: presence-redis
+    networks:
+      - gym-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  presence-service:
+    build:
+      context: ../microservices/presence-service
+      dockerfile: Dockerfile
+    container_name: presence-service
+    ports:
+      - "8082:8080"   # temporary — for local testing only, remove before production
+    environment:
+      REDIS_URL: redis://presence-redis:6379
+      PRESENCE_TTL_SECS: 60
+      PORT: 8080
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      RUST_LOG: info
+    depends_on:
+      presence-redis:
+        condition: service_healthy
+    networks:
+      - gym-network
+
+# ==============================
 # Networks and Volumes
 # ==============================
 networks:
