@@ -28,6 +28,9 @@ stripe:
   api-key: ${STRIPE_API_KEY}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET}
 
+membership-service:
+  base-url: ${MEMBERSHIP_SERVICE_URL:http://membership-service:8080}
+
 server:
   port: 8080
   forward-headers-strategy: framework

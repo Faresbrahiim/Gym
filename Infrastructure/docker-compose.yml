@@ -143,6 +143,7 @@ services:
       STRIPE_API_KEY: ${STRIPE_API_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MEMBERSHIP_SERVICE_URL: http://membership-service:8080
     depends_on:
       payment-db:
         condition: service_healthy

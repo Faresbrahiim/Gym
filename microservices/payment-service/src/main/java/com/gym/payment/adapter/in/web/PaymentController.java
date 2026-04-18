@@ -37,8 +37,6 @@ public class PaymentController {
                 userId,
                 request.subscriptionId(),
                 request.planId(),
-                request.amount(),
-                request.currency(),
                 request.paymentMethodToken()
         );
 
