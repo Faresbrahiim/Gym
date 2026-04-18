@@ -1,5 +1,4 @@
 ﻿using Google.Apis.Auth;
-using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
 
 namespace user_service.Application.Services;

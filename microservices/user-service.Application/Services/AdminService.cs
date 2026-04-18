@@ -9,7 +9,6 @@ using user_service.Application.Domain.Entities;
 using user_service.Application.Domain.Enums;
 using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
-using user_service.Application.Helpers;
 using user_service.Application.Mappers;
 using Microsoft.Extensions.Configuration;
 

@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using user_service.Application.Domain.Authorization;
 using user_service.Application.DTOs;
-using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
-using user_service.Authorization;
 
 namespace user_service.Controllers
 {
@@ -36,6 +33,7 @@ namespace user_service.Controllers
 
             return Ok(new { message = "Member invitation sent." });
         }
+
 
         [Authorize(Policy = Permissions.UsersCreate)]
         [HttpPost("coach")]
