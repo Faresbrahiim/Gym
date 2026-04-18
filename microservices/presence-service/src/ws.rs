@@ -5,6 +5,7 @@ use axum::{
 };
 use axum::extract::ws::{Message, WebSocket};
 use serde::Deserialize;
+use tokio::time::{timeout, Duration};
 
 use crate::{jwt, presence, state::SharedState};
 
@@ -37,13 +38,26 @@ async fn handle_socket(
     let mut conn = state.redis.clone();
     presence::set_online(&mut conn, &user_id, ttl).await;
 
-    while let Some(Ok(msg)) = socket.recv().await {
-        match msg {
-            Message::Ping(_) | Message::Text(_) => {
-                presence::set_online(&mut conn, &user_id, ttl).await;
+    let idle_timeout = Duration::from_secs(ttl);
+
+    loop {
+        match timeout(idle_timeout, socket.recv()).await {
+            Ok(Some(Ok(msg))) => match msg {
+                Message::Ping(_) | Message::Text(_) => {
+                    presence::set_online(&mut conn, &user_id, ttl).await;
+                }
+                Message::Close(_) => break,
+                _ => {}
+            },
+            Ok(Some(Err(e))) => {
+                tracing::info!("user {} socket error: {}", user_id, e);
+                break;
             }
-            Message::Close(_) => break,
-            _ => {}
+            Ok(None) => break,
+            Err(_) => {
+                tracing::info!("user {} heartbeat timeout after {}s", user_id, ttl);
+                break;
+            }
         }
     }
 
