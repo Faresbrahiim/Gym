@@ -1,4 +1,5 @@
 mod config;
+mod presence;
 mod state;
 
 use axum::{Router, routing::get};
