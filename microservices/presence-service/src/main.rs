@@ -1,4 +1,5 @@
 mod config;
+mod handlers;
 mod jwt;
 mod presence;
 mod state;
@@ -29,6 +30,8 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
         .route("/ws", get(ws::ws_handler))
+        .route("/presence/online", get(handlers::get_all_online))
+        .route("/presence/{user_id}", get(handlers::get_user_presence))
         .with_state(state);
 
     let addr = format!("0.0.0.0:{}", config.port);
