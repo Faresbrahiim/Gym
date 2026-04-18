@@ -19,7 +19,7 @@ public class WebSocketPublisher {
 
     public void pushNotification(UUID userId, NotificationResponse notification) {
         try {
-            messagingTemplate.convertAndSend("/topic/notifications/" + userId, notification);
+            messagingTemplate.convertAndSendToUser(userId.toString(), "/queue/notifications", notification);
             log.info("Pushed notification via WebSocket to userId={}", userId);
         } catch (Exception e) {
             log.error("Failed to push WebSocket notification to userId={}: {}", userId, e.getMessage(), e);

@@ -33,8 +33,9 @@ public class NotificationController {
     }
 
     @PostMapping("/{id}/read")
-    public ResponseEntity<NotificationResponse> markAsRead(@PathVariable UUID id) {
-        return ResponseEntity.ok(notificationService.markAsRead(id));
+    public ResponseEntity<NotificationResponse> markAsRead(@PathVariable UUID id, JwtAuthenticationToken token) {
+        UUID userId = UUID.fromString(token.getToken().getSubject());
+        return ResponseEntity.ok(notificationService.markAsRead(id, userId));
     }
 
     @PostMapping("/me/read-all")
