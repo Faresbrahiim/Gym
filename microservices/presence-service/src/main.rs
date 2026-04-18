@@ -2,6 +2,7 @@ mod config;
 mod jwt;
 mod presence;
 mod state;
+mod ws;
 
 use axum::{Router, routing::get};
 use redis::{Client, aio::ConnectionManager};
@@ -27,6 +28,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
+        .route("/ws", get(ws::ws_handler))
         .with_state(state);
 
     let addr = format!("0.0.0.0:{}", config.port);
