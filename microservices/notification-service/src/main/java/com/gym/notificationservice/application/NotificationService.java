@@ -5,8 +5,10 @@ import com.gym.notificationservice.adapter.out.persistence.NotificationRepositor
 import com.gym.notificationservice.adapter.out.websocket.WebSocketPublisher;
 import com.gym.notificationservice.domain.Notification;
 import com.gym.notificationservice.domain.NotificationStatus;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,9 +55,10 @@ public class NotificationService {
         return notificationRepository.countByUserIdAndStatus(userId, NotificationStatus.UNREAD);
     }
 
-    public NotificationResponse markAsRead(UUID notificationId) {
+    public NotificationResponse markAsRead(UUID notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .filter(n -> n.getUserId().equals(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
 
         notification.setStatus(NotificationStatus.READ);
         notification.setReadAt(LocalDateTime.now());
