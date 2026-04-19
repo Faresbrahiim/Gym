@@ -35,7 +35,7 @@ class MembershipControllerTest {
         userId = UUID.randomUUID();
         responseDTO = new SubscriptionResponseDTO(
                 UUID.randomUUID(), userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.ACTIVE,
+                0.0, SubscriptionStatus.ACTIVE,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );

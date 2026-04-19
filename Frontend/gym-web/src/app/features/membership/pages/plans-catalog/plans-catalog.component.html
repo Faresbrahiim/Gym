@@ -1,1 +1,68 @@
-<p>Plans Catalog</p>
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && errorMessage()) {
+  <div class="content">
+    <div class="container">
+      <div class="text-center py-5">
+        <p class="text-muted mb-3">{{ errorMessage() }}</p>
+        <button class="btn btn-secondary" (click)="loadPlans()">Retry</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && !errorMessage()) {
+
+  <div class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container">
+      <h1 class="text-white">Membership Plans</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>Plans</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="content">
+    <section class="featured-plan">
+      <div class="container">
+
+        @if (plans().length === 0) {
+          <div class="text-center py-5">
+            <p class="text-muted mb-3">No plans are currently available. Please check back soon.</p>
+            <a routerLink="/home" class="btn btn-primary">Back to Home</a>
+          </div>
+        } @else {
+          <div class="section-heading">
+            <h2>Choose the Plan That Fits You</h2>
+            <p class="sub-title">Join us and unlock access to premium gym features and coaching.</p>
+          </div>
+
+          <div class="price-wrap">
+            <div class="row d-flex justify-content-center">
+              @for (plan of plans(); track plan.id; let i = $index) {
+                <div class="col-lg-4 d-flex col-md-6">
+                  <app-plan-card
+                    [plan]="plan"
+                    [iconIndex]="i"
+                    [highlighted]="i === 1"
+                    (select)="onSelectPlan($event)"
+                  />
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+      </div>
+    </section>
+  </div>
+
+}

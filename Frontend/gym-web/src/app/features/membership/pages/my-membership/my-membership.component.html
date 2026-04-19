@@ -1,1 +1,178 @@
-<p>My Membership</p>
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && errorMessage()) {
+  <div class="content">
+    <div class="container">
+      <div class="text-center py-5">
+        <p class="text-muted mb-3">{{ errorMessage() }}</p>
+        <button class="btn btn-secondary" (click)="loadSubscription()">Retry</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && !errorMessage()) {
+
+  <div class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container">
+      <h1 class="text-white">My Membership</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>My Membership</li>
+      </ul>
+    </div>
+  </div>
+
+  <app-dashboard-menu />
+
+  <div class="content">
+    <div class="container">
+
+      @if (subscription() === null) {
+        <div class="card dashboard-card">
+          <div class="card-body text-center py-5">
+            <h4 class="mb-3">You don't have an active membership.</h4>
+            <p class="text-muted mb-4">Explore our plans and choose one that fits your goals.</p>
+            <a routerLink="/membership/plans" class="btn btn-primary">View Plans</a>
+          </div>
+        </div>
+      } @else {
+
+        <div class="card dashboard-card">
+          <div class="card-body">
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              <h4 class="mb-0">{{ subscription()!.planName }}</h4>
+              <app-status-badge [status]="subscription()!.status" />
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-md-4 mb-3">
+                <p class="text-muted mb-1">Start Date</p>
+                <strong>{{ formatDate(subscription()!.startDate) }}</strong>
+              </div>
+              <div class="col-md-4 mb-3">
+                <p class="text-muted mb-1">End Date</p>
+                <strong>{{ formatDate(subscription()!.endDate) }}</strong>
+              </div>
+              @if (subscription()!.freezeStartDate) {
+                <div class="col-md-4 mb-3">
+                  <p class="text-muted mb-1">Frozen Until</p>
+                  <strong>{{ formatDate(subscription()!.freezeEndDate) }}</strong>
+                </div>
+              }
+            </div>
+
+            @switch (subscription()!.status) {
+
+              @case ('ACTIVE') {
+                <div class="d-flex flex-wrap gap-2">
+                  @if (!isFree()) {
+                    <app-loading-button
+                      [loading]="false"
+                      cssClass="btn btn-outline-secondary"
+                      (click)="onPause()">
+                      Pause
+                    </app-loading-button>
+                  }
+                  <app-loading-button
+                    [loading]="false"
+                    cssClass="btn btn-primary"
+                    (click)="onChangePlan()">
+                    Change Plan
+                  </app-loading-button>
+                  @if (!isFree()) {
+                    <app-loading-button
+                      [loading]="false"
+                      cssClass="btn btn-outline-danger"
+                      (click)="onCancel()">
+                      Cancel
+                    </app-loading-button>
+                  }
+                </div>
+              }
+
+              @case ('PENDING_PAYMENT') {
+                <div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <span>Your payment is being processed. This may take a moment.</span>
+                  <a
+                    [routerLink]="['/membership/status', subscription()!.subscriptionId]"
+                    class="btn btn-sm btn-warning">
+                    Check Status
+                  </a>
+                </div>
+              }
+
+              @case ('PAYMENT_FAILED') {
+                <div class="alert alert-danger mb-3">
+                  Your payment failed. Please pick a new plan or try again.
+                </div>
+                <a routerLink="/membership/plans" class="btn btn-primary">Pick a Plan</a>
+              }
+
+              @case ('PAUSED') {
+                <div class="alert alert-secondary mb-3">Your membership is paused.</div>
+                <app-loading-button
+                  [loading]="false"
+                  cssClass="btn btn-primary"
+                  (click)="onResume()">
+                  Resume
+                </app-loading-button>
+              }
+
+              @case ('FROZEN') {
+                <div class="alert alert-secondary">
+                  Your membership has been frozen by an administrator. Please contact support for assistance.
+                </div>
+              }
+
+              @case ('PAUSE_REQUESTED') {
+                <div class="alert alert-info">Your pause request is pending admin approval.</div>
+              }
+
+              @case ('CANCEL_REQUESTED') {
+                <div class="alert alert-info">Your cancellation request is pending admin approval.</div>
+              }
+
+              @case ('EXPIRED') {
+                <div class="alert alert-secondary mb-3">Your membership has expired.</div>
+                <div class="d-flex flex-wrap gap-2">
+                  <app-loading-button
+                    [loading]="false"
+                    cssClass="btn btn-primary"
+                    (click)="onRenew()">
+                    Renew
+                  </app-loading-button>
+                  <a routerLink="/membership/plans" class="btn btn-outline-primary">Pick a New Plan</a>
+                </div>
+              }
+
+              @case ('CANCELLED') {
+                <div class="alert alert-secondary mb-3">Your membership has been cancelled.</div>
+                <a routerLink="/membership/plans" class="btn btn-primary">Pick a New Plan</a>
+              }
+
+              @default {
+                <div class="alert alert-secondary">
+                  Status: {{ subscription()!.status }}
+                </div>
+              }
+
+            }
+
+          </div>
+        </div>
+
+      }
+
+    </div>
+  </div>
+
+}

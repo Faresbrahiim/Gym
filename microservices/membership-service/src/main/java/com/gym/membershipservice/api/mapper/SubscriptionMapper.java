@@ -15,6 +15,7 @@ public class SubscriptionMapper {
                 sub.getUserId(),
                 sub.getPlan().getId(),
                 sub.getPlan().getName(),
+                sub.getPlan().getPrice(),
                 sub.getStatus(),
                 sub.getStartDate(),
                 sub.getEndDate(),

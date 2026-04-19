@@ -42,6 +42,7 @@ public class MembershipServiceImpl implements MembershipService {
                 sub.getUserId(),
                 plan.getId(),
                 plan.getName(),
+                plan.getPrice(),
                 sub.getStatus(),
                 sub.getStartDate(),
                 sub.getEndDate(),

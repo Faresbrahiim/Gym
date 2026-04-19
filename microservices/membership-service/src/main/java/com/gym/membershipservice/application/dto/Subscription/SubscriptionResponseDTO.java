@@ -10,6 +10,7 @@ public class SubscriptionResponseDTO {
     private UUID userId;
     private UUID planId;
     private String planName;
+    private Double planPrice;
     private SubscriptionStatus status;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
@@ -17,12 +18,14 @@ public class SubscriptionResponseDTO {
     private LocalDateTime freezeEndDate;
 
     public SubscriptionResponseDTO(UUID subscriptionId, UUID userId, UUID planId, String planName,
-                                   SubscriptionStatus status, LocalDateTime startDate, LocalDateTime endDate,
+                                   Double planPrice, SubscriptionStatus status,
+                                   LocalDateTime startDate, LocalDateTime endDate,
                                    LocalDateTime freezeStartDate, LocalDateTime freezeEndDate) {
         this.subscriptionId = subscriptionId;
         this.userId = userId;
         this.planId = planId;
         this.planName = planName;
+        this.planPrice = planPrice;
         this.status = status;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -34,6 +37,7 @@ public class SubscriptionResponseDTO {
     public UUID getUserId() { return userId; }
     public UUID getPlanId() { return planId; }
     public String getPlanName() { return planName; }
+    public Double getPlanPrice() { return planPrice; }
     public SubscriptionStatus getStatus() { return status; }
     public LocalDateTime getStartDate() { return startDate; }
     public LocalDateTime getEndDate() { return endDate; }

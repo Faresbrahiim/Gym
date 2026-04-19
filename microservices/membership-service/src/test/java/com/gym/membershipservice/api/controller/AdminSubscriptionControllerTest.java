@@ -39,7 +39,7 @@ class AdminSubscriptionControllerTest {
 
         responseDTO = new SubscriptionResponseDTO(
                 subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.ACTIVE,
+                0.0, SubscriptionStatus.ACTIVE,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );
@@ -83,7 +83,7 @@ class AdminSubscriptionControllerTest {
     void cancel_returnsCancelledSubscription() {
         SubscriptionResponseDTO cancelled = new SubscriptionResponseDTO(
                 subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.CANCELLED,
+                0.0, SubscriptionStatus.CANCELLED,
                 LocalDateTime.now(), LocalDateTime.now(),
                 null, null
         );
@@ -102,7 +102,7 @@ class AdminSubscriptionControllerTest {
         String freezeEnd = LocalDateTime.now().plusDays(7).toString();
         SubscriptionResponseDTO frozen = new SubscriptionResponseDTO(
                 subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.FROZEN,
+                0.0, SubscriptionStatus.FROZEN,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7)
         );
@@ -178,7 +178,7 @@ class AdminSubscriptionControllerTest {
     void approvePause_returnsPausedSubscription() {
         SubscriptionResponseDTO paused = new SubscriptionResponseDTO(
                 subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.PAUSED,
+                0.0, SubscriptionStatus.PAUSED,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );

@@ -49,7 +49,7 @@ class UserSubscriptionControllerTest {
 
         responseDTO = new SubscriptionResponseDTO(
                 subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.ACTIVE,
+                0.0, SubscriptionStatus.ACTIVE,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );
@@ -101,7 +101,7 @@ class UserSubscriptionControllerTest {
     void cancelSubscription_returnsCancelledSubscription() {
         SubscriptionResponseDTO cancelled = new SubscriptionResponseDTO(
                 subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.CANCELLED,
+                0.0, SubscriptionStatus.CANCELLED,
                 LocalDateTime.now(), LocalDateTime.now(),
                 null, null
         );
@@ -128,7 +128,7 @@ class UserSubscriptionControllerTest {
     void requestPause_returnsPauseRequestedSubscription() {
         SubscriptionResponseDTO paused = new SubscriptionResponseDTO(
                 subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.PAUSE_REQUESTED,
+                0.0, SubscriptionStatus.PAUSE_REQUESTED,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );

@@ -51,6 +51,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // =========================
 
     @Override
+    @Transactional(readOnly = true)
     public List<SubscriptionResponseDTO> getUserSubscriptions(UUID userId) {
         return SubscriptionMapper.toDTOList(subscriptionRepository.findByUserId(userId));
     }
@@ -109,12 +110,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         sub.setPlan(plan);
         sub.setStartDate(now);
 
+        boolean hasFixedDuration = plan.getDurationInDays() != null && plan.getDurationInDays() > 0;
+
         if (isPaid) {
             sub.setStatus(SubscriptionStatus.PENDING_PAYMENT);
-            sub.setEndDate(now.plusDays(plan.getDurationInDays()));
+            sub.setEndDate(hasFixedDuration ? now.plusDays(plan.getDurationInDays()) : null);
         } else {
             sub.setStatus(SubscriptionStatus.ACTIVE);
-            sub.setEndDate(now.plusDays(plan.getDurationInDays()));
+            sub.setEndDate(hasFixedDuration ? now.plusDays(plan.getDurationInDays()) : null);
         }
 
         Subscription saved = subscriptionRepository.save(sub);
@@ -148,6 +151,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (sub.getStatus() == SubscriptionStatus.CANCELLED) {
             throw new BadRequestException("Already Cancelled");
         }
+        if (sub.getPlan().getPrice() == null || sub.getPlan().getPrice() == 0) {
+            throw new BadRequestException("Free plan cannot be cancelled");
+        }
 
         LocalDateTime now = LocalDateTime.now();
         if (sub.getStartDate() != null && sub.getStartDate().plusDays(2).isBefore(now)) {
@@ -174,6 +180,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription sub = findAndAutoExpire(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
             throw new BadRequestException("Only ACTIVE subscriptions can be paused");
+        }
+        if (sub.getPlan().getPrice() == null || sub.getPlan().getPrice() == 0) {
+            throw new BadRequestException("Free plan cannot be paused");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -448,7 +457,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // =========================
 
     private void validatePlanDuration(Plan plan) {
-        if (plan.getDurationInDays() == null || plan.getDurationInDays() < 0) {
+        if (plan.getDurationInDays() != null && plan.getDurationInDays() < 0) {
             throw new BadRequestException("Invalid plan duration");
         }
     }
