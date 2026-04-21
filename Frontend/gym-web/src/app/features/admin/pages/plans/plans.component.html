@@ -1,0 +1,226 @@
+<app-confirm-modal
+  #confirmModal
+  [title]="modalTitle"
+  [message]="modalMessage"
+  [confirmLabel]="modalConfirmLabel"
+  [confirmClass]="modalConfirmClass"
+  (confirmed)="onModalConfirmed()"
+/>
+
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border" style="color:#177c82;" role="status">
+      <span class="visually-hidden">Loading…</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && errorMessage()) {
+  <div class="text-center py-5">
+    <p class="text-muted mb-3">{{ errorMessage() }}</p>
+    <button class="btn-primary-admin" (click)="load()">Retry</button>
+  </div>
+}
+
+@if (!isLoading() && !errorMessage()) {
+
+  <!-- ── Page header ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Membership Plans</h1>
+      <p class="page-subtitle">Manage the plans available to members</p>
+    </div>
+    <button class="btn-primary-admin" (click)="openCreate()">
+      <i class="feather-plus"></i> New Plan
+    </button>
+  </div>
+
+  <!-- ── Stat grid ─────────────────────────────────────────────── -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--members"><i class="feather-layers"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ totalCount() }}</span>
+        <span class="stat-label">Total Plans</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--active"><i class="feather-check-circle"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ activeCount() }}</span>
+        <span class="stat-label">Active</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--pending"><i class="feather-eye-off"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ inactiveCount() }}</span>
+        <span class="stat-label">Inactive</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--coaches"><i class="feather-gift"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ freeCount() }}</span>
+        <span class="stat-label">Free Plans</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Search bar ────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="feather-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search plans…"
+        (input)="onSearch($event)"
+      />
+    </div>
+  </div>
+
+  <!-- ── Plans table ───────────────────────────────────────────── -->
+  <div class="table-card">
+    @if (filtered().length === 0) {
+      <div class="text-center py-5 text-muted">No plans found.</div>
+    } @else {
+      <table class="plans-table">
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Price</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (plan of filtered(); track plan.id) {
+            <tr [class.row-inactive]="plan.status === 'INACTIVE'">
+              <td>
+                <div class="plan-name">{{ plan.name }}</div>
+                @if (plan.description) {
+                  <div class="plan-desc">{{ plan.description }}</div>
+                }
+              </td>
+              <td>
+                <span class="price-tag" [class.price-free]="plan.price === 0">
+                  {{ priceLabel(plan.price) }}
+                </span>
+              </td>
+              <td class="duration-cell">{{ durationLabel(plan.durationInDays) }}</td>
+              <td>
+                <span class="status-badge" [class.badge-active]="plan.status === 'ACTIVE'" [class.badge-inactive]="plan.status === 'INACTIVE'">
+                  {{ plan.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="text-end">
+                <div class="action-row">
+                  <button
+                    class="btn-icon btn-edit"
+                    title="Edit"
+                    [disabled]="actionLoading() === plan.id || actionLoading() === plan.id + '-del'"
+                    (click)="openEdit(plan)">
+                    <i class="feather-edit-2"></i>
+                  </button>
+                  <button
+                    class="btn-icon"
+                    [class.btn-enable]="plan.status === 'INACTIVE'"
+                    [class.btn-disable]="plan.status === 'ACTIVE'"
+                    [title]="plan.status === 'ACTIVE' ? 'Disable' : 'Enable'"
+                    [disabled]="actionLoading() === plan.id || actionLoading() === plan.id + '-del' || plan.name === 'Free'"
+                    (click)="onToggleEnable(plan)">
+                    @if (actionLoading() === plan.id) {
+                      <span class="spinner-border spinner-border-sm"></span>
+                    } @else {
+                      <i [class]="plan.status === 'ACTIVE' ? 'feather-eye-off' : 'feather-eye'"></i>
+                    }
+                  </button>
+                  <button
+                    class="btn-icon btn-delete"
+                    title="Delete"
+                    [disabled]="actionLoading() === plan.id || actionLoading() === plan.id + '-del' || plan.name === 'Free'"
+                    (click)="onDelete(plan)">
+                    @if (actionLoading() === plan.id + '-del') {
+                      <span class="spinner-border spinner-border-sm"></span>
+                    } @else {
+                      <i class="feather-trash-2"></i>
+                    }
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+}
+
+<!-- ── Create / Edit modal ───────────────────────────────────────── -->
+@if (showFormModal()) {
+  <div class="modal-backdrop" (click)="closeFormModal()"></div>
+  <div class="form-modal">
+    <div class="form-modal-header">
+      <h5 class="form-modal-title">{{ editingPlan() ? 'Edit Plan' : 'New Plan' }}</h5>
+      <button class="close-btn" (click)="closeFormModal()"><i class="feather-x"></i></button>
+    </div>
+
+    <div class="form-modal-body">
+      <div class="form-group">
+        <label class="form-label">Name <span class="required">*</span></label>
+        <input type="text" class="form-ctrl" [(ngModel)]="form.name" placeholder="e.g. Gold Monthly" maxlength="80" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-ctrl" [(ngModel)]="form.description" rows="3" placeholder="Brief description of what this plan includes"></textarea>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Price ($) <span class="required">*</span></label>
+          <input type="number" class="form-ctrl" [(ngModel)]="form.price" min="0" step="0.01" placeholder="0.00" />
+          <span class="form-hint">Set to 0 for a free plan</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (days)</label>
+          <input type="number" class="form-ctrl" [(ngModel)]="form.durationInDays" min="1" step="1" placeholder="Leave empty for unlimited" />
+          <span class="form-hint">e.g. 30, 90, 365</span>
+        </div>
+      </div>
+
+      <div class="form-group mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0">Plan Features</label>
+          <button class="btn-icon text-primary" (click)="addFeature()" title="Add Feature">
+            <i class="feather-plus-circle"></i> Add
+          </button>
+        </div>
+        @if (form.features.length === 0) {
+          <div class="text-muted small">No features added. Click "Add" to list what this plan includes.</div>
+        }
+        @for (feature of form.features; track trackByIndex($index, feature)) {
+          <div class="d-flex mb-2 align-items-center gap-2">
+            <input type="text" class="form-ctrl mb-0" [(ngModel)]="form.features[$index]" placeholder="e.g. 24/7 Gym Access" />
+            <button class="btn-icon btn-delete" (click)="removeFeature($index)" title="Remove Feature">
+              <i class="feather-trash-2"></i>
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="form-modal-footer">
+      <button class="btn-cancel" (click)="closeFormModal()" [disabled]="formSaving()">Cancel</button>
+      <button class="btn-primary-admin" (click)="saveForm()" [disabled]="formSaving() || !form.name.trim()">
+        @if (formSaving()) {
+          <span class="spinner-border spinner-border-sm me-1"></span>
+        }
+        {{ editingPlan() ? 'Save Changes' : 'Create Plan' }}
+      </button>
+    </div>
+  </div>
+}

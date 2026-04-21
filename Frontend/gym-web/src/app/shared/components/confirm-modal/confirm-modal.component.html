@@ -1,0 +1,28 @@
+@if (isVisible()) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1" role="dialog" (click)="onCancel()">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-semibold">{{ title }}</h5>
+          <button type="button" class="btn-close" (click)="onCancel()"></button>
+        </div>
+
+        <div class="modal-body pt-2">
+          <p class="text-muted mb-0">{{ message }}</p>
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">
+            {{ cancelLabel }}
+          </button>
+          <button type="button" [class]="'btn ' + confirmClass" (click)="onConfirm()">
+            {{ confirmLabel }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

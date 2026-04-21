@@ -1,0 +1,231 @@
+/* ── Membership Hero Card ─────────────────────────────────────────────── */
+.membership-hero {
+  background: linear-gradient(135deg, #177c82 0%, #0f5459 60%, #192335 100%);
+  border-radius: 20px;
+  padding: 40px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.membership-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  pointer-events: none;
+}
+
+.membership-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  right: 80px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  pointer-events: none;
+}
+
+.hero-plan-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.hero-plan-name {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+
+.hero-price {
+  font-size: 15px;
+  opacity: 0.75;
+  margin-bottom: 0;
+}
+
+.hero-logo-mark {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hero-logo-mark i {
+  font-size: 30px;
+  color: #fff;
+}
+
+/* ── Stat Pills ───────────────────────────────────────────────────────── */
+.stat-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  height: 100%;
+  border: 1px solid #f0f0f0;
+  transition: box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
+}
+
+.stat-icon.teal   { background: rgba(23,124,130,0.12); color: #177c82; }
+.stat-icon.orange { background: rgba(255,152,0,0.12);  color: #f09000; }
+.stat-icon.purple { background: rgba(103,58,183,0.12); color: #673ab7; }
+.stat-icon.red    { background: rgba(229,57,53,0.12);  color: #e53935; }
+
+.stat-label {
+  font-size: 12px;
+  color: #9e9e9e;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #192335;
+  margin: 0;
+}
+
+/* ── Actions Card ─────────────────────────────────────────────────────── */
+.actions-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.actions-card h6 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #9e9e9e;
+  margin-bottom: 18px;
+}
+
+/* ── Status Notice ────────────────────────────────────────────────────── */
+.status-notice {
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.status-notice i {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.status-notice.warning  { background: #fff8e1; color: #856404; border: 1px solid #ffe082; }
+.status-notice.danger   { background: #ffeaea; color: #c62828; border: 1px solid #ffcdd2; }
+.status-notice.info     { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+.status-notice.muted    { background: #f5f5f5; color: #555;    border: 1px solid #e0e0e0; }
+.status-notice.success  { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+.notice-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.notice-text {
+  font-size: 13px;
+  opacity: 0.85;
+  margin: 0;
+}
+
+/* ── Action Buttons ───────────────────────────────────────────────────── */
+.action-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.action-btn-group .btn {
+  border-radius: 10px;
+  font-weight: 600;
+  padding: 10px 22px;
+  font-size: 14px;
+}
+
+/* ── Empty State ──────────────────────────────────────────────────────── */
+.empty-state {
+  background: #fff;
+  border-radius: 20px;
+  padding: 64px 40px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.empty-state-icon {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: rgba(23,124,130,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.empty-state-icon i {
+  font-size: 36px;
+  color: #177c82;
+}
+
+/* ── Free Plan Banner ─────────────────────────────────────────────────── */
+.free-plan-banner {
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0fafa 0%, #e0f7f7 100%);
+  border: 1px dashed #177c82;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.free-plan-banner p { margin: 0; color: #0f5459; font-size: 14px; }
+.free-plan-banner strong { color: #177c82; }

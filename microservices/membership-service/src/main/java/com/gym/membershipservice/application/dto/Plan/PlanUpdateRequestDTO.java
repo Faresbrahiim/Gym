@@ -2,6 +2,8 @@ package com.gym.membershipservice.application.dto.Plan;
 
 import com.gym.membershipservice.application.enums.PlanStatus;
 
+import java.util.List;
+
 public class PlanUpdateRequestDTO {
 
     private String name;
@@ -9,6 +11,7 @@ public class PlanUpdateRequestDTO {
     private Double price;
     private Integer durationInDays;
     private PlanStatus status;
+    private List<String> features;
 
     public String getName() {
         return name;
@@ -49,4 +52,7 @@ public class PlanUpdateRequestDTO {
     public void setStatus(PlanStatus status) {
         this.status = status;
     }
+
+    public List<String> getFeatures() { return features; }
+    public void setFeatures(List<String> features) { this.features = features; }
 }

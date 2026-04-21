@@ -38,8 +38,8 @@ class AdminSubscriptionControllerTest {
         subscriptionId = UUID.randomUUID();
 
         responseDTO = new SubscriptionResponseDTO(
-                subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.ACTIVE,
+                subscriptionId, userId, null, UUID.randomUUID(), "Gold",
+                0.0, SubscriptionStatus.ACTIVE,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );
@@ -82,8 +82,8 @@ class AdminSubscriptionControllerTest {
     @Test
     void cancel_returnsCancelledSubscription() {
         SubscriptionResponseDTO cancelled = new SubscriptionResponseDTO(
-                subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.CANCELLED,
+                subscriptionId, userId, null, UUID.randomUUID(), "Gold",
+                0.0, SubscriptionStatus.CANCELLED,
                 LocalDateTime.now(), LocalDateTime.now(),
                 null, null
         );
@@ -101,8 +101,8 @@ class AdminSubscriptionControllerTest {
     void freezeSubscription_returnsFrozenSubscription() {
         String freezeEnd = LocalDateTime.now().plusDays(7).toString();
         SubscriptionResponseDTO frozen = new SubscriptionResponseDTO(
-                subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.FROZEN,
+                subscriptionId, userId, null, UUID.randomUUID(), "Gold",
+                0.0, SubscriptionStatus.FROZEN,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 LocalDateTime.now(), LocalDateTime.now().plusDays(7)
         );
@@ -177,8 +177,8 @@ class AdminSubscriptionControllerTest {
     @Test
     void approvePause_returnsPausedSubscription() {
         SubscriptionResponseDTO paused = new SubscriptionResponseDTO(
-                subscriptionId, userId, UUID.randomUUID(), "Gold",
-                SubscriptionStatus.PAUSED,
+                subscriptionId, userId, null, UUID.randomUUID(), "Gold",
+                0.0, SubscriptionStatus.PAUSED,
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );

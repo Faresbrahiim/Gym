@@ -26,5 +26,6 @@ public interface PlanService {
     void deletePlan(UUID id);
 
     PlanResponseDTO enablePlan(UUID id);
+    PlanResponseDTO disablePlan(UUID id);
     public Plan getFreePlan() ;
 }

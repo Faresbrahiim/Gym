@@ -1,0 +1,355 @@
+<app-confirm-modal
+  #confirmModal
+  [title]="modalTitle"
+  [message]="modalMessage"
+  [confirmLabel]="modalConfirmLabel"
+  [confirmClass]="modalConfirmClass"
+  (confirmed)="onModalConfirmed()"
+/>
+
+<!-- ── Freeze Modal ──────────────────────────────────────────────────── -->
+@if (freezeModalSub()) {
+  <div class="action-overlay" (click)="closeFreezeModal()">
+    <div class="action-modal" (click)="$event.stopPropagation()">
+      <div class="action-modal-header">
+        <div class="action-modal-icon freeze"><i class="feather-shield"></i></div>
+        <div>
+          <h5>Freeze Membership</h5>
+          <p>{{ freezeModalSub()!.planName }}</p>
+        </div>
+        <button class="action-modal-close" (click)="closeFreezeModal()">
+          <i class="feather-x"></i>
+        </button>
+      </div>
+      <div class="action-modal-body">
+        <div class="form-field">
+          <label class="field-label">Freeze Until</label>
+          <input
+            type="datetime-local"
+            class="field-input"
+            (input)="onFreezeEndChange($event)">
+          <span class="field-hint">The membership will be frozen until this date and time.</span>
+        </div>
+      </div>
+      <div class="action-modal-footer">
+        <button class="btn-modal-secondary" (click)="closeFreezeModal()">Cancel</button>
+        <button class="btn-modal-freeze" [disabled]="!freezeEnd()" (click)="confirmFreeze()">
+          <i class="feather-shield me-1"></i>Freeze Membership
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Extend Modal ──────────────────────────────────────────────────── -->
+@if (extendModalSub()) {
+  <div class="action-overlay" (click)="closeExtendModal()">
+    <div class="action-modal" (click)="$event.stopPropagation()">
+      <div class="action-modal-header">
+        <div class="action-modal-icon extend"><i class="feather-plus-circle"></i></div>
+        <div>
+          <h5>Extend Membership</h5>
+          <p>{{ extendModalSub()!.planName }}</p>
+        </div>
+        <button class="action-modal-close" (click)="closeExtendModal()">
+          <i class="feather-x"></i>
+        </button>
+      </div>
+      <div class="action-modal-body">
+        <div class="form-field">
+          <label class="field-label">Extra Days</label>
+          <input
+            type="number"
+            class="field-input"
+            min="1"
+            max="365"
+            [value]="extendDays()"
+            (input)="onExtendDaysChange($event)">
+          <span class="field-hint">The subscription end date will be pushed forward by this many days.</span>
+        </div>
+        <div class="extend-preview">
+          <i class="feather-calendar"></i>
+          Adding <strong>{{ extendDays() }} day{{ extendDays() === 1 ? '' : 's' }}</strong> to the current end date.
+        </div>
+      </div>
+      <div class="action-modal-footer">
+        <button class="btn-modal-secondary" (click)="closeExtendModal()">Cancel</button>
+        <button class="btn-modal-extend" [disabled]="extendDays() <= 0" (click)="confirmExtend()">
+          <i class="feather-plus-circle me-1"></i>Extend Membership
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Page header ───────────────────────────────────────────────────── -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Subscriptions</h1>
+    <p class="page-subtitle">
+      {{ totalCount() }} total
+      @if (pendingCount() > 0) {
+        · <span class="subtitle-alert">{{ pendingCount() }} pending action{{ pendingCount() === 1 ? '' : 's' }}</span>
+      }
+    </p>
+  </div>
+  <button class="btn-primary-admin" (click)="load()">
+    <i class="feather-refresh-cw"></i>Refresh
+  </button>
+</div>
+
+<!-- ── Stat cards ────────────────────────────────────────────────────── -->
+<div class="stat-grid">
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--members"><i class="feather-layers"></i></div>
+    <div class="stat-body">
+      <span class="stat-value">{{ totalCount() }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--active"><i class="feather-check-circle"></i></div>
+    <div class="stat-body">
+      <span class="stat-value">{{ activeCount() }}</span>
+      <span class="stat-label">Active</span>
+    </div>
+  </div>
+
+  <div class="stat-card" [class.stat-card--alert]="pendingCount() > 0">
+    <div class="stat-icon stat-icon--pending"><i class="feather-clock"></i></div>
+    <div class="stat-body">
+      <span class="stat-value">{{ pendingCount() }}</span>
+      <span class="stat-label">Pending Action</span>
+    </div>
+  </div>
+
+  <div class="stat-card" [class.stat-card--issue]="issueCount() > 0">
+    <div class="stat-icon stat-icon--coaches"><i class="feather-alert-triangle"></i></div>
+    <div class="stat-body">
+      <span class="stat-value">{{ issueCount() }}</span>
+      <span class="stat-label">Issues</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Pending alert banner ──────────────────────────────────────────── -->
+@if (pendingCount() > 0) {
+  <div class="pending-banner" (click)="statusFilter.set('PENDING')">
+    <div class="pending-banner-left">
+      <i class="feather-bell"></i>
+      <div>
+        <p class="pending-banner-title">{{ pendingCount() }} request{{ pendingCount() === 1 ? '' : 's' }} awaiting approval</p>
+        <p class="pending-banner-sub">Pause and cancellation requests need your review.</p>
+      </div>
+    </div>
+    <span class="pending-banner-cta">View <i class="feather-chevron-right"></i></span>
+  </div>
+}
+
+<!-- ── Toolbar: search + filter tabs ─────────────────────────────────── -->
+<div class="subs-toolbar">
+  <div class="search-box">
+    <i class="feather-search"></i>
+    <input
+      type="text"
+      placeholder="Search by plan or member email…"
+      (input)="onSearch($event)">
+  </div>
+  <div class="filter-tabs">
+    <button [class.active]="statusFilter() === 'ALL'"     (click)="statusFilter.set('ALL')">All</button>
+    <button [class.active]="statusFilter() === 'ACTIVE'"  (click)="statusFilter.set('ACTIVE')">Active</button>
+    <button [class.active]="statusFilter() === 'PENDING'" (click)="statusFilter.set('PENDING')">
+      Pending
+      @if (pendingCount() > 0) { <span class="tab-badge">{{ pendingCount() }}</span> }
+    </button>
+    <button [class.active]="statusFilter() === 'PAUSED'"  (click)="statusFilter.set('PAUSED')">Paused</button>
+    <button [class.active]="statusFilter() === 'FROZEN'"  (click)="statusFilter.set('FROZEN')">Frozen</button>
+    <button [class.active]="statusFilter() === 'ISSUES'"  (click)="statusFilter.set('ISSUES')">Issues</button>
+  </div>
+</div>
+
+<!-- ── Table card ────────────────────────────────────────────────────── -->
+<div class="table-card">
+
+  @if (isLoading()) {
+    <div class="table-state">
+      <div class="spinner-ring"></div>
+      <p>Loading subscriptions…</p>
+    </div>
+  }
+
+  @else if (errorMessage()) {
+    <div class="table-state">
+      <div class="state-icon state-icon--error"><i class="feather-alert-circle"></i></div>
+      <p>{{ errorMessage() }}</p>
+      <button class="btn-primary-admin" (click)="load()">
+        <i class="feather-refresh-cw"></i>Retry
+      </button>
+    </div>
+  }
+
+  @else if (filtered().length === 0) {
+    <div class="table-state">
+      <div class="state-icon state-icon--empty"><i class="feather-inbox"></i></div>
+      <p>{{ subscriptions().length === 0 ? 'No subscriptions yet.' : 'No subscriptions match your filter.' }}</p>
+    </div>
+  }
+
+  @else {
+    <div class="table-scroll">
+      <table class="subs-table">
+        <thead>
+          <tr>
+            <th>Member</th>
+            <th>Plan</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Expires</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sub of filtered(); track sub.subscriptionId) {
+            <tr [class.row--pending]="isPendingAction(sub.status)">
+
+              <!-- Member -->
+              <td>
+                <div class="cell-member">
+                  <div class="member-avatar">{{ avatarInitials(sub) }}</div>
+                  <div>
+                    <span class="member-id">{{ sub.userEmail ?? 'Unknown' }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Plan -->
+              <td>
+                <div class="cell-plan">
+                  <span class="plan-name">{{ sub.planName }}</span>
+                  <span class="plan-price">{{ priceLabel(sub.planPrice) }}</span>
+                </div>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <span class="status-dot {{ statusBadgeClass(sub.status) }}">
+                  {{ statusLabel(sub.status) }}
+                </span>
+              </td>
+
+              <!-- Dates -->
+              <td class="cell-date">{{ formatDate(sub.startDate) }}</td>
+              <td class="cell-date">{{ sub.endDate ? formatDate(sub.endDate) : '—' }}</td>
+
+              <!-- Actions -->
+              <td>
+                <div class="cell-actions">
+
+                  @if (sub.status === 'PAUSE_REQUESTED') {
+                    <button class="btn-act btn-act--approve"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onApprovePause(sub)">
+                      <i class="feather-check"></i>Approve
+                    </button>
+                    <button class="btn-act btn-act--reject"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onRejectPause(sub)">
+                      <i class="feather-x"></i>Reject
+                    </button>
+                  }
+
+                  @else if (sub.status === 'CANCEL_REQUESTED') {
+                    <button class="btn-act btn-act--reject"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onConfirmCancelRequest(sub)">
+                      <i class="feather-check"></i>Confirm
+                    </button>
+                    <button class="btn-act btn-act--restore"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onRejectCancelRequest(sub)">
+                      <i class="feather-rotate-ccw"></i>Restore
+                    </button>
+                  }
+
+                  @else if (sub.status === 'ACTIVE') {
+                    <button class="btn-act btn-act--freeze"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="openFreezeModal(sub)">
+                      <i class="feather-shield"></i>Freeze
+                    </button>
+                    <button class="btn-act btn-act--extend"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="openExtendModal(sub)">
+                      <i class="feather-plus-circle"></i>Extend
+                    </button>
+                    <button class="btn-act btn-act--cancel"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onCancel(sub)">
+                      <i class="feather-x-circle"></i>Cancel
+                    </button>
+                  }
+
+                  @else if (sub.status === 'PAUSED') {
+                    <button class="btn-act btn-act--activate"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onActivate(sub)">
+                      <i class="feather-play"></i>Activate
+                    </button>
+                    <button class="btn-act btn-act--extend"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="openExtendModal(sub)">
+                      <i class="feather-plus-circle"></i>Extend
+                    </button>
+                  }
+
+                  @else if (sub.status === 'FROZEN' || sub.status === 'PENDING_PAYMENT') {
+                    <button class="btn-act btn-act--activate"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onActivate(sub)">
+                      <i class="feather-play"></i>Activate
+                    </button>
+                  }
+
+                  @else if (sub.status === 'EXPIRED') {
+                    <button class="btn-act btn-act--activate"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onActivate(sub)">
+                      <i class="feather-play"></i>Activate
+                    </button>
+                    <button class="btn-act btn-act--extend"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="openExtendModal(sub)">
+                      <i class="feather-plus-circle"></i>Extend
+                    </button>
+                  }
+
+                  @else if (sub.status === 'PAYMENT_FAILED') {
+                    <button class="btn-act btn-act--cancel"
+                      [disabled]="actionLoading() === sub.subscriptionId"
+                      (click)="onCancel(sub)">
+                      <i class="feather-x-circle"></i>Cancel
+                    </button>
+                  }
+
+                  @if (actionLoading() === sub.subscriptionId) {
+                    <span class="action-spinner"></span>
+                  }
+
+                </div>
+              </td>
+
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      Showing {{ filtered().length }} of {{ totalCount() }} subscription{{ totalCount() === 1 ? '' : 's' }}
+    </div>
+  }
+
+</div>

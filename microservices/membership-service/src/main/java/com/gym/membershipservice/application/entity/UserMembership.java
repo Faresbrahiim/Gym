@@ -20,15 +20,28 @@ public class UserMembership {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "email")
+    private String email;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MembershipStatus status = MembershipStatus.ACTIVE;
+
+    public UserMembership() {}
+
+    public UserMembership(UUID userId, String email) {
+        this.userId = userId;
+        this.email  = email;
+    }
 
     // Getters & Setters
     public UUID getId() { return id; }
 
     public UUID getUserId() { return userId; }
     public void setUserId(UUID userId) { this.userId = userId; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
     public MembershipStatus getStatus() { return status; }
     public void setStatus(MembershipStatus status) { this.status = status; }

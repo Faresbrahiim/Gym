@@ -1,0 +1,122 @@
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.history-title    { font-size: 20px; font-weight: 700; color: #1e2433; margin: 0 0 2px; }
+.history-subtitle { font-size: 13px; color: #7a8a9a; margin: 0; }
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #177c82;
+  text-decoration: none;
+  padding: 8px 14px;
+  border: 1px solid #177c82;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-back:hover { background: #177c82; color: #fff; }
+
+/* ── Empty state ─────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 80px 24px;
+}
+.empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f0f9fa;
+  color: #177c82;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+/* ── Timeline ────────────────────────────────────── */
+.timeline {
+  position: relative;
+  padding-left: 28px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e0eaeb;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+.timeline-item.terminal .timeline-card {
+  opacity: 0.75;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -24px;
+  top: 18px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #b0c4c6;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #b0c4c6;
+}
+.timeline-dot.dot-active {
+  background: #177c82;
+  box-shadow: 0 0 0 3px rgba(23, 124, 130, 0.25);
+}
+
+/* ── Card ────────────────────────────────────────── */
+.timeline-card {
+  background: #fff;
+  border: 1px solid #e8edf0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s;
+}
+.timeline-card:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.card-plan    { display: flex; align-items: baseline; gap: 10px; }
+.plan-name    { font-size: 16px; font-weight: 700; color: #1e2433; }
+.plan-price   { font-size: 13px; color: #7a8a9a; font-weight: 500; }
+
+.card-dates {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.date-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #7a8a9a;
+}
+.date-item i { font-size: 13px; color: #177c82; }
+.date-sep { font-size: 13px; color: #b0c4c6; }

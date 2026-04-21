@@ -2,9 +2,11 @@ package com.gym.membershipservice.application.service.kafka;
 
 import com.gym.membershipservice.application.dto.kafka.UserRegisteredEvent;
 import com.gym.membershipservice.application.entity.Plan;
+import com.gym.membershipservice.application.entity.UserMembership;
 import com.gym.membershipservice.application.port.PlanService;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import com.gym.membershipservice.application.port.kafka.UserRegistrationHandler;
+import com.gym.membershipservice.infrastructure.repository.UserMembershipRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -17,11 +19,14 @@ public class UserRegistrationListenerImpl implements UserRegistrationHandler {
 
     private final SubscriptionService subscriptionService;
     private final PlanService planService;
+    private final UserMembershipRepository userMembershipRepository;
 
     public UserRegistrationListenerImpl(SubscriptionService subscriptionService,
-                                        PlanService planService) {
-        this.subscriptionService = subscriptionService;
-        this.planService = planService;
+                                        PlanService planService,
+                                        UserMembershipRepository userMembershipRepository) {
+        this.subscriptionService      = subscriptionService;
+        this.planService              = planService;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     @KafkaListener(
@@ -45,8 +50,19 @@ public class UserRegistrationListenerImpl implements UserRegistrationHandler {
     private void processNewUser(UserRegisteredEvent event) {
         UUID userId = event.getUserId();
 
+        // Persist the user's email so subscriptions can be enriched for admin views
+        userMembershipRepository.findByUserId(userId).ifPresentOrElse(
+            existing -> {
+                if (existing.getEmail() == null) {
+                    existing.setEmail(event.getEmail());
+                    userMembershipRepository.save(existing);
+                }
+            },
+            () -> userMembershipRepository.save(new UserMembership(userId, event.getEmail()))
+        );
+
         if (hasExistingSubscription(userId)) {
-            log.info("User {} already has subscriptions. Skipping.", userId);
+            log.info("User {} already has subscriptions. Skipping free plan.", userId);
             return;
         }
 

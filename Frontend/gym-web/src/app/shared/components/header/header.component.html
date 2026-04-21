@@ -31,6 +31,9 @@
           <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             <a routerLink="/home">Home</a>
           </li>
+          <li routerLinkActive="active">
+            <a routerLink="/membership/plans">Plans</a>
+          </li>
           <li class="has-submenu">
             <a href="javascript:void(0);">Coaches <i class="fas fa-chevron-down"></i></a>
             <ul class="submenu">
@@ -117,6 +120,7 @@
                 </div>
               </div>
               <p><a class="dropdown-item" routerLink="/profile">My Profile</a></p>
+              <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
               <p><a class="dropdown-item" href="javascript:void(0);" (click)="onLogout()">Logout</a></p>
             </div>
           </li>

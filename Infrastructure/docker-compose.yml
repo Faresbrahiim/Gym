@@ -97,6 +97,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${MEMBERSHIP_DB_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      PAYMENT_DEV_MODE: "true"
     depends_on:
       membership-db:
         condition: service_healthy

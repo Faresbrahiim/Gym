@@ -1,0 +1,190 @@
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading…</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading()) {
+
+  <div class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container">
+      <h1 class="text-white">Membership Status</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/membership">My Membership</a></li>
+        <li>Status</li>
+      </ul>
+    </div>
+  </div>
+
+  <app-dashboard-menu />
+
+  <div class="content">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+
+          <!-- ── ACTIVE ─────────────────────────────────────────── -->
+          @if (subscription()?.status === 'ACTIVE') {
+
+            <div class="result-card">
+              <div class="result-band success"></div>
+              <div class="result-body">
+
+                <div class="result-icon-ring success">
+                  <i class="feather-check"></i>
+                </div>
+
+                <h3 class="result-title">You're all set!</h3>
+                <p class="result-subtitle">
+                  Your membership is now <strong>active</strong>. Welcome aboard — let's get to work.
+                </p>
+
+                <div class="result-plan-strip">
+                  <div class="rps-item">
+                    <span class="rps-label">Plan</span>
+                    <span class="rps-val">{{ subscription()!.planName }}</span>
+                  </div>
+                  <div class="rps-divider"></div>
+                  <div class="rps-item">
+                    <span class="rps-label">Status</span>
+                    <app-status-badge [status]="subscription()!.status" />
+                  </div>
+                  <div class="rps-divider"></div>
+                  <div class="rps-item">
+                    <span class="rps-label">Valid Until</span>
+                    <span class="rps-val">
+                      {{ subscription()!.endDate ? formatDate(subscription()!.endDate) : 'Unlimited' }}
+                    </span>
+                  </div>
+                </div>
+
+                <a routerLink="/membership" class="btn btn-result-primary w-100 mt-4">
+                  <i class="feather-award me-2"></i>Go to My Membership
+                </a>
+
+              </div>
+            </div>
+
+          }
+
+          <!-- ── PAYMENT FAILED ─────────────────────────────────── -->
+          @else if (subscription()?.status === 'PAYMENT_FAILED') {
+
+            <div class="result-card">
+              <div class="result-band danger"></div>
+              <div class="result-body">
+
+                <div class="result-icon-ring danger">
+                  <i class="feather-x"></i>
+                </div>
+
+                <h3 class="result-title">Payment Failed</h3>
+                <p class="result-subtitle">
+                  We couldn't process your payment. This is usually due to insufficient funds or a card issue — no charges were made.
+                </p>
+
+                <div class="result-help-strip">
+                  <i class="feather-info"></i>
+                  <p>Try a different payment method or pick another plan. Contact support if the issue persists.</p>
+                </div>
+
+                <div class="result-action-row mt-4">
+                  <a [routerLink]="['/membership/checkout', planId]" class="btn btn-result-primary">
+                    <i class="feather-refresh-cw me-2"></i>Try Again
+                  </a>
+                  <a routerLink="/membership/plans" class="btn btn-result-outline">
+                    <i class="feather-grid me-2"></i>Pick Another Plan
+                  </a>
+                </div>
+
+              </div>
+            </div>
+
+          }
+
+          <!-- ── TIMED OUT ──────────────────────────────────────── -->
+          @else if (timedOut()) {
+
+            <div class="result-card">
+              <div class="result-band warning"></div>
+              <div class="result-body">
+
+                <div class="result-icon-ring warning">
+                  <i class="feather-clock"></i>
+                </div>
+
+                <h3 class="result-title">Still processing…</h3>
+                <p class="result-subtitle">
+                  Your payment is taking longer than usual. Don't worry — your subscription will activate automatically once confirmed.
+                </p>
+
+                <div class="result-help-strip warning">
+                  <i class="feather-alert-triangle"></i>
+                  <p>Check your membership page in a minute. If the issue persists, contact our support team.</p>
+                </div>
+
+                <a routerLink="/membership" class="btn btn-result-primary w-100 mt-4">
+                  <i class="feather-eye me-2"></i>Check My Membership
+                </a>
+
+              </div>
+            </div>
+
+          }
+
+          <!-- ── PROCESSING (polling) ───────────────────────────── -->
+          @else {
+
+            <div class="result-card">
+              <div class="result-band processing"></div>
+              <div class="result-body">
+
+                <div class="processing-pulse-ring">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Processing…</span>
+                  </div>
+                </div>
+
+                <h3 class="result-title">Confirming your membership…</h3>
+                <p class="result-subtitle">
+                  We're confirming your payment. This usually takes just a moment — hang tight.
+                </p>
+
+                @if (subscription()) {
+                  <div class="mt-3 d-flex justify-content-center">
+                    <app-status-badge [status]="subscription()!.status" />
+                  </div>
+                }
+
+                <div class="processing-steps">
+                  <div class="ps-step done">
+                    <i class="feather-check-circle"></i>
+                    <span>Submitted</span>
+                  </div>
+                  <div class="ps-connector"></div>
+                  <div class="ps-step active">
+                    <i class="feather-loader"></i>
+                    <span>Processing</span>
+                  </div>
+                  <div class="ps-connector"></div>
+                  <div class="ps-step pending">
+                    <i class="feather-circle"></i>
+                    <span>Activating</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          }
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+}

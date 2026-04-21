@@ -1,0 +1,300 @@
+<app-confirm-modal
+  #confirmModal
+  [title]="modalTitle"
+  [message]="modalMessage"
+  [confirmLabel]="modalConfirmLabel"
+  [confirmClass]="modalConfirmClass"
+  (confirmed)="onModalConfirmed()"
+/>
+
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && errorMessage()) {
+  <div class="content">
+    <div class="container">
+      <div class="text-center py-5">
+        <p class="text-muted mb-3">{{ errorMessage() }}</p>
+        <button class="btn btn-secondary" (click)="loadSubscription()">Retry</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && !errorMessage()) {
+
+  <div class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1 class="text-white">My Membership</h1>
+        <ul>
+          <li><a routerLink="/home">Home</a></li>
+          <li>My Membership</li>
+        </ul>
+      </div>
+      <a routerLink="/membership/history" class="btn btn-outline-light btn-sm" style="border-radius:8px;font-weight:600;white-space:nowrap;">
+        <i class="feather-clock me-1"></i>History
+      </a>
+    </div>
+  </div>
+
+  <app-dashboard-menu />
+
+  <div class="content">
+    <div class="container">
+
+      <!-- Empty state -->
+      @if (subscription() === null) {
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <i class="feather-credit-card"></i>
+          </div>
+          <h4 class="mb-2">No Active Membership</h4>
+          <p class="text-muted mb-4" style="max-width:380px;margin:0 auto 24px;">
+            You don't have an active membership yet. Explore our plans and find the one that fits your goals.
+          </p>
+          <a routerLink="/membership/plans" class="btn btn-primary px-4 py-2" style="border-radius:10px;font-weight:600;">
+            <i class="feather-zap me-2"></i>View Plans
+          </a>
+        </div>
+      }
+
+      <!-- Active subscription -->
+      @if (subscription() !== null) {
+
+        <!-- Hero membership card -->
+        <div class="membership-hero">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+              <p class="hero-plan-label">Current Plan</p>
+              <h2 class="hero-plan-name">{{ subscription()!.planName }}</h2>
+              <p class="hero-price">
+                @if (isFree()) { Free membership }
+                @else { Paid membership }
+              </p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+              <app-status-badge [status]="subscription()!.status" />
+              <div class="hero-logo-mark">
+                <i class="feather-award"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat pills -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="stat-card">
+              <div class="stat-icon teal"><i class="feather-calendar"></i></div>
+              <div>
+                <p class="stat-label">Member Since</p>
+                <p class="stat-value">{{ formatDate(subscription()!.startDate) }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="feather-clock"></i></div>
+              <div>
+                <p class="stat-label">Valid Until</p>
+                <p class="stat-value">{{ subscription()!.endDate ? formatDate(subscription()!.endDate) : 'Unlimited' }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="stat-card">
+              <div class="stat-icon purple"><i class="feather-tag"></i></div>
+              <div>
+                <p class="stat-label">Plan Type</p>
+                <p class="stat-value">{{ isFree() ? 'Free' : 'Premium' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Freeze notice -->
+        @if (subscription()!.freezeStartDate) {
+          <div class="status-notice info mb-4">
+            <i class="feather-pause-circle"></i>
+            <div>
+              <p class="notice-title">Membership Frozen</p>
+              <p class="notice-text">Your membership is frozen until {{ formatDate(subscription()!.freezeEndDate) }}.</p>
+            </div>
+          </div>
+        }
+
+        <!-- Status-specific actions panel -->
+        <div class="actions-card">
+
+          @switch (subscription()!.status) {
+
+            @case ('ACTIVE') {
+              <h6>Manage Membership</h6>
+
+              @if (isFree()) {
+                <div class="free-plan-banner mb-4">
+                  <p><strong>You're on the free plan.</strong> Upgrade to unlock premium features and exclusive benefits.</p>
+                  <a routerLink="/membership/plans" class="btn btn-primary btn-sm" style="border-radius:8px;font-weight:600;white-space:nowrap;">
+                    <i class="feather-zap me-1"></i>Upgrade
+                  </a>
+                </div>
+              }
+
+              <div class="action-btn-group">
+                <app-loading-button
+                  [loading]="false"
+                  cssClass="btn btn-primary"
+                  (click)="onChangePlan()">
+                  <i class="feather-refresh-cw me-2"></i>Change Plan
+                </app-loading-button>
+                @if (!isFree()) {
+                  <app-loading-button
+                    [loading]="isPausing()"
+                    cssClass="btn btn-outline-secondary"
+                    (click)="onPause()">
+                    <i class="feather-pause me-2"></i>Request Pause
+                  </app-loading-button>
+                  <app-loading-button
+                    [loading]="isCancelling()"
+                    cssClass="btn btn-outline-danger"
+                    (click)="onCancel()">
+                    <i class="feather-x-circle me-2"></i>Cancel
+                  </app-loading-button>
+                }
+              </div>
+            }
+
+            @case ('PENDING_PAYMENT') {
+              <div class="status-notice warning mb-4">
+                <i class="feather-loader"></i>
+                <div>
+                  <p class="notice-title">Payment Processing</p>
+                  <p class="notice-text">Your payment is being processed. This usually takes just a moment.</p>
+                </div>
+              </div>
+              <a [routerLink]="['/membership/status', subscription()!.subscriptionId]"
+                 class="btn btn-warning" style="border-radius:10px;font-weight:600;">
+                <i class="feather-eye me-2"></i>Check Status
+              </a>
+            }
+
+            @case ('PAYMENT_FAILED') {
+              <div class="status-notice danger mb-4">
+                <i class="feather-alert-circle"></i>
+                <div>
+                  <p class="notice-title">Payment Failed</p>
+                  <p class="notice-text">We couldn't process your payment. Please try a different plan or contact support.</p>
+                </div>
+              </div>
+              <a routerLink="/membership/plans" class="btn btn-primary" style="border-radius:10px;font-weight:600;">
+                <i class="feather-refresh-cw me-2"></i>Pick a Plan
+              </a>
+            }
+
+            @case ('PAUSED') {
+              <div class="status-notice muted mb-4">
+                <i class="feather-pause-circle"></i>
+                <div>
+                  <p class="notice-title">Membership Paused</p>
+                  <p class="notice-text">Your membership is currently on pause. Resume anytime to regain full access.</p>
+                </div>
+              </div>
+              <app-loading-button
+                [loading]="isResuming()"
+                cssClass="btn btn-primary"
+                (click)="onResume()">
+                <i class="feather-play me-2"></i>Resume Membership
+              </app-loading-button>
+            }
+
+            @case ('FROZEN') {
+              <div class="status-notice info">
+                <i class="feather-shield"></i>
+                <div>
+                  <p class="notice-title">Frozen by Administrator</p>
+                  <p class="notice-text">Your membership has been temporarily frozen. Please contact support for assistance.</p>
+                </div>
+              </div>
+            }
+
+            @case ('PAUSE_REQUESTED') {
+              <div class="status-notice info">
+                <i class="feather-clock"></i>
+                <div>
+                  <p class="notice-title">Pause Request Pending</p>
+                  <p class="notice-text">Your pause request is awaiting admin approval. We'll notify you once it's reviewed.</p>
+                </div>
+              </div>
+            }
+
+            @case ('CANCEL_REQUESTED') {
+              <div class="status-notice warning">
+                <i class="feather-clock"></i>
+                <div>
+                  <p class="notice-title">Cancellation Pending</p>
+                  <p class="notice-text">Your cancellation request is awaiting admin approval.</p>
+                </div>
+              </div>
+            }
+
+            @case ('EXPIRED') {
+              <div class="status-notice danger mb-4">
+                <i class="feather-alert-triangle"></i>
+                <div>
+                  <p class="notice-title">Membership Expired</p>
+                  <p class="notice-text">Your membership has expired. Renew to continue enjoying full access.</p>
+                </div>
+              </div>
+              <div class="action-btn-group">
+                <app-loading-button
+                  [loading]="isRenewing()"
+                  cssClass="btn btn-primary"
+                  (click)="onRenew()">
+                  <i class="feather-refresh-cw me-2"></i>Renew Membership
+                </app-loading-button>
+                <a routerLink="/membership/plans" class="btn btn-outline-primary" style="border-radius:10px;font-weight:600;">
+                  <i class="feather-grid me-2"></i>Pick a New Plan
+                </a>
+              </div>
+            }
+
+            @case ('CANCELLED') {
+              <div class="status-notice muted mb-4">
+                <i class="feather-x-circle"></i>
+                <div>
+                  <p class="notice-title">Membership Cancelled</p>
+                  <p class="notice-text">Your membership has been cancelled. You're welcome to subscribe again anytime.</p>
+                </div>
+              </div>
+              <a routerLink="/membership/plans" class="btn btn-primary" style="border-radius:10px;font-weight:600;">
+                <i class="feather-zap me-2"></i>Get a New Plan
+              </a>
+            }
+
+            @default {
+              <div class="status-notice muted">
+                <i class="feather-info"></i>
+                <div>
+                  <p class="notice-title">Status: {{ subscription()!.status }}</p>
+                  <p class="notice-text">Please contact support if you need assistance.</p>
+                </div>
+              </div>
+            }
+
+          }
+
+        </div>
+
+      }
+
+    </div>
+  </div>
+
+}

@@ -16,7 +16,8 @@ public class PlanMapper {
                 plan.getDescription(),
                 plan.getPrice(),
                 plan.getDurationInDays(),
-                plan.getStatus().name()
+                plan.getStatus().name(),
+                plan.getFeatures()
         );
     }
 
@@ -33,6 +34,10 @@ public class PlanMapper {
         plan.setDescription(dto.getDescription());
         plan.setPrice(dto.getPrice());
         plan.setDurationInDays(dto.getDurationInDays());
+        
+        if (dto.getFeatures() != null) {
+            plan.setFeatures(new java.util.ArrayList<>(dto.getFeatures()));
+        }
 
         //  important
         plan.setStatus(PlanStatus.ACTIVE);

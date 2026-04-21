@@ -1,0 +1,170 @@
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading…</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && errorMessage()) {
+  <div class="content">
+    <div class="container">
+      <div class="text-center py-5">
+        <div class="error-icon mb-3"><i class="feather-alert-circle"></i></div>
+        <p class="text-muted mb-3">{{ errorMessage() }}</p>
+        <a routerLink="/membership/plans" class="btn btn-secondary">← Back to Plans</a>
+      </div>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && !errorMessage() && plan()) {
+
+  <div class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container">
+      <h1 class="text-white">{{ isChangingPlan ? 'Change Plan' : 'Checkout' }}</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/membership/plans">Plans</a></li>
+        <li>{{ isChangingPlan ? 'Change Plan' : 'Checkout' }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <app-dashboard-menu />
+
+  <div class="content">
+    <div class="container">
+      <div class="row g-4 justify-content-center">
+
+        <!-- Left: Plan Preview ─────────────────────────────── -->
+        <div class="col-lg-5 col-md-8">
+
+          <!-- Hero card -->
+          <div class="plan-hero">
+            <div class="plan-hero-inner">
+              <div class="plan-badge-ring">
+                <i class="feather-award"></i>
+              </div>
+              <div class="plan-hero-text">
+                <p class="plan-label-tag">Selected Plan</p>
+                <h2 class="plan-hero-name">{{ plan()!.name }}</h2>
+                <div class="plan-hero-price">
+                  @if (isFree) {
+                    <span class="price-free-tag">Free</span>
+                  } @else {
+                    <span class="price-sup">$</span><span class="price-main">{{ plan()!.price!.toFixed(2) }}</span>
+                  }
+                </div>
+                <p class="plan-hero-duration">
+                  <i class="feather-clock me-1"></i>{{ durationLabel }}
+                </p>
+              </div>
+            </div>
+            <div class="plan-hero-shine"></div>
+          </div>
+
+          <!-- What's included -->
+          <div class="features-card">
+            <h6 class="features-heading">
+              <i class="feather-gift me-2"></i>What You Get
+            </h6>
+
+            @if (plan()!.description) {
+              <p class="plan-desc">{{ plan()!.description }}</p>
+            }
+
+            <ul class="features-list">
+              <li><i class="feather-check-circle"></i><span>Full gym floor access</span></li>
+              <li><i class="feather-check-circle"></i><span>All equipment included</span></li>
+              <li><i class="feather-check-circle"></i><span>Personal member dashboard</span></li>
+              @if (!isFree) {
+                <li><i class="feather-check-circle"></i><span>Priority customer support</span></li>
+                <li><i class="feather-check-circle"></i><span>Advanced progress tracking</span></li>
+                <li><i class="feather-check-circle"></i><span>Exclusive member events</span></li>
+              }
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Right: Order Summary ────────────────────────────── -->
+        <div class="col-lg-4 col-md-8">
+          <div class="order-card">
+
+            <div class="order-header">
+              <i class="feather-shopping-cart me-2"></i>
+              <span>{{ isChangingPlan ? 'Switch Summary' : 'Order Summary' }}</span>
+            </div>
+
+            <!-- Line items -->
+            <div class="order-lines">
+              <div class="order-line">
+                <span>{{ plan()!.name }}</span>
+                <span class="order-line-val">{{ formattedPrice }}</span>
+              </div>
+              <div class="order-line muted">
+                <span>Duration</span>
+                <span>{{ durationLabel }}</span>
+              </div>
+              @if (!isFree) {
+                <div class="order-line muted">
+                  <span>Billing</span>
+                  <span>One-time</span>
+                </div>
+              }
+            </div>
+
+            <div class="order-divider"></div>
+
+            <div class="order-total">
+              <span>Total Due</span>
+              <span class="order-total-val">{{ formattedPrice }}</span>
+            </div>
+
+            <!-- Context notice -->
+            @if (isFree) {
+              <div class="checkout-notice success">
+                <i class="feather-gift"></i>
+                <p>No payment required — activate instantly.</p>
+              </div>
+            } @else if (isChangingPlan) {
+              <div class="checkout-notice info">
+                <i class="feather-refresh-cw"></i>
+                <p>Your current plan is replaced with <strong>{{ plan()!.name }}</strong> right away.</p>
+              </div>
+            } @else {
+              <div class="checkout-notice info">
+                <i class="feather-zap"></i>
+                <p>You'll be subscribed to <strong>{{ plan()!.name }}</strong> immediately after confirmation.</p>
+              </div>
+            }
+
+            <!-- CTA -->
+            <app-loading-button
+              [loading]="isSubmitting()"
+              cssClass="btn btn-checkout w-100"
+              (click)="onConfirm()">
+              <i class="feather-lock me-2"></i>{{ buttonLabel }}
+            </app-loading-button>
+
+            <!-- Trust signals -->
+            <div class="trust-row">
+              <span><i class="feather-shield"></i>Secure</span>
+              <span><i class="feather-x-circle"></i>Cancel anytime</span>
+              <span><i class="feather-lock"></i>Private</span>
+            </div>
+
+            <div class="text-center mt-3">
+              <a routerLink="/membership/plans" class="back-link">← Back to Plans</a>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+}

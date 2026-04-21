@@ -10,11 +10,17 @@ import java.util.List;
 public class SubscriptionMapper {
 
     public static SubscriptionResponseDTO toDTO(Subscription sub) {
+        return toDTO(sub, null);
+    }
+
+    public static SubscriptionResponseDTO toDTO(Subscription sub, String userEmail) {
         return new SubscriptionResponseDTO(
                 sub.getId(),
                 sub.getUserId(),
+                userEmail,
                 sub.getPlan().getId(),
                 sub.getPlan().getName(),
+                sub.getPlan().getPrice(),
                 sub.getStatus(),
                 sub.getStartDate(),
                 sub.getEndDate(),

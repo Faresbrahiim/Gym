@@ -1,0 +1,41 @@
+<div class="price-card flex-fill">
+  <div class="price-head" [class.expert-price]="highlighted">
+    <img [src]="iconSrc" alt="Plan icon">
+    <h3>{{ plan.name }}</h3>
+    @if (highlighted) {
+      <span>Recommended</span>
+    }
+  </div>
+  <div class="price-body">
+    <div class="per-month">
+      @if (plan.price === 0) {
+        <h2><span>Free</span></h2>
+      } @else {
+        <h2><sup>$</sup><span>{{ formattedPrice }}</span></h2>
+      }
+      <span>{{ durationLabel }}</span>
+    </div>
+    <div class="features-price-list">
+      @if (plan.description) {
+        <h5>Features</h5>
+        <p>{{ plan.description }}</p>
+      }
+      @if (plan.features && plan.features.length > 0) {
+        <ul>
+          @for (feature of plan.features; track feature) {
+            <li class="active"><i class="feather-check-circle"></i>{{ feature }}</li>
+          }
+        </ul>
+      }
+    </div>
+    <div class="price-choose" [class.active-price]="highlighted">
+      <button
+        type="button"
+        class="btn viewdetails-btn"
+        [disabled]="isCurrentPlan"
+        (click)="onSelect()">
+        {{ isCurrentPlan ? 'Current Plan' : 'Choose Plan' }}
+      </button>
+    </div>
+  </div>
+</div>

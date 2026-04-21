@@ -34,10 +34,10 @@ class PlanControllerTest {
         planId = UUID.randomUUID();
 
         activeDTO = new PlanResponseDTO(
-                planId, "Gold", "Gold plan", 99.99, 30, "ACTIVE"
+                planId, "Gold", "Gold plan", 99.99, 30, "ACTIVE", new java.util.ArrayList<>()
         );
         inactiveDTO = new PlanResponseDTO(
-                UUID.randomUUID(), "Basic", "Basic plan", 0.0, Integer.MAX_VALUE, "INACTIVE"
+                UUID.randomUUID(), "Basic", "Basic plan", 0.0, Integer.MAX_VALUE, "INACTIVE", new java.util.ArrayList<>()
         );
     }
 

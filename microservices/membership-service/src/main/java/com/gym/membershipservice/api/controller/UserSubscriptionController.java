@@ -25,7 +25,7 @@ public class UserSubscriptionController {
         this.subscriptionService = subscriptionService;
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping
     public SubscriptionResponseDTO createSubscription(@AuthenticationPrincipal Jwt jwt,
                                                       @Valid @RequestBody SubscriptionRequestDTO dto) {
@@ -33,52 +33,59 @@ public class UserSubscriptionController {
         return subscriptionService.createSubscription(userId, dto.getPlanId());
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/me")
     public List<SubscriptionResponseDTO> getMySubscriptions(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return subscriptionService.getUserSubscriptions(userId);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/cancel")
     public SubscriptionResponseDTO cancelSubscription(@PathVariable UUID subscriptionId) {
         return subscriptionService.cancelSubscription(subscriptionId);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
+    @PostMapping("/me/free")
+    public SubscriptionResponseDTO activateFree(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.createFreeSubscription(userId);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/pause")
     public SubscriptionResponseDTO requestPause(@PathVariable UUID subscriptionId) {
         return subscriptionService.pauseSubscription(subscriptionId);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/resume")
     public SubscriptionResponseDTO resumeSubscription(@PathVariable UUID subscriptionId) {
         return subscriptionService.resumeSubscription(subscriptionId);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/renew")
     public SubscriptionResponseDTO renewSubscription(@PathVariable UUID subscriptionId) {
         return subscriptionService.renewSubscription(subscriptionId);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/upgrade")
     public SubscriptionResponseDTO upgradeSubscription(@PathVariable UUID subscriptionId,
                                                        @RequestParam UUID newPlanId) {
         return subscriptionService.upgradeSubscription(subscriptionId, newPlanId);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/downgrade")
     public SubscriptionResponseDTO downgradeSubscription(@PathVariable UUID subscriptionId,
                                                          @RequestParam UUID newPlanId) {
         return subscriptionService.downgradeSubscription(subscriptionId, newPlanId);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/change-plan")
     public SubscriptionResponseDTO changePlan(@PathVariable UUID subscriptionId,
                                               @RequestParam UUID newPlanId) {

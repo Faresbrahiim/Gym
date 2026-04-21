@@ -9,6 +9,7 @@ import com.gym.membershipservice.application.dto.Subscription.SubscriptionRespon
 import com.gym.membershipservice.application.dto.kafka.SubscriptionCreatedEvent;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
+import com.gym.membershipservice.application.entity.UserMembership;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.PlanService;
@@ -17,13 +18,17 @@ import com.gym.membershipservice.application.port.SubscriptionService;
 import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
+import com.gym.membershipservice.infrastructure.repository.UserMembershipRepository;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
@@ -33,17 +38,23 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionHistoryService historyService;
     private final PlanService planService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final UserMembershipRepository userMembershipRepository;
+
+    @org.springframework.beans.factory.annotation.Value("${payment.dev-mode:false}")
+    private boolean paymentDevMode;
 
     public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository,
                                    PlanRepository planRepository,
                                    SubscriptionHistoryService historyService,
                                    PlanServiceImpl planService,
-                                   KafkaTemplate<String, Object> kafkaTemplate) {
-        this.subscriptionRepository = subscriptionRepository;
-        this.planRepository = planRepository;
-        this.historyService = historyService;
-        this.planService = planService;
-        this.kafkaTemplate = kafkaTemplate;
+                                   KafkaTemplate<String, Object> kafkaTemplate,
+                                   UserMembershipRepository userMembershipRepository) {
+        this.subscriptionRepository  = subscriptionRepository;
+        this.planRepository          = planRepository;
+        this.historyService          = historyService;
+        this.planService             = planService;
+        this.kafkaTemplate           = kafkaTemplate;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     // =========================
@@ -51,13 +62,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // =========================
 
     @Override
+    @Transactional(readOnly = true)
     public List<SubscriptionResponseDTO> getUserSubscriptions(UUID userId) {
         return SubscriptionMapper.toDTOList(subscriptionRepository.findByUserId(userId));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SubscriptionResponseDTO> getAllSubscriptions() {
-        return SubscriptionMapper.toDTOList(subscriptionRepository.findAll());
+        List<Subscription> subs = subscriptionRepository.findAll();
+
+        // Batch-fetch emails — one query regardless of how many subscriptions exist
+        Set<UUID> userIds = subs.stream().map(Subscription::getUserId).collect(Collectors.toSet());
+        Map<UUID, String> emailMap = userMembershipRepository.findByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(UserMembership::getUserId, um -> um.getEmail() != null ? um.getEmail() : ""));
+
+        return subs.stream()
+                .map(s -> SubscriptionMapper.toDTO(s, emailMap.getOrDefault(s.getUserId(), null)))
+                .toList();
     }
 
     @Override
@@ -109,17 +131,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         sub.setPlan(plan);
         sub.setStartDate(now);
 
-        if (isPaid) {
-            sub.setStatus(SubscriptionStatus.PENDING_PAYMENT);
-            sub.setEndDate(now.plusDays(plan.getDurationInDays()));
-        } else {
-            sub.setStatus(SubscriptionStatus.ACTIVE);
-            sub.setEndDate(now.plusDays(plan.getDurationInDays()));
-        }
+        boolean hasFixedDuration = plan.getDurationInDays() != null && plan.getDurationInDays() > 0;
+
+        boolean activateImmediately = !isPaid || paymentDevMode;
+        sub.setStatus(activateImmediately ? SubscriptionStatus.ACTIVE : SubscriptionStatus.PENDING_PAYMENT);
+        sub.setEndDate(hasFixedDuration ? now.plusDays(plan.getDurationInDays()) : null);
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, null, saved.getStatus(), null,
-                isPaid ? "Created — awaiting payment" : "Created");
+                activateImmediately ? "Created" : "Created — awaiting payment");
 
         kafkaTemplate.send("subscription.created", new SubscriptionCreatedEvent(
                 saved.getId().toString(),
@@ -148,6 +168,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (sub.getStatus() == SubscriptionStatus.CANCELLED) {
             throw new BadRequestException("Already Cancelled");
         }
+        if (sub.getPlan().getPrice() == null || sub.getPlan().getPrice() == 0) {
+            throw new BadRequestException("Free plan cannot be cancelled");
+        }
 
         LocalDateTime now = LocalDateTime.now();
         if (sub.getStartDate() != null && sub.getStartDate().plusDays(2).isBefore(now)) {
@@ -174,6 +197,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Subscription sub = findAndAutoExpire(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
             throw new BadRequestException("Only ACTIVE subscriptions can be paused");
+        }
+        if (sub.getPlan().getPrice() == null || sub.getPlan().getPrice() == 0) {
+            throw new BadRequestException("Free plan cannot be paused");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -258,7 +284,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         SubscriptionStatus previous = sub.getStatus();
         LocalDateTime now = LocalDateTime.now();
 
-        if (sub.getEndDate() != null && sub.getEndDate().isAfter(now)) {
+        boolean hasFixedDuration = plan.getDurationInDays() != null && plan.getDurationInDays() > 0;
+        if (!hasFixedDuration) {
+            sub.setStartDate(now);
+            sub.setEndDate(null);
+        } else if (sub.getEndDate() != null && sub.getEndDate().isAfter(now)) {
             sub.setEndDate(sub.getEndDate().plusDays(plan.getDurationInDays()));
         } else {
             sub.setStartDate(now);
@@ -293,9 +323,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         String oldPlanName = sub.getPlan().getName();
         LocalDateTime now = LocalDateTime.now();
 
+        boolean hasFixedDuration = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
         sub.setPlan(newPlan);
         sub.setStartDate(now);
-        sub.setEndDate(now.plusDays(newPlan.getDurationInDays()));
+        sub.setEndDate(hasFixedDuration ? now.plusDays(newPlan.getDurationInDays()) : null);
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, previous, previous, null,
@@ -319,10 +350,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new BadRequestException("New plan must be more expensive");
         }
 
+        boolean upgradeHasFixed = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
         SubscriptionStatus previous = sub.getStatus();
         sub.setPlan(newPlan);
         sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(LocalDateTime.now().plusDays(newPlan.getDurationInDays()));
+        sub.setEndDate(upgradeHasFixed ? LocalDateTime.now().plusDays(newPlan.getDurationInDays()) : null);
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, previous, previous, null, "Upgraded to " + newPlan.getName());
@@ -341,10 +373,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             throw new BadRequestException("New plan must be cheaper");
         }
 
+        boolean downgradeHasFixed = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
         SubscriptionStatus previous = sub.getStatus();
         sub.setPlan(newPlan);
         sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(LocalDateTime.now().plusDays(newPlan.getDurationInDays()));
+        sub.setEndDate(downgradeHasFixed ? LocalDateTime.now().plusDays(newPlan.getDurationInDays()) : null);
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, previous, previous, null, "Downgraded to " + newPlan.getName());
@@ -448,7 +481,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // =========================
 
     private void validatePlanDuration(Plan plan) {
-        if (plan.getDurationInDays() == null || plan.getDurationInDays() < 0) {
+        if (plan.getDurationInDays() != null && plan.getDurationInDays() < 0) {
             throw new BadRequestException("Invalid plan duration");
         }
     }
