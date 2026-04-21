@@ -44,6 +44,14 @@
           <li routerLinkActive="active">
             <a routerLink="/people">People</a>
           </li>
+          @if (isAuthenticated) {
+            <li routerLinkActive="active">
+              <a routerLink="/chat" class="chat-nav-link">
+                <i class="feather-message-circle"></i>
+                <span>Chat</span>
+              </a>
+            </li>
+          }
           <li class="has-submenu">
             <a href="javascript:void(0);">User <i class="fas fa-chevron-down"></i></a>
             <ul class="submenu">
@@ -123,6 +131,7 @@
                 </div>
               </div>
               <p><a class="dropdown-item" routerLink="/profile">My Profile</a></p>
+              <p><a class="dropdown-item" routerLink="/chat">Open Full Chat</a></p>
               <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
               <p><a class="dropdown-item" routerLink="/payments">Payments</a></p>
               <p><a class="dropdown-item" href="javascript:void(0);" (click)="onLogout()">Logout</a></p>

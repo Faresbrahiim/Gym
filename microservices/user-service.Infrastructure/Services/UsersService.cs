@@ -52,4 +52,27 @@ public class UsersService : IUsersService
 
         return users.Select(UserMapper.ToSearchResultDto).ToList();
     }
+
+    public async Task<IEnumerable<UserContactDto>> GetContactsByIdsAsync(
+        IEnumerable<string> userIds,
+        CancellationToken cancellationToken = default)
+    {
+        var orderedIds = userIds
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => Guid.TryParse(id, out var guid) ? guid : Guid.Empty)
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        if (orderedIds.Count == 0)
+            return [];
+
+        var users = await _userRepository.GetByIdsAsync(orderedIds, cancellationToken);
+        var contactsById = users.ToDictionary(user => user.Id, UserMapper.ToContactDto);
+
+        return orderedIds
+            .Where(id => contactsById.ContainsKey(id))
+            .Select(id => contactsById[id])
+            .ToList();
+    }
 }

@@ -135,5 +135,20 @@ namespace user_service.Infrastructure.Repositories
                 .Take(limit)
                 .ToListAsync(cancellationToken);
         }
+
+        public async Task<IEnumerable<User>> GetByIdsAsync(
+            IEnumerable<Guid> userIds,
+            CancellationToken cancellationToken = default)
+        {
+            var ids = userIds.Distinct().ToList();
+            if (ids.Count == 0)
+                return [];
+
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .Where(u => ids.Contains(u.Id))
+                .ToListAsync(cancellationToken);
+        }
     }
 }

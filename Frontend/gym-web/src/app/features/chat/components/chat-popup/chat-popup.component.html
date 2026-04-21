@@ -1,0 +1,79 @@
+@if (isAuthenticated) {
+  @if (!popup.isOpen()) {
+    <button
+      type="button"
+      class="chat-pop-launcher"
+      (click)="openPopup()"
+      aria-label="Open messages"
+      title="Messages"
+    >
+      <i class="feather-message-circle"></i>
+    </button>
+  }
+
+  @if (popup.isOpen()) {
+    <section class="chat-pop-window">
+      <header class="chat-pop-header">
+        <div class="chat-pop-title-block">
+          <strong class="chat-pop-title">Messages</strong>
+          <span class="chat-pop-subtitle">Keep chatting while browsing</span>
+        </div>
+
+        <div class="chat-pop-actions">
+          @if (activeConversation()) {
+            <button
+              type="button"
+              class="chat-pop-action chat-pop-action--label"
+              (click)="closeThread()"
+              aria-label="Back to conversations"
+              title="Back to conversations"
+            >
+              <i class="feather-chevron-left"></i>
+              <span>Conversations</span>
+            </button>
+          }
+          <button type="button" class="chat-pop-action" (click)="openFullChat()" aria-label="Open full chat" title="Open full chat">
+            <i class="feather-maximize-2"></i>
+          </button>
+          <button type="button" class="chat-pop-action" (click)="minimize()" aria-label="Minimize chat" title="Minimize">
+            <i class="feather-minus"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="chat-pop-body">
+        @if (activeConversation()) {
+          <app-message-thread
+            class="chat-pop-thread"
+            [messages]="messages()"
+            [currentUserId]="currentUserId"
+            [contact]="getActiveContact()"
+            [isOnline]="isActiveContactOnline()"
+            [typingUserIds]="typingUserIds()"
+            [isLoading]="loadingMessages()"
+            (backClicked)="closeThread()"
+          />
+
+          <app-message-input
+            (messageSent)="onMessageSent($event)"
+            (typingStart)="onTypingStart()"
+            (typingStop)="onTypingStop()"
+          />
+        } @else {
+          @if (loadingConversations()) {
+            <div class="chat-pop-state">
+              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            </div>
+          } @else {
+            <app-conversation-list
+              [conversations]="conversations()"
+              [activeConversationId]="activeConversation()?._id ?? null"
+              [currentUserId]="currentUserId"
+              (conversationSelected)="openConversation($event)"
+            />
+          }
+        }
+      </div>
+    </section>
+  }
+}

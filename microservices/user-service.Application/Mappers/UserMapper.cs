@@ -104,6 +104,21 @@ namespace user_service.Application.Mappers
                 AvatarUrl = user.Profile?.ProfilePictureUrl
             };
         }
+
+        public static UserContactDto ToContactDto(User user)
+        {
+            var firstName = user.Profile?.FirstName?.Trim();
+            var lastName = user.Profile?.LastName?.Trim();
+            var fullName = string.Join(" ", new[] { firstName, lastName }.Where(v => !string.IsNullOrWhiteSpace(v)));
+
+            return new UserContactDto
+            {
+                Id = user.Id,
+                DisplayName = string.IsNullOrWhiteSpace(fullName) ? user.Username : fullName,
+                Username = user.Username,
+                AvatarUrl = user.Profile?.ProfilePictureUrl
+            };
+        }
     }
 
 }

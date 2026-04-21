@@ -81,8 +81,19 @@ export class ChatComponent implements OnInit, OnDestroy {
         next: convs => {
           this.conversations.set(convs);
           this.loadingConversations.set(false);
-          this.trackAllParticipants(convs);
-          this.handleDeepLink(convs);
+          const participantIds = this.collectOtherParticipantIds(convs);
+
+          this.trackParticipants(participantIds);
+          this.subs.add(
+            this.contactCache.hydrate(participantIds).subscribe({
+              next: () => this.refreshConversationContacts(),
+              error: () => this.handleDeepLink(convs),
+              complete: () => {
+                this.refreshConversationContacts();
+                this.handleDeepLink(convs);
+              }
+            })
+          );
         },
         error: () => this.loadingConversations.set(false)
       })
@@ -196,14 +207,24 @@ export class ChatComponent implements OnInit, OnDestroy {
     return this.presenceService.isOnline(otherId);
   }
 
-  private trackAllParticipants(convs: Conversation[]): void {
+  private collectOtherParticipantIds(convs: Conversation[]): string[] {
     const ids = new Set<string>();
     for (const c of convs) {
       for (const p of c.participants) {
         if (p !== this.currentUserId) ids.add(p);
       }
     }
-    if (ids.size > 0) this.presenceService.startTracking([...ids]);
+    return [...ids];
+  }
+
+  private trackParticipants(userIds: string[]): void {
+    if (userIds.length > 0) {
+      this.presenceService.startTracking(userIds);
+    }
+  }
+
+  private refreshConversationContacts(): void {
+    this.conversations.update(convs => [...convs]);
   }
 
   private handleDeepLink(convs: Conversation[]): void {

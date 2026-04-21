@@ -1,13 +1,25 @@
 import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
+import { ApiService } from '../../../core/api/api.service';
 import { Contact } from '../models/contact.model';
 import { UserSearchResult } from '../../people/models/user-search-result.model';
+
+interface ContactLookupDto {
+  id: string;
+  displayName: string;
+  username: string;
+  avatarUrl?: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ContactCacheService {
 
   private cache = new Map<string, Contact>();
 
-  // Seed a single entry — called before navigating from the People page
+  constructor(private api: ApiService) {}
+
+  // Seed a single entry - called before navigating from the People page
   seed(userId: string, displayName: string, avatarUrl?: string): void {
     this.cache.set(userId, {
       userId,
@@ -23,16 +35,30 @@ export class ContactCacheService {
     this.seed(result.id, displayName, result.avatarUrl);
   }
 
+  hydrate(userIds: string[]): Observable<void> {
+    const missingIds = [...new Set(userIds.filter(userId => userId && !this.cache.has(userId)))];
+    if (missingIds.length === 0) {
+      return of(void 0);
+    }
+
+    return this.api.post<ContactLookupDto[]>('/api/users/contacts', { userIds: missingIds }).pipe(
+      tap(results => {
+        for (const result of results) {
+          const displayName = result.displayName?.trim() || result.username;
+          this.seed(result.id, displayName, result.avatarUrl ?? undefined);
+        }
+      }),
+      map(() => void 0)
+    );
+  }
+
   // Returns a resolved Contact, or a safe fallback if the userId is unknown.
   // The fallback is intentionally non-empty so the UI never shows a blank.
   resolve(userId: string): Contact {
     const cached = this.cache.get(userId);
     if (cached) return cached;
 
-    // Backend gap: no batch-resolve endpoint yet.
-    // Show a short anonymous placeholder until it's available.
-    const fallback = this.buildFallback(userId);
-    return fallback;
+    return this.buildFallback(userId);
   }
 
   has(userId: string): boolean {
@@ -40,11 +66,10 @@ export class ContactCacheService {
   }
 
   private buildFallback(userId: string): Contact {
-    // Use the last 6 chars of the UUID as a short anonymous label
     const short = userId.slice(-6).toUpperCase();
     return {
       userId,
-      displayName: `User …${short}`,
+      displayName: `User ...${short}`,
       initials: '?',
     };
   }

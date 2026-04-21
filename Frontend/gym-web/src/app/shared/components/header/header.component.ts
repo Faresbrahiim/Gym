@@ -8,7 +8,8 @@ import { CurrentUserService } from '../../../core/services/current-user.service'
   standalone: true,
   selector: 'app-header',
   imports: [RouterLink, RouterLinkActive],
-  templateUrl: './header.component.html'
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css']
 })
 export class HeaderComponent {
 

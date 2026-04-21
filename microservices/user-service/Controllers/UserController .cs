@@ -43,5 +43,18 @@ namespace user_service.Controllers
             var results = await _usersService.SearchUsersAsync(q, cancellationToken);
             return Ok(results);
         }
+
+        [Authorize]
+        [HttpPost("contacts")]
+        public async Task<ActionResult<IEnumerable<UserContactDto>>> GetContacts(
+            [FromBody] UserContactLookupRequestDto request,
+            CancellationToken cancellationToken)
+        {
+            if (request?.UserIds == null || request.UserIds.Count == 0)
+                return Ok(Array.Empty<UserContactDto>());
+
+            var contacts = await _usersService.GetContactsByIdsAsync(request.UserIds, cancellationToken);
+            return Ok(contacts);
+        }
     }
 }

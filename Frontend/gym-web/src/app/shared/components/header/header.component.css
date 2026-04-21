@@ -1,0 +1,9 @@
+.chat-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-nav-link i {
+  font-size: 16px;
+}

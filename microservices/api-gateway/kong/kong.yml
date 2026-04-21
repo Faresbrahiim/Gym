@@ -350,6 +350,7 @@ services:
       - name: presence-rest-route
         paths:
           - /presence
+          - /api/presence
         strip_path: false
         plugins:
           - name: rate-limiting
@@ -366,6 +367,7 @@ services:
                 - "http://localhost:4200"
               methods:
                 - GET
+                - POST
                 - OPTIONS
               headers:
                 - Authorization
