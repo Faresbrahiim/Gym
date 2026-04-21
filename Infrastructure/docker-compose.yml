@@ -49,9 +49,12 @@ services:
       Email__SmtpPass: ${EMAIL_SMTP_PASS}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       PublicBaseUrl: http://localhost:8000
+      PRESENCE_SERVICE_URL: http://presence-service:8080
     depends_on:
       gym-user-db:
         condition: service_healthy
+      presence-service:
+        condition: service_started
     networks:
       - gym-network
     volumes:
@@ -287,9 +290,14 @@ services:
     environment:
       PORT: 5000
       MONGO_URI: mongodb://chat-db:27017/chatdb
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_AUDIENCE: ${JWT_AUDIENCE}
+      PRESENCE_SERVICE_URL: http://presence-service:8080
     depends_on:
       - chat-db
-      - kafka   
+      - kafka
+      - presence-service
     networks:
       - gym-network
 

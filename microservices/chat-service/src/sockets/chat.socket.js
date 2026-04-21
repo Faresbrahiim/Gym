@@ -1,6 +1,12 @@
 import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
 import Message from "../modules/message/message.model.js";
 import Conversation from "../modules/conversation/conversation.model.js";
+
+// PEM key stored with literal \n — reconstruct real newlines at startup
+const JWT_PUBLIC_KEY = (process.env.JWT_PUBLIC_KEY ?? "").replace(/\\n/g, "\n");
+const JWT_ISSUER    = process.env.JWT_ISSUER    ?? "MyGymApp";
+const JWT_AUDIENCE  = process.env.JWT_AUDIENCE  ?? "MyGymUsers";
 
 export const initSocket = (server) => {
   const io = new Server(server, {
@@ -10,31 +16,40 @@ export const initSocket = (server) => {
     },
   });
 
-  // online users map: userId -> socketId
-  const onlineUsers = new Map();
+  // Authenticate every connection using the Bearer token from the handshake.
+  // The frontend already sends: io(url, { auth: { token } })
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("Authentication required"));
+
+    try {
+      const payload = jwt.verify(token, JWT_PUBLIC_KEY, {
+        algorithms: ["RS256"],
+        issuer: JWT_ISSUER,
+        audience: JWT_AUDIENCE,
+      });
+      socket.data.userId = payload.sub;
+      next();
+    } catch {
+      next(new Error("Invalid token"));
+    }
+  });
 
   io.on("connection", (socket) => {
-    console.log(`Socket connected: ${socket.id}`);
-
-    // user comes online
-    socket.on("user:online", (userId) => {
-      onlineUsers.set(userId, socket.id);
-      console.log(`User ${userId} is online`);
-      io.emit("users:online", Array.from(onlineUsers.keys()));
-    });
+    console.log(`Socket connected: ${socket.id} (userId: ${socket.data.userId})`);
 
     // join a conversation room
     socket.on("conversation:join", (conversationId) => {
       socket.join(conversationId);
-      console.log(`Socket ${socket.id} joined conversation ${conversationId}`);
     });
 
     // send a message in real time
-    socket.on("message:send", async ({ conversationId, senderId, content }) => {
+    // senderId comes from the validated JWT — client-provided senderId is ignored
+    socket.on("message:send", async ({ conversationId, content }) => {
       try {
         const message = await Message.create({
           conversationId,
-          senderId,
+          senderId: socket.data.userId,
           content,
         });
 
@@ -42,32 +57,23 @@ export const initSocket = (server) => {
           lastMessage: message._id,
         });
 
-        // broadcast to everyone in the conversation room
         io.to(conversationId).emit("message:received", message);
       } catch (error) {
         socket.emit("error", { message: error.message });
       }
     });
 
-    // typing indicator
-    socket.on("typing:start", ({ conversationId, userId }) => {
-      socket.to(conversationId).emit("typing:start", { userId });
+    // typing indicators
+    socket.on("typing:start", ({ conversationId }) => {
+      socket.to(conversationId).emit("typing:start", { userId: socket.data.userId });
     });
 
-    socket.on("typing:stop", ({ conversationId, userId }) => {
-      socket.to(conversationId).emit("typing:stop", { userId });
+    socket.on("typing:stop", ({ conversationId }) => {
+      socket.to(conversationId).emit("typing:stop", { userId: socket.data.userId });
     });
 
-    // user disconnects
     socket.on("disconnect", () => {
-      for (const [userId, socketId] of onlineUsers.entries()) {
-        if (socketId === socket.id) {
-          onlineUsers.delete(userId);
-          console.log(`User ${userId} went offline`);
-          break;
-        }
-      }
-      io.emit("users:online", Array.from(onlineUsers.keys()));
+      console.log(`Socket disconnected: ${socket.id} (userId: ${socket.data.userId})`);
     });
   });
 };

@@ -1,0 +1,359 @@
+/* ── Page shell ──────────────────────────────────────────────────────────── */
+.people-page {
+  min-height: calc(100vh - 80px);
+  background: #f4f6f8;
+  font-family: "Outfit", sans-serif;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.search-hero {
+  background: linear-gradient(135deg, #177c82 0%, #0f5459 100%);
+  padding: 60px 24px 48px;
+  text-align: center;
+}
+
+.search-hero-inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.search-hero-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.search-hero-sub {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 28px;
+}
+
+/* ── Search bar ──────────────────────────────────────────────────────────── */
+.search-bar-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 0 18px;
+  height: 52px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.2s;
+}
+
+.search-bar--active {
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.22);
+}
+
+.search-bar-icon {
+  font-size: 18px;
+  color: #177c82;
+  flex-shrink: 0;
+}
+
+.search-bar-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-family: "Outfit", sans-serif;
+  color: #1e2433;
+  background: transparent;
+}
+
+.search-bar-input::placeholder {
+  color: #b0bec5;
+}
+
+.search-bar-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e0e8ec;
+  border-top-color: #177c82;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.search-bar-clear {
+  background: none;
+  border: none;
+  color: #b0bec5;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.search-bar-clear:hover {
+  color: #1e2433;
+  background: #f4f6f8;
+}
+
+/* ── Results section ─────────────────────────────────────────────────────── */
+.results-section {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+
+/* ── States ──────────────────────────────────────────────────────────────── */
+.state-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 64px 24px;
+  text-align: center;
+  color: #7a8a9a;
+  font-size: 14px;
+}
+
+.state-block--hint {
+  opacity: 0.7;
+}
+
+.state-block strong {
+  color: #1e2433;
+}
+
+.state-hint {
+  font-size: 12px;
+  color: #b0bec5;
+}
+
+.spinner-ring {
+  width: 38px;
+  height: 38px;
+  border: 3px solid #e8ecf0;
+  border-top-color: #177c82;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.state-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.state-icon--hint  { background: #e8f5f6; color: #177c82; }
+.state-icon--empty { background: #f0f4ff; color: #3a6fa8; }
+.state-icon--error { background: #ffeaea; color: #c62828; }
+
+/* ── Results meta ────────────────────────────────────────────────────────── */
+.results-meta {
+  font-size: 13px;
+  color: #7a8a9a;
+  margin-bottom: 16px;
+}
+
+.results-meta strong {
+  color: #1e2433;
+}
+
+/* ── Results grid ────────────────────────────────────────────────────────── */
+.results-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Person card ─────────────────────────────────────────────────────────── */
+.person-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #edf0f4;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.12s;
+}
+
+.person-card:hover {
+  box-shadow: 0 4px 16px rgba(23, 124, 130, 0.1);
+  border-color: #c8e6e8;
+  transform: translateY(-1px);
+}
+
+/* ── Avatar ──────────────────────────────────────────────────────────────── */
+.person-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: #e8f5f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.person-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-avatar-initials {
+  font-size: 18px;
+  font-weight: 700;
+  color: #177c82;
+  font-family: "Outfit", sans-serif;
+}
+
+/* ── Info ────────────────────────────────────────────────────────────────── */
+.person-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.person-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e2433;
+  margin: 0 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.person-username {
+  font-size: 13px;
+  color: #7a8a9a;
+  margin: 0 0 8px;
+}
+
+/* ── Role badge ──────────────────────────────────────────────────────────── */
+.person-role-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge--coach  { background: #fff8e1; color: #c79a00; }
+.badge--member { background: #e8f5f6; color: #177c82; }
+
+/* ── Chat button ─────────────────────────────────────────────────────────── */
+.btn-chat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  background: #177c82;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Outfit", sans-serif;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s, opacity 0.15s;
+  white-space: nowrap;
+}
+
+.btn-chat:hover:not(:disabled) {
+  background: #135f64;
+  transform: scale(1.02);
+}
+
+.btn-chat:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn-chat:disabled,
+.btn-chat--loading {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-chat i {
+  font-size: 14px;
+}
+
+/* ── You badge (own profile in results) ─────────────────────────────────── */
+.you-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Outfit", sans-serif;
+  color: #7a8a9a;
+  background: #f4f6f8;
+  border-radius: 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.btn-chat-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .search-hero {
+    padding: 40px 16px 36px;
+  }
+
+  .search-hero-title {
+    font-size: 24px;
+  }
+
+  .results-section {
+    padding: 24px 16px 40px;
+  }
+
+  .person-card {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .person-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .btn-chat {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}

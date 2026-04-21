@@ -1,0 +1,125 @@
+<div class="people-page">
+
+  <!-- Hero search section -->
+  <div class="search-hero">
+    <div class="search-hero-inner">
+      <h1 class="search-hero-title">Find People</h1>
+      <p class="search-hero-sub">Search for members and coaches by name or username</p>
+
+      <div class="search-bar-wrap">
+        <div class="search-bar" [class.search-bar--active]="queryValue.length > 0">
+          <i class="feather-search search-bar-icon"></i>
+          <input
+            [formControl]="searchControl"
+            type="text"
+            class="search-bar-input"
+            placeholder="Search by name or username…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          @if (loading()) {
+            <span class="search-bar-spinner"></span>
+          }
+          @if (!loading() && queryValue.length > 0) {
+            <button class="search-bar-clear" (click)="searchControl.setValue('')" aria-label="Clear">
+              <i class="feather-x"></i>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results section -->
+  <div class="results-section">
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="state-block">
+        <span class="spinner-ring"></span>
+        <p>Searching…</p>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (!loading() && error()) {
+      <div class="state-block">
+        <span class="state-icon state-icon--error"><i class="feather-alert-circle"></i></span>
+        <p>Something went wrong. Please try again.</p>
+      </div>
+    }
+
+    <!-- Empty query -->
+    @if (!loading() && !error() && !searched()) {
+      <div class="state-block state-block--hint">
+        <span class="state-icon state-icon--hint"><i class="feather-users"></i></span>
+        <p>Type at least 2 characters to search</p>
+      </div>
+    }
+
+    <!-- No results -->
+    @if (!loading() && !error() && searched() && results().length === 0) {
+      <div class="state-block">
+        <span class="state-icon state-icon--empty"><i class="feather-user-x"></i></span>
+        <p>No results for <strong>"{{ queryValue }}"</strong></p>
+        <span class="state-hint">Try a different name or username</span>
+      </div>
+    }
+
+    <!-- Results grid -->
+    @if (!loading() && !error() && results().length > 0) {
+      <div class="results-meta">
+        {{ results().length }} result{{ results().length === 1 ? '' : 's' }} for
+        <strong>"{{ queryValue }}"</strong>
+      </div>
+
+      <div class="results-grid">
+        @for (person of results(); track person.id) {
+          <div class="person-card">
+
+            <!-- Avatar -->
+            <div class="person-avatar">
+              @if (person.avatarUrl) {
+                <img [src]="person.avatarUrl" [alt]="person.username" class="person-avatar-img" />
+              } @else {
+                <span class="person-avatar-initials">{{ getInitials(person) }}</span>
+              }
+            </div>
+
+            <!-- Info -->
+            <div class="person-info">
+              <p class="person-name">{{ person.firstName }} {{ person.lastName }}</p>
+              <p class="person-username">&#64;{{ person.username }}</p>
+              <span class="person-role-badge"
+                    [class.badge--coach]="person.role === 'COACH'"
+                    [class.badge--member]="person.role === 'MEMBER'">
+                {{ person.role === 'COACH' ? 'Coach' : 'Member' }}
+              </span>
+            </div>
+
+            <!-- Chat button / You badge -->
+            @if (person.id !== currentUserId) {
+              <button
+                class="btn-chat"
+                [class.btn-chat--loading]="startingConvFor() === person.id"
+                [disabled]="startingConvFor() === person.id"
+                (click)="startChat(person)"
+              >
+                @if (startingConvFor() === person.id) {
+                  <span class="btn-chat-spinner"></span>
+                } @else {
+                  <i class="feather-message-circle"></i>
+                }
+                <span>Chat</span>
+              </button>
+            } @else {
+              <span class="you-badge">You</span>
+            }
+
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</div>

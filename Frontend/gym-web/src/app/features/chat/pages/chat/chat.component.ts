@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { ChatService } from '../../services/chat.service';
@@ -50,7 +51,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     private userService: UserService,
     private socketService: SocketService,
     private tokenService: TokenService,
-    public currentUserService: CurrentUserService
+    public currentUserService: CurrentUserService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -65,6 +67,21 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   loadInitialData(): void {
     this.loadUsers();
     this.loadConversations();
+
+    // Deep-link from People page: auto-open a specific conversation
+    const nav = this.router.getCurrentNavigation();
+    const openId: string | undefined =
+      nav?.extras?.state?.['openConversationId'] ??
+      (history.state as { openConversationId?: string })?.openConversationId;
+
+    if (openId) {
+      this.subs.add(
+        this.chatService.getUserConversations(this.currentUserId).subscribe(convs => {
+          const target = convs.find(c => c._id === openId);
+          if (target) this.openConversation(target);
+        })
+      );
+    }
   }
 
   ngAfterViewChecked(): void {

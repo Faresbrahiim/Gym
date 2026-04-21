@@ -91,6 +91,19 @@ namespace user_service.Application.Mappers
                 Role = user.Role.ToString()
             };
         }
+
+        public static UserSearchResultDto ToSearchResultDto(User user)
+        {
+            return new UserSearchResultDto
+            {
+                Id        = user.Id,
+                Username  = user.Username,
+                FirstName = user.Profile?.FirstName ?? string.Empty,
+                LastName  = user.Profile?.LastName  ?? string.Empty,
+                Role      = user.Role.ToString(),
+                AvatarUrl = user.Profile?.ProfilePictureUrl
+            };
+        }
     }
 
 }
