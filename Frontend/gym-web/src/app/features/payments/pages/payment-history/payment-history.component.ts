@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, take } from 'rxjs/operators';
 
 import { PaymentService } from '../../services/payment.service';
 import { MembershipService } from '../../../membership/services/membership.service';
@@ -20,7 +20,8 @@ interface EnrichedPayment extends PaymentResponse {
   selector: 'app-payment-history',
   standalone: true,
   imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent],
-  templateUrl: './payment-history.component.html'
+  templateUrl: './payment-history.component.html',
+  styleUrl: './payment-history.component.css'
 })
 export class PaymentHistoryComponent implements OnInit {
   private readonly paymentService = inject(PaymentService);
@@ -49,8 +50,8 @@ export class PaymentHistoryComponent implements OnInit {
     this.errorMessage.set(null);
 
     forkJoin({
-      payments: this.paymentService.getMyPayments(),
-      subscriptions: this.membershipService.getMySubscriptions()
+      payments: this.paymentService.getMyPayments().pipe(take(1)),
+      subscriptions: this.membershipService.getMySubscriptions().pipe(take(1))
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
       catchError(err => {

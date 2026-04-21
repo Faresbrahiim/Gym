@@ -8,8 +8,8 @@ public record Money(BigDecimal amount, String currency) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
         }
-        if (!"MAD".equals(currency)) {
-            throw new IllegalArgumentException("Currency must be MAD");
+        if (currency == null || currency.isBlank()) {
+            throw new IllegalArgumentException("Currency must not be blank");
         }
     }
 }

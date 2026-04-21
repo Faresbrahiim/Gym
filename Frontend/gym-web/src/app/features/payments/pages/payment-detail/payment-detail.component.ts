@@ -19,7 +19,8 @@ import { DashboardMenuComponent } from '../../../../shared/components/dashboard-
   selector: 'app-payment-detail',
   standalone: true,
   imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent],
-  templateUrl: './payment-detail.component.html'
+  templateUrl: './payment-detail.component.html',
+  styleUrl: './payment-detail.component.css'
 })
 export class PaymentDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -81,7 +82,45 @@ export class PaymentDetailComponent implements OnInit {
   }
 
   printReceipt(): void {
-    window.print();
+    const card = document.querySelector('.receipt-card') as HTMLElement;
+    if (!card) return;
+
+    // Clone so we don't mutate the live DOM
+    const clone = card.cloneNode(true) as HTMLElement;
+
+    // Strip anything that must not appear on paper
+    clone.querySelectorAll('.d-print-none, button, [class*="btn"]').forEach(el => el.remove());
+
+    // Make asset paths absolute so images load in the popup
+    const origin = window.location.origin;
+    const html = clone.outerHTML
+      .replace(/src="assets\//g, `src="${origin}/assets/`)
+      .replace(/href="assets\//g, `href="${origin}/assets/`);
+
+    // Only carry over external stylesheet links (Bootstrap, fonts, icons)
+    const styleLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .map(el => el.outerHTML).join('\n');
+
+    const win = window.open('', '_blank', 'width=820,height=900');
+    if (!win) return;
+
+    win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  ${styleLinks}
+  <style>
+    @page { size: A4; margin: 0; }
+    body { background: #fff; margin: 0; padding: 15mm; box-sizing: border-box; }
+  </style>
+</head>
+<body>${html}</body>
+</html>`);
+    win.document.close();
+    win.focus();
+    // Wait for stylesheets to load before printing
+    setTimeout(() => { win.print(); win.close(); }, 800);
   }
 }
 

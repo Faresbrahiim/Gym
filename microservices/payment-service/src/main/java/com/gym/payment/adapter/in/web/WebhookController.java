@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -45,13 +44,20 @@ public class WebhookController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        Optional<StripeObject> stripeObjectOpt = event.getDataObjectDeserializer().getObject();
-        if (stripeObjectOpt.isEmpty()) {
-            log.warn("Webhook event {} has no deserializable object, acknowledging", event.getId());
+        StripeObject stripeObject;
+        try {
+            stripeObject = event.getDataObjectDeserializer().deserializeUnsafe();
+        } catch (Exception e) {
+            log.warn("Webhook event {} could not be deserialized (API version mismatch?): {}", event.getId(), e.getMessage());
             return ResponseEntity.ok().build();
         }
 
-        PaymentIntent intent = (PaymentIntent) stripeObjectOpt.get();
+        if (!(stripeObject instanceof PaymentIntent)) {
+            log.warn("Webhook event {} is not a PaymentIntent, ignoring", event.getId());
+            return ResponseEntity.ok().build();
+        }
+
+        PaymentIntent intent = (PaymentIntent) stripeObject;
         String failureReason = intent.getLastPaymentError() != null
                 ? intent.getLastPaymentError().getMessage()
                 : null;
@@ -65,7 +71,12 @@ public class WebhookController {
                 sigHeader
         );
 
-        handleWebhookUseCase.execute(command);
+        try {
+            handleWebhookUseCase.execute(command);
+        } catch (Exception e) {
+            log.error("Webhook processing failed for event {}: {}", event.getId(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
 
         return ResponseEntity.ok().build();
     }

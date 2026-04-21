@@ -76,7 +76,7 @@ public class PaymentApplicationService implements
                     payment.getAmount().currency(),
                     payment.getCompletedAt()
             ));
-        } else {
+        } else if ("payment_intent.payment_failed".equals(command.eventType())) {
             payment.markFailed(command.failureReason());
             paymentRepository.save(payment);
             eventPublisherPort.publish("payment.failed", new PaymentFailedEvent(
