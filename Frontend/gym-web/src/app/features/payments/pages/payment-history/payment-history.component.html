@@ -1,0 +1,127 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">Payments</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>Payments</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-dashboard-menu></app-dashboard-menu>
+
+<div class="content">
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12">
+        <div class="card card-tableset">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="coache-head-blk">
+              <h4 class="card-title mb-0">Your Payments</h4>
+            </div>
+            <div class="table-search-top invoice-search-top">
+              <select class="form-select form-select-sm" (change)="setFilter($any($event.target).value)">
+                <option value="ALL">All Statuses</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="PENDING">Pending</option>
+                <option value="FAILED">Failed</option>
+                <option value="REFUNDED">Refunded</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card-body">
+            @if (isLoading()) {
+              <div class="text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            } @else if (errorMessage()) {
+              <div class="status-notice danger mb-4">
+                <i class="feather-alert-circle"></i>
+                <div>
+                  <p class="notice-title">Error</p>
+                  <p class="notice-text">{{ errorMessage() }}</p>
+                </div>
+                <button class="btn btn-primary mt-3" (click)="loadData()">Retry</button>
+              </div>
+            } @else if (payments().length === 0) {
+              <div class="empty-state text-center p-5">
+                <i class="feather-credit-card text-muted" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">No payments yet</h5>
+                <p class="text-muted">You haven't made any payments yet.</p>
+                <a routerLink="/membership/plans" class="btn btn-primary mt-2">View Plans</a>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="table datatable">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>#ID</th>
+                      <th>Plan</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (payment of filteredPayments(); track payment.id) {
+                      <tr>
+                        <td>
+                          <a [routerLink]="['/payments', payment.id]" class="text-primary font-weight-bold">
+                            {{ payment.id.substring(0, 8) | uppercase }}
+                          </a>
+                        </td>
+                        <td>
+                          <div class="table-avatar d-flex align-items-center">
+                            <div class="avatar-xs me-2">
+                              <span class="avatar-title rounded-circle bg-primary text-white">
+                                {{ payment.planName.charAt(0) | uppercase }}
+                              </span>
+                            </div>
+                            <div>
+                              <h6 class="mb-0">{{ payment.planName }}</h6>
+                              <small class="text-muted">{{ payment.subscriptionId.substring(0, 8) }}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="fw-bold">{{ payment.amount | number:'1.2-2' }} {{ payment.currency }}</span>
+                        </td>
+                        <td>
+                          <app-payment-status-badge [status]="payment.status"></app-payment-status-badge>
+                        </td>
+                        <td>
+                          <div class="table-date-time">
+                            {{ payment.createdAt | date:'mediumDate' }}
+                            <small class="d-block text-muted">{{ payment.createdAt | date:'shortTime' }}</small>
+                          </div>
+                        </td>
+                        <td>
+                          <a [routerLink]="['/payments', payment.id]" class="btn btn-sm btn-outline-primary">
+                            View
+                          </a>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6" class="text-center p-4">
+                          <p class="text-muted mb-0">No payments match the selected filter.</p>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

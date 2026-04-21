@@ -1,0 +1,144 @@
+<div class="breadcrumb breadcrumb-list mb-0 d-print-none">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">Receipt</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/payments">Payments</a></li>
+        @if (payment()) {
+          <li>#{{ payment()!.id.substring(0, 8) | uppercase }}</li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="d-print-none">
+  <app-dashboard-menu></app-dashboard-menu>
+</div>
+
+<div class="content">
+  <div class="container">
+    @if (isLoading()) {
+      <div class="text-center p-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="status-notice danger mb-4">
+        <i class="feather-alert-circle"></i>
+        <div>
+          <p class="notice-title">Error</p>
+          <p class="notice-text">{{ errorMessage() }}</p>
+        </div>
+        <button class="btn btn-primary mt-3" routerLink="/payments">Back to History</button>
+      </div>
+    } @else if (payment()) {
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          
+          @if (payment()!.status === 'FAILED') {
+            <div class="status-notice danger mb-4 d-print-none">
+              <i class="feather-alert-circle"></i>
+              <div>
+                <p class="notice-title">Payment Failed</p>
+                <p class="notice-text">{{ payment()!.failureReason || 'Your payment could not be processed.' }}</p>
+              </div>
+            </div>
+          } @else if (payment()!.status === 'REFUNDED') {
+            <div class="status-notice info mb-4 d-print-none">
+              <i class="feather-rotate-ccw"></i>
+              <div>
+                <p class="notice-title">Payment Refunded</p>
+                <p class="notice-text">This payment was refunded on {{ payment()!.completedAt | date:'mediumDate' }}.</p>
+              </div>
+            </div>
+          }
+
+          <div class="card p-4 p-md-5">
+            <!-- Receipt Head -->
+            <div class="head d-flex justify-content-between align-items-center mb-4 pb-4 border-bottom">
+              <div>
+                <img src="assets/img/logo-black.svg" alt="Gym" height="40" class="mb-2">
+                <h5 class="mb-0">{{ user()?.profile?.firstName }} {{ user()?.profile?.lastName }}</h5>
+              </div>
+              <div class="text-end">
+                <h4 class="mb-2">Receipt #{{ payment()!.id.substring(0, 8) | uppercase }}</h4>
+                <div class="mb-2">
+                  <app-payment-status-badge [status]="payment()!.status"></app-payment-status-badge>
+                </div>
+                <small class="text-muted d-block">Created: {{ payment()!.createdAt | date:'medium' }}</small>
+                @if (payment()!.completedAt) {
+                  <small class="text-muted d-block">Completed: {{ payment()!.completedAt | date:'medium' }}</small>
+                }
+              </div>
+            </div>
+
+            <!-- Billed To & From -->
+            <div class="dull-bg from-to p-4 rounded mb-4 d-flex justify-content-between">
+              <div>
+                <h6 class="text-muted mb-2">Billed To</h6>
+                <p class="mb-0 fw-bold">{{ user()?.profile?.firstName }} {{ user()?.profile?.lastName }}</p>
+                <p class="mb-0 text-muted">{{ user()?.email }}</p>
+              </div>
+              <div class="text-end">
+                <h6 class="text-muted mb-2">From</h6>
+                <p class="mb-0 fw-bold">Gym Platform</p>
+                <p class="mb-0 text-muted">support&#64;gym.com</p>
+              </div>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="table-responsive mb-4">
+              <table class="table invoice-table mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Item</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="fw-bold">{{ plan()?.name }}</span>
+                      <small class="d-block text-muted">{{ plan()?.durationInDays ? plan()!.durationInDays + ' Days' : 'Unlimited' }} Subscription</small>
+                    </td>
+                    <td class="text-end fw-bold">{{ payment()!.amount | number:'1.2-2' }} {{ payment()!.currency }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Totals -->
+            <div class="dull-bg total-wrap p-4 rounded mb-4 text-end">
+              <p class="mb-2 d-flex justify-content-between"><span>Subtotal:</span> <span>{{ payment()!.amount | number:'1.2-2' }} {{ payment()!.currency }}</span></p>
+              <p class="mb-2 d-flex justify-content-between"><span>Tax:</span> <span>$0.00</span></p>
+              <h4 class="mb-0 d-flex justify-content-between mt-3 pt-3 border-top">
+                <span>Total Paid:</span> 
+                <span>{{ payment()!.amount | number:'1.2-2' }} {{ payment()!.currency }}</span>
+              </h4>
+            </div>
+
+            <!-- Payment Method & Print -->
+            <div class="payment-detail d-flex justify-content-between align-items-center border-top pt-4">
+              <div>
+                <p class="mb-1"><i class="feather-credit-card me-2"></i>Paid via Card (Stripe)</p>
+                @if (payment()!.stripePaymentIntentId) {
+                  <small class="text-muted">Transaction ID: {{ payment()!.stripePaymentIntentId }}</small>
+                }
+              </div>
+              <div class="d-print-none">
+                <button class="btn btn-outline-primary" (click)="printReceipt()">
+                  <i class="feather-printer me-2"></i>Print Receipt
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
