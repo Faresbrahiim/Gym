@@ -1,0 +1,82 @@
+<div class="conv-list-wrap">
+
+  <!-- Search/filter -->
+  <div class="conv-search">
+    <i class="feather-search conv-search-icon"></i>
+    <input
+      [formControl]="filterControl"
+      type="text"
+      class="conv-search-input"
+      placeholder="Search conversations…"
+      autocomplete="off"
+    />
+    @if (filterControl.value) {
+      <button class="conv-search-clear" (click)="clearFilter()" aria-label="Clear">
+        <i class="feather-x"></i>
+      </button>
+    }
+  </div>
+
+  <!-- List -->
+  <div class="conv-list" role="list">
+
+    @if (filtered.length === 0 && conversations.length === 0) {
+      <div class="conv-empty">
+        <span class="conv-empty-icon"><i class="feather-message-square"></i></span>
+        <p>No conversations yet</p>
+        <span class="conv-empty-hint">Find someone in <a routerLink="/people">People</a> to start chatting</span>
+      </div>
+    }
+
+    @if (filtered.length === 0 && conversations.length > 0) {
+      <div class="conv-empty">
+        <span class="conv-empty-icon"><i class="feather-search"></i></span>
+        <p>No matches</p>
+      </div>
+    }
+
+    @for (conv of filtered; track conv._id) {
+      @let contact = getContact(conv);
+      @let unread  = isUnread(conv);
+      @let online  = isOnline(conv);
+
+      <div
+        class="conv-item"
+        [class.conv-item--active]="conv._id === activeConversationId"
+        [class.conv-item--unread]="unread"
+        (click)="select(conv)"
+        role="listitem"
+      >
+        <!-- Avatar -->
+        <div class="conv-avatar-wrap">
+          @if (contact.avatarUrl) {
+            <img [src]="contact.avatarUrl" [alt]="contact.displayName" class="conv-avatar-img" />
+          } @else {
+            <span class="conv-avatar-initials">{{ contact.initials }}</span>
+          }
+          @if (online) {
+            <span class="conv-online-dot" title="Online"></span>
+          }
+        </div>
+
+        <!-- Body -->
+        <div class="conv-body">
+          <div class="conv-header-row">
+            <span class="conv-name" [class.conv-name--unread]="unread">{{ contact.displayName }}</span>
+            <span class="conv-time">{{ relativeTime(conv.updatedAt) }}</span>
+          </div>
+          <div class="conv-preview-row">
+            <span class="conv-preview" [class.conv-preview--unread]="unread">
+              {{ lastMessagePreview(conv) }}
+            </span>
+            @if (unread) {
+              <span class="conv-unread-dot"></span>
+            }
+          </div>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

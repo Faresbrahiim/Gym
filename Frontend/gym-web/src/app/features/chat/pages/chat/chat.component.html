@@ -1,118 +1,63 @@
-<div class="chat-wrapper">
+<div class="chat-shell">
 
-  <!-- SIDEBAR -->
-  <div class="chat-sidebar">
-
-    <div class="sidebar-header">
-      <h5>Users</h5>
-    </div>
-
-    <!-- USERS LIST -->
-    <div class="conversation-list">
-      @for (user of users(); track user.id) {
-        <div class="conversation-item"
-             (click)="startConversation(user.id)">
-
-          <div class="conv-avatar">
-            <span class="avatar-circle">
-              {{ user.username[0] }}
-            </span>
-
-            @if (isOnline(user.id)) {
-              <span class="online-dot"></span>
-            }
-          </div>
-
-          <div class="conv-info">
-            <p class="conv-name">{{ user.username }}</p>
-            <p class="conv-role">{{ user.role }}</p>
-          </div>
-        </div>
-      }
-    </div>
+  <!-- ── LEFT PANEL — conversation list ──────────────────────────────────── -->
+  <aside class="chat-sidebar" [class.chat-sidebar--hidden]="mobileShowThread()">
 
     <div class="sidebar-header">
-      <h5>Conversations</h5>
+      <h2 class="sidebar-title">Messages</h2>
+      <a routerLink="/people" class="sidebar-new-btn" title="Find people">
+        <i class="feather-edit"></i>
+      </a>
     </div>
 
-    <!-- CONVERSATIONS -->
-    <div class="conversation-list">
-      @for (conv of conversations(); track conv._id) {
-        <div class="conversation-item"
-             [class.active]="activeConversation()?._id === conv._id"
-             (click)="openConversation(conv)">
+    @if (loadingConversations()) {
+      <div class="sidebar-loading">
+        <span class="spinner-ring"></span>
+      </div>
+    } @else {
+      <app-conversation-list
+        [conversations]="conversations()"
+        [activeConversationId]="activeConversation()?._id ?? null"
+        [currentUserId]="currentUserId"
+        (conversationSelected)="openConversation($event)"
+      />
+    }
 
-          <div class="conv-info">
-            <p class="conv-name">
-              {{ getUserById(getOtherParticipant(conv))?.username || 'User' }}
-            </p>
-            <p class="conv-last">
-              {{ conv.lastMessage?.content ?? 'No messages' }}
-            </p>
-          </div>
-        </div>
-      }
-    </div>
+  </aside>
 
-  </div>
-
-  <!-- CHAT -->
-  <div class="chat-main">
+  <!-- ── RIGHT PANEL — active thread or welcome ──────────────────────────── -->
+  <main class="chat-main" [class.chat-main--visible]="mobileShowThread()">
 
     @if (activeConversation()) {
+      <app-message-thread
+        [messages]="messages()"
+        [currentUserId]="currentUserId"
+        [contact]="getActiveContact()"
+        [isOnline]="isActiveContactOnline()"
+        [typingUserIds]="typingUserIds()"
+        [isLoading]="loadingMessages()"
+        (backClicked)="onBackClicked()"
+        class="thread-host"
+      />
 
-      <!-- HEADER -->
-      <div class="chat-header">
-        <p class="chat-name">
-          {{ getUserById(getOtherParticipant(activeConversation()!))?.username }}
-        </p>
-      </div>
-
-      <!-- MESSAGES -->
-      <div #messagesContainer class="chat-messages">
-        @for (msg of messages(); track msg._id) {
-          <div class="message-row"
-               [class.sent]="msg.senderId === currentUserId"
-               [class.received]="msg.senderId !== currentUserId">
-
-            <div class="message-bubble">
-              <p>{{ msg.content }}</p>
-              <span class="message-time">
-                {{ msg.createdAt | date:'shortTime' }}
-              </span>
-            </div>
-
-          </div>
-        }
-
-        @if (typingUsers().length > 0) {
-          <div class="typing-indicator">
-            <span></span><span></span><span></span>
-          </div>
-        }
-      </div>
-
-      <!-- INPUT -->
-      <div class="chat-input">
-        <input
-          type="text"
-          class="form-control"
-          [(ngModel)]="newMessage"
-          (input)="onTyping()"
-          (keyup.enter)="sendMessage()"
-          placeholder="Type a message..."
-        />
-
-        <button class="btn btn-primary" (click)="sendMessage()">
-          Send
-        </button>
-      </div>
-
+      <app-message-input
+        (messageSent)="onMessageSent($event)"
+        (typingStart)="onTypingStart()"
+        (typingStop)="onTypingStop()"
+      />
     } @else {
-      <div class="no-chat-selected">
-        Select a user to start chatting
+      <div class="chat-welcome">
+        <div class="chat-welcome-icon">
+          <i class="feather-message-circle"></i>
+        </div>
+        <h3 class="chat-welcome-title">Your Messages</h3>
+        <p class="chat-welcome-sub">Select a conversation from the left, or find someone new to chat with.</p>
+        <a routerLink="/people" class="chat-welcome-cta">
+          <i class="feather-users"></i> Find People
+        </a>
       </div>
     }
 
-  </div>
+  </main>
+
 </div>

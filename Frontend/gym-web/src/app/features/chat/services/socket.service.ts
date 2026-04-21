@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { TokenService } from '../../../core/auth/token.service';
 import { environment } from '../../../../environments/environment';
+import { Message } from '../models/message.model';
 
 @Injectable({ providedIn: 'root' })
 export class SocketService implements OnDestroy {
@@ -19,13 +20,11 @@ export class SocketService implements OnDestroy {
     });
 
     this.socket.on('connect', () => {
-      console.log('Socket connected');
-      const userId = this.tokenService.getUserId();
-      if (userId) this.socket?.emit('user:online', userId);
+      console.log('Socket connected:', this.socket?.id);
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('Socket disconnected');
+    this.socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
     });
   }
 
@@ -38,43 +37,48 @@ export class SocketService implements OnDestroy {
     this.socket?.emit('conversation:join', conversationId);
   }
 
-  sendMessage(conversationId: string, senderId: string, content: string): void {
-    this.socket?.emit('message:send', { conversationId, senderId, content });
+  // senderId is intentionally omitted — the server derives it from the JWT
+  sendMessage(conversationId: string, content: string): void {
+    this.socket?.emit('message:send', { conversationId, content });
   }
 
-  onMessage(): Observable<any> {
+  emitTypingStart(conversationId: string): void {
+    this.socket?.emit('typing:start', { conversationId });
+  }
+
+  emitTypingStop(conversationId: string): void {
+    this.socket?.emit('typing:stop', { conversationId });
+  }
+
+  onMessage(): Observable<Message> {
     return new Observable(observer => {
-      this.socket?.on('message:received', (message: any) => {
-        observer.next(message);
-      });
+      const handler = (message: Message) => observer.next(message);
+      this.socket?.on('message:received', handler);
+      return () => this.socket?.off('message:received', handler);
     });
-  }
-
-  onUsersOnline(): Observable<string[]> {
-    return new Observable(observer => {
-      this.socket?.on('users:online', (users: string[]) => {
-        observer.next(users);
-      });
-    });
-  }
-
-  emitTypingStart(conversationId: string, userId: string): void {
-    this.socket?.emit('typing:start', { conversationId, userId });
-  }
-
-  emitTypingStop(conversationId: string, userId: string): void {
-    this.socket?.emit('typing:stop', { conversationId, userId });
   }
 
   onTypingStart(): Observable<{ userId: string }> {
     return new Observable(observer => {
-      this.socket?.on('typing:start', (data: { userId: string }) => observer.next(data));
+      const handler = (data: { userId: string }) => observer.next(data);
+      this.socket?.on('typing:start', handler);
+      return () => this.socket?.off('typing:start', handler);
     });
   }
 
   onTypingStop(): Observable<{ userId: string }> {
     return new Observable(observer => {
-      this.socket?.on('typing:stop', (data: { userId: string }) => observer.next(data));
+      const handler = (data: { userId: string }) => observer.next(data);
+      this.socket?.on('typing:stop', handler);
+      return () => this.socket?.off('typing:stop', handler);
+    });
+  }
+
+  onError(): Observable<{ message: string }> {
+    return new Observable(observer => {
+      const handler = (data: { message: string }) => observer.next(data);
+      this.socket?.on('error', handler);
+      return () => this.socket?.off('error', handler);
     });
   }
 

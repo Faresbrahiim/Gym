@@ -1,0 +1,88 @@
+<!-- Thread header -->
+<div class="thread-header">
+  <button class="thread-back" (click)="backClicked.emit()" aria-label="Back">
+    <i class="feather-arrow-left"></i>
+  </button>
+
+  @if (contact) {
+    <div class="thread-contact">
+      <div class="thread-avatar-wrap">
+        @if (contact.avatarUrl) {
+          <img [src]="contact.avatarUrl" [alt]="contact.displayName" class="thread-avatar-img" />
+        } @else {
+          <span class="thread-avatar-initials">{{ contact.initials }}</span>
+        }
+        @if (isOnline) {
+          <span class="thread-online-dot"></span>
+        }
+      </div>
+      <div class="thread-contact-info">
+        <p class="thread-contact-name">{{ contact.displayName }}</p>
+        <p class="thread-contact-status">{{ isOnline ? 'Online' : 'Offline' }}</p>
+      </div>
+    </div>
+  } @else {
+    <div class="thread-contact">
+      <p class="thread-contact-name">Chat</p>
+    </div>
+  }
+</div>
+
+<!-- Messages area -->
+<div class="thread-messages">
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="thread-state">
+      <span class="thread-spinner"></span>
+    </div>
+  }
+
+  <!-- Empty -->
+  @if (!isLoading && messages.length === 0) {
+    <div class="thread-state">
+      <span class="thread-state-icon"><i class="feather-message-circle"></i></span>
+      <p>No messages yet.</p>
+      <span class="thread-state-hint">Say hello!</span>
+    </div>
+  }
+
+  <!-- Day groups -->
+  @for (group of dayGroups; track group.label) {
+
+    <div class="day-separator">
+      <span class="day-separator-label">{{ group.label }}</span>
+    </div>
+
+    @for (msg of group.messages; track msg._id) {
+      <div class="bubble-row" [class.bubble-row--mine]="isMine(msg)">
+        <div class="bubble" [class.bubble--mine]="isMine(msg)" [class.bubble--theirs]="!isMine(msg)">
+          <p class="bubble-text">{{ msg.content }}</p>
+          <div class="bubble-meta">
+            <span class="bubble-time">{{ formatTime(msg.createdAt) }}</span>
+            @if (isMine(msg)) {
+              <span class="bubble-ticks" [class.bubble-ticks--read]="isRead(msg)">
+                <i class="feather-check"></i><i class="feather-check bubble-tick-second"></i>
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+
+  <!-- Typing indicator -->
+  @if (isTyping) {
+    <div class="bubble-row">
+      <div class="bubble bubble--theirs typing-bubble">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    </div>
+  }
+
+  <!-- Scroll anchor -->
+  <div #scrollAnchor></div>
+</div>

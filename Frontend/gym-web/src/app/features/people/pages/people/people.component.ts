@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 import { PeopleService } from '../../services/people.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { UserSearchResult } from '../../models/user-search-result.model';
+import { ContactCacheService } from '../../../chat/services/contact-cache.service';
 
 @Component({
   selector: 'app-people',
@@ -33,7 +34,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
   constructor(
     private peopleService: PeopleService,
     private tokenService: TokenService,
-    private router: Router
+    private router: Router,
+    private contactCache: ContactCacheService
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +79,10 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   startChat(person: UserSearchResult): void {
     this.startingConvFor.set(person.id);
+
+    // Seed the contact cache before navigating so the chat page can display
+    // the person's name and avatar without needing a backend lookup.
+    this.contactCache.seedFromResult(person);
 
     this.subs.add(
       this.peopleService.getOrCreateConversation(this.currentUserId, person.id)
