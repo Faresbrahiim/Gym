@@ -24,5 +24,11 @@ export const membershipRoutes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/status/status.component').then(m => m.StatusComponent)
+  },
+  {
+    path: 'history',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/subscription-history/subscription-history.component').then(m => m.SubscriptionHistoryComponent)
   }
 ];

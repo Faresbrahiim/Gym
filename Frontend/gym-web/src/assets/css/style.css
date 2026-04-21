@@ -15925,4 +15925,26 @@ Version      : 1.0
   color: #f2b600;
 }
 
+/* ── Checkout CTA Button (global: pierces LoadingButtonComponent encapsulation) ── */
+.btn-checkout {
+  background: linear-gradient(135deg, #177c82, #0f5459);
+  color: #fff !important;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(23,124,130,0.35);
+}
+.btn-checkout:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(23,124,130,0.45);
+  color: #fff !important;
+}
+.btn-checkout:active:not(:disabled) { transform: translateY(0); }
+.btn-checkout:disabled { opacity: 0.65; cursor: not-allowed; }
+
 /*# sourceMappingURL=style.css.map */

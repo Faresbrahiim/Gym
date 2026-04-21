@@ -16,6 +16,7 @@ public interface SubscriptionService {
 
     // User actions
     SubscriptionResponseDTO createSubscription(UUID userId, UUID planId);
+    SubscriptionResponseDTO createFreeSubscription(UUID userId);
     SubscriptionResponseDTO cancelSubscription(UUID subscriptionId);
     SubscriptionResponseDTO pauseSubscription(UUID subscriptionId);
     SubscriptionResponseDTO resumeSubscription(UUID subscriptionId);

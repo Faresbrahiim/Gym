@@ -19,6 +19,11 @@ export class ErrorService {
       return 'Something went wrong. Please try again.';
     }
 
+    // Never expose raw server error messages
+    if (error.status >= 500) {
+      return 'A server error occurred. Please try again later.';
+    }
+
     // Try structured backend body first
     const body = error.error;
     if (typeof body?.message === 'string' && body.message.trim()) {
@@ -28,12 +33,9 @@ export class ErrorService {
       return body.errors[0];
     }
 
-    // Status-code fallback
+    // Status-code fallback for known 4xx
     if (STATUS_MESSAGES[error.status]) {
       return STATUS_MESSAGES[error.status];
-    }
-    if (error.status >= 500) {
-      return 'A server error occurred. Please try again later.';
     }
 
     return 'Something went wrong. Please try again.';

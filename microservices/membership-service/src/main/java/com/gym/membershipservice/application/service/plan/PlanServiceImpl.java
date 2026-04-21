@@ -61,7 +61,9 @@ public class PlanServiceImpl implements PlanService {
             throw new BadRequestException("Price must be positive");
         }
 
-        if (dto.getDurationInDays() == null || dto.getDurationInDays() < 0) {
+        if (dto.getDurationInDays() == null) {
+            dto.setDurationInDays(Integer.MAX_VALUE);
+        } else if (dto.getDurationInDays() <= 0) {
             throw new BadRequestException("Duration must be greater than 0");
         }
 
@@ -93,7 +95,9 @@ public class PlanServiceImpl implements PlanService {
             throw new BadRequestException("Price must be positive");
         }
 
-        if (dto.getDurationInDays() == null || dto.getDurationInDays() < 0) {
+        if (dto.getDurationInDays() == null) {
+            dto.setDurationInDays(Integer.MAX_VALUE);
+        } else if (dto.getDurationInDays() <= 0) {
             throw new BadRequestException("Duration must be greater than 0");
         }
 
@@ -101,20 +105,48 @@ public class PlanServiceImpl implements PlanService {
             throw new BadRequestException("Plan with this name already exists");
         }
 
+        if ("Free".equalsIgnoreCase(plan.getName()) && dto.getStatus() != null && dto.getStatus() != PlanStatus.ACTIVE) {
+            throw new BadRequestException("Free plan cannot be deactivated");
+        }
+
         plan.setName(dto.getName());
         plan.setDescription(dto.getDescription());
         plan.setPrice(dto.getPrice());
         plan.setDurationInDays(dto.getDurationInDays());
-        plan.setStatus(dto.getStatus());
+        if (dto.getStatus() != null) {
+            plan.setStatus(dto.getStatus());
+        }
+        if (dto.getFeatures() != null) {
+            plan.getFeatures().clear();
+            plan.getFeatures().addAll(dto.getFeatures());
+        }
 
         return PlanMapper.toDTO(repository.save(plan));
     }
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void deletePlan(UUID id) {
         Plan plan = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
+        if ("Free".equalsIgnoreCase(plan.getName())) {
+            throw new BadRequestException("Free plan cannot be deleted");
+        }
+        if (plan.getSubscriptions() != null && !plan.getSubscriptions().isEmpty()) {
+            throw new ConflictException("Cannot delete plan because it is actively used in subscriptions");
+        }
+        
+        repository.delete(plan);
+    }
+
+    @Override
+    public PlanResponseDTO disablePlan(UUID id) {
+        Plan plan = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
+        if ("Free".equalsIgnoreCase(plan.getName())) {
+            throw new BadRequestException("Free plan cannot be deactivated");
+        }
         plan.setStatus(PlanStatus.INACTIVE);
-        repository.save(plan);
+        return PlanMapper.toDTO(repository.save(plan));
     }
 
     @Override

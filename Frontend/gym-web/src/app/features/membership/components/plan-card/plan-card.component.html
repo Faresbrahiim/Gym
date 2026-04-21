@@ -15,12 +15,19 @@
       }
       <span>{{ durationLabel }}</span>
     </div>
-    @if (plan.description) {
-      <div class="features-price-list">
+    <div class="features-price-list">
+      @if (plan.description) {
         <h5>Features</h5>
         <p>{{ plan.description }}</p>
-      </div>
-    }
+      }
+      @if (plan.features && plan.features.length > 0) {
+        <ul>
+          @for (feature of plan.features; track feature) {
+            <li class="active"><i class="feather-check-circle"></i>{{ feature }}</li>
+          }
+        </ul>
+      }
+    </div>
     <div class="price-choose" [class.active-price]="highlighted">
       <button
         type="button"

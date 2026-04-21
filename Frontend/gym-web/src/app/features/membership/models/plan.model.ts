@@ -5,4 +5,5 @@ export interface Plan {
   price: number;
   durationInDays: number | null;
   status: 'ACTIVE' | 'INACTIVE' | string;
+  features?: string[];
 }

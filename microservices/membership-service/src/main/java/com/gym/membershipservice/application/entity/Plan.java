@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,6 +24,11 @@ public class Plan {
     private String name;
 
     private String description;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "plan_features", joinColumns = @JoinColumn(name = "plan_id"))
+    @Column(name = "feature")
+    private List<String> features = new ArrayList<>();
 
     @Column(nullable = false)
     private Double price;
@@ -46,6 +52,9 @@ public class Plan {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public List<String> getFeatures() { return features; }
+    public void setFeatures(List<String> features) { this.features = features; }
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }

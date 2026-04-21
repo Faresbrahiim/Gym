@@ -40,6 +40,7 @@ public class MembershipServiceImpl implements MembershipService {
         return new SubscriptionResponseDTO(
                 sub.getId(),
                 sub.getUserId(),
+                null,
                 plan.getId(),
                 plan.getName(),
                 plan.getPrice(),

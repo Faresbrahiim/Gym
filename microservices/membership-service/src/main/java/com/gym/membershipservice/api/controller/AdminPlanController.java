@@ -38,6 +38,7 @@ public class AdminPlanController {
     }
 
     @DeleteMapping("/{planId}")
+    @org.springframework.web.bind.annotation.ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
     public void deletePlan(@PathVariable UUID planId) {
         service.deletePlan(planId);
     }
@@ -45,5 +46,10 @@ public class AdminPlanController {
     @PatchMapping("/{planId}/enable")
     public PlanResponseDTO enablePlan(@PathVariable UUID planId) {
         return service.enablePlan(planId);
+    }
+
+    @PatchMapping("/{planId}/disable")
+    public PlanResponseDTO disablePlan(@PathVariable UUID planId) {
+        return service.disablePlan(planId);
     }
 }

@@ -48,6 +48,12 @@ export class MembershipService {
     );
   }
 
+  activateFree(): Observable<Subscription> {
+    return this.api.post<Subscription>(`${this.BASE}/me/free`, {}).pipe(
+      tap(() => this.invalidate())
+    );
+  }
+
   pause(subscriptionId: string): Observable<Subscription> {
     return this.api.post<Subscription>(`${this.BASE}/${subscriptionId}/pause`, {}).pipe(
       tap(() => this.invalidate())

@@ -3,6 +3,7 @@ import { SubscriptionStatus } from './subscription-status.enum';
 export interface Subscription {
   subscriptionId: string;
   userId: string;
+  userEmail: string | null;
   planId: string;
   planName: string;
   planPrice: number | null;

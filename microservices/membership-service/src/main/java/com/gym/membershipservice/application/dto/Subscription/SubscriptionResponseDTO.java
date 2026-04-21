@@ -8,6 +8,7 @@ import java.util.UUID;
 public class SubscriptionResponseDTO {
     private UUID subscriptionId;
     private UUID userId;
+    private String userEmail;
     private UUID planId;
     private String planName;
     private Double planPrice;
@@ -17,12 +18,13 @@ public class SubscriptionResponseDTO {
     private LocalDateTime freezeStartDate;
     private LocalDateTime freezeEndDate;
 
-    public SubscriptionResponseDTO(UUID subscriptionId, UUID userId, UUID planId, String planName,
+    public SubscriptionResponseDTO(UUID subscriptionId, UUID userId, String userEmail, UUID planId, String planName,
                                    Double planPrice, SubscriptionStatus status,
                                    LocalDateTime startDate, LocalDateTime endDate,
                                    LocalDateTime freezeStartDate, LocalDateTime freezeEndDate) {
         this.subscriptionId = subscriptionId;
         this.userId = userId;
+        this.userEmail = userEmail;
         this.planId = planId;
         this.planName = planName;
         this.planPrice = planPrice;
@@ -35,6 +37,7 @@ public class SubscriptionResponseDTO {
 
     public UUID getSubscriptionId() { return subscriptionId; }
     public UUID getUserId() { return userId; }
+    public String getUserEmail() { return userEmail; }
     public UUID getPlanId() { return planId; }
     public String getPlanName() { return planName; }
     public Double getPlanPrice() { return planPrice; }

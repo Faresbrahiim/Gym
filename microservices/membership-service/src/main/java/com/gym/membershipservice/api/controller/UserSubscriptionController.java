@@ -47,6 +47,13 @@ public class UserSubscriptionController {
     }
 
     @PreAuthorize("hasRole('MEMBER')")
+    @PostMapping("/me/free")
+    public SubscriptionResponseDTO activateFree(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.createFreeSubscription(userId);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/pause")
     public SubscriptionResponseDTO requestPause(@PathVariable UUID subscriptionId) {
         return subscriptionService.pauseSubscription(subscriptionId);
