@@ -4,7 +4,7 @@ import {
   OnDestroy,
   signal
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { ChatService }              from '../../services/chat.service';
@@ -13,6 +13,7 @@ import { PresenceService }          from '../../services/presence.service';
 import { PresenceHeartbeatService } from '../../services/presence-heartbeat.service';
 import { ContactCacheService }      from '../../services/contact-cache.service';
 import { TokenService }             from '../../../../core/auth/token.service';
+import { NotificationCenterService } from '../../../../core/services/notification-center.service';
 
 import { Conversation } from '../../models/conversation.model';
 import { Message }      from '../../models/message.model';
@@ -56,6 +57,8 @@ export class ChatComponent implements OnInit, OnDestroy {
     private presenceHeartbeat: PresenceHeartbeatService,
     private contactCache:      ContactCacheService,
     private tokenService:      TokenService,
+    private notificationCenter: NotificationCenterService,
+    private route:             ActivatedRoute,
     private router:            Router
   ) {}
 
@@ -63,7 +66,17 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.currentUserId = this.tokenService.getUserId() ?? '';
 
     // Capture deep-link before anything async runs
-    this.deepLinkId = (history.state as { openConversationId?: string })?.openConversationId ?? null;
+    this.deepLinkId =
+      (history.state as { openConversationId?: string })?.openConversationId ??
+      this.route.snapshot.queryParamMap.get('conversationId');
+
+    this.subs.add(
+      this.route.queryParamMap.subscribe(params => {
+        const conversationId = params.get('conversationId');
+        if (!conversationId) return;
+        this.requestConversationOpen(conversationId);
+      })
+    );
 
     this.presenceHeartbeat.connect();
     this.socketService.connect();
@@ -106,6 +119,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     this.messages.set([]);
     this.loadingMessages.set(true);
     this.mobileShowThread.set(true);
+    this.notificationCenter.setActiveConversation(conv._id);
 
     this.socketService.joinConversation(conv._id);
 
@@ -123,6 +137,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private markRead(conversationId: string): void {
     this.chatService.markAsRead(conversationId, this.currentUserId).subscribe();
+    this.notificationCenter.markConversationAsRead(conversationId).subscribe({ error: () => undefined });
   }
 
   // ── Socket events ────────────────────────────────────────────────────────
@@ -186,6 +201,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   onBackClicked(): void {
     this.mobileShowThread.set(false);
+    this.notificationCenter.setActiveConversation(null);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -229,12 +245,28 @@ export class ChatComponent implements OnInit, OnDestroy {
 
   private handleDeepLink(convs: Conversation[]): void {
     if (!this.deepLinkId) return;
-    const target = convs.find(c => c._id === this.deepLinkId);
+    const targetId = this.deepLinkId;
+    const target = convs.find(c => c._id === targetId);
     this.deepLinkId = null;
     if (target) this.openConversation(target);
+    else this.deepLinkId = targetId;
+  }
+
+  private requestConversationOpen(conversationId: string): void {
+    const activeId = this.activeConversation()?._id ?? null;
+    if (activeId === conversationId) return;
+
+    const target = this.conversations().find(c => c._id === conversationId);
+    if (target) {
+      this.openConversation(target);
+      return;
+    }
+
+    this.deepLinkId = conversationId;
   }
 
   ngOnDestroy(): void {
+    this.notificationCenter.setActiveConversation(null);
     this.subs.unsubscribe();
     this.socketService.disconnect();
     this.presenceHeartbeat.disconnect();

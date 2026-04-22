@@ -85,28 +85,68 @@
 
           <!-- Notifications -->
           <li class="nav-item dropdown noti-nav">
-            <a href="javascript:void(0);" class="dropdown-toggle nav-link position-relative" data-bs-toggle="dropdown">
-              <i class="feather-bell"></i> <span class="alert-bg"></span>
+            <a
+              href="javascript:void(0);"
+              class="dropdown-toggle nav-link position-relative"
+              data-bs-toggle="dropdown"
+              (click)="onNotificationsToggle()"
+            >
+              <i class="feather-bell"></i>
+              @if (notificationCenter.unreadCount() > 0) {
+                <span class="notification-count">{{ notificationCenter.unreadCount() > 99 ? '99+' : notificationCenter.unreadCount() }}</span>
+              } @else {
+                <span class="alert-bg"></span>
+              }
             </a>
             <div class="dropdown-menu notifications dropdown-menu-end">
               <div class="topnav-dropdown-header">
                 <span class="notification-title">Notifications</span>
+                @if (notificationCenter.unreadCount() > 0) {
+                  <a href="javascript:void(0);" class="clear-noti" (click)="onMarkAllNotificationsRead($event)">Mark all as read</a>
+                }
               </div>
               <div class="noti-content">
                 <ul class="notification-list">
-                  <li class="notification-message">
-                    <a href="javascript:void(0);">
+                  @if (notificationCenter.loading()) {
+                    <li class="notification-message">
                       <div class="media d-flex">
-                        <span class="avatar">
-                          <img class="avatar-img" src="assets/img/profiles/avatar-01.jpg" alt="User">
-                        </span>
+                        <div class="media-body">
+                          <h6>Loading notifications...</h6>
+                        </div>
+                      </div>
+                    </li>
+                  } @else if (notificationCenter.notifications().length === 0) {
+                    <li class="notification-message">
+                      <div class="media d-flex">
                         <div class="media-body">
                           <h6>No new notifications</h6>
                           <p class="noti-details">You're all caught up</p>
                         </div>
                       </div>
-                    </a>
-                  </li>
+                    </li>
+                  } @else {
+                    @for (notification of notificationCenter.notifications().slice(0, 8); track notification.id) {
+                      <li class="notification-message" [class.notification-message--unread]="notification.status === 'UNREAD'">
+                        <a href="javascript:void(0);" (click)="onNotificationSelected(notification, $event)">
+                          <div class="media d-flex">
+                            <span class="notification-bullet" [class.notification-bullet--chat]="notification.type === 'CHAT_MESSAGE_RECEIVED'">
+                              <i class="feather-bell"></i>
+                            </span>
+                            <div class="media-body">
+                              <div class="notification-meta-row">
+                                <h6>{{ notification.title }}</h6>
+                                @if (notification.status === 'UNREAD') {
+                                  <span class="notification-pill">New</span>
+                                }
+                              </div>
+                              <p class="noti-details">{{ notification.message }}</p>
+                              <p class="notification-time">{{ relativeNotificationTime(notification.createdAt) }}</p>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                    }
+                  }
                 </ul>
               </div>
             </div>

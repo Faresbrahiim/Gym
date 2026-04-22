@@ -1,7 +1,6 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import Message from "../modules/message/message.model.js";
-import Conversation from "../modules/conversation/conversation.model.js";
+import { createMessageWithNotifications } from "../modules/message/message.service.js";
 
 // PEM key stored with literal \n — reconstruct real newlines at startup
 const JWT_PUBLIC_KEY = (process.env.JWT_PUBLIC_KEY ?? "").replace(/\\n/g, "\n");
@@ -47,14 +46,10 @@ export const initSocket = (server) => {
     // senderId comes from the validated JWT — client-provided senderId is ignored
     socket.on("message:send", async ({ conversationId, content }) => {
       try {
-        const message = await Message.create({
+        const { message } = await createMessageWithNotifications({
           conversationId,
           senderId: socket.data.userId,
           content,
-        });
-
-        await Conversation.findByIdAndUpdate(conversationId, {
-          lastMessage: message._id,
         });
 
         io.to(conversationId).emit("message:received", message);

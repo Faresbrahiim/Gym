@@ -377,6 +377,54 @@ services:
               max_age: 3600
               preflight_continue: false
 
+  # ==============================
+  # Notification Service
+  # ==============================
+  - name: notification-service
+    url: http://notification-service:8080
+    routes:
+      - name: notification-ws-route
+        paths:
+          - /ws/notifications
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 30
+              hour: 500
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+      - name: notification-rest-route
+        paths:
+          - /api/notifications
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 60
+              hour: 1000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - POST
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
 consumers:
   - username: gym-client
     jwt_secrets:

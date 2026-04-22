@@ -1,20 +1,15 @@
 import Message from "../message/message.model.js";
-import Conversation from "../conversation/conversation.model.js";
+import { createMessageWithNotifications } from "./message.service.js";
 
 // Send a message
 export const sendMessage = async (req, res) => {
   const { conversationId, senderId, content } = req.body;
 
   try {
-    const message = await Message.create({
+    const { message } = await createMessageWithNotifications({
       conversationId,
       senderId,
       content,
-    });
-
-    // Update lastMessage in conversation
-    await Conversation.findByIdAndUpdate(conversationId, {
-      lastMessage: message._id,
     });
 
     res.status(201).json(message);

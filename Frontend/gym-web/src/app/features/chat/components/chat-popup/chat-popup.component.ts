@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { TokenService } from '../../../../core/auth/token.service';
+import { NotificationCenterService } from '../../../../core/services/notification-center.service';
 import { ChatService } from '../../services/chat.service';
 import { ChatPopupService } from '../../services/chat-popup.service';
 import { ContactCacheService } from '../../services/contact-cache.service';
@@ -50,6 +51,7 @@ export class ChatPopupComponent implements OnInit, OnDestroy {
     private presenceHeartbeat: PresenceHeartbeatService,
     private contactCache: ContactCacheService,
     private tokenService: TokenService,
+    private notificationCenter: NotificationCenterService,
     private router: Router
   ) {}
 
@@ -73,10 +75,12 @@ export class ChatPopupComponent implements OnInit, OnDestroy {
   }
 
   minimize(): void {
+    this.notificationCenter.setActiveConversation(null);
     this.popup.close();
   }
 
   openFullChat(): void {
+    this.notificationCenter.setActiveConversation(null);
     this.popup.close();
     this.router.navigate(['/chat']);
   }
@@ -86,6 +90,7 @@ export class ChatPopupComponent implements OnInit, OnDestroy {
     this.typingUserIds.set([]);
     this.messages.set([]);
     this.loadingMessages.set(true);
+    this.notificationCenter.setActiveConversation(conv._id);
 
     this.socketService.joinConversation(conv._id);
 
@@ -105,6 +110,7 @@ export class ChatPopupComponent implements OnInit, OnDestroy {
     this.activeConversation.set(null);
     this.typingUserIds.set([]);
     this.messages.set([]);
+    this.notificationCenter.setActiveConversation(null);
   }
 
   onMessageSent(content: string): void {
@@ -201,6 +207,7 @@ export class ChatPopupComponent implements OnInit, OnDestroy {
 
   private markRead(conversationId: string): void {
     this.chatService.markAsRead(conversationId, this.currentUserId).subscribe();
+    this.notificationCenter.markConversationAsRead(conversationId).subscribe({ error: () => undefined });
   }
 
   private collectOtherParticipantIds(convs: Conversation[]): string[] {
@@ -224,6 +231,7 @@ export class ChatPopupComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.notificationCenter.setActiveConversation(null);
     this.subs.unsubscribe();
     this.socketService.disconnect();
     this.presenceHeartbeat.disconnect();

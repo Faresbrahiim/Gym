@@ -29,6 +29,12 @@ public class Notification {
     @Column(nullable = false)
     private String type;
 
+    private String resourceType;
+
+    private String resourceId;
+
+    private String actionUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private NotificationStatus status;

@@ -3,6 +3,8 @@ package com.gym.notificationservice.infrastructure.config;
 import com.gym.notificationservice.adapter.in.kafka.dto.PaymentCompletedMessage;
 import com.gym.notificationservice.adapter.in.kafka.dto.PaymentFailedMessage;
 import com.gym.notificationservice.adapter.in.kafka.dto.SubscriptionCreatedMessage;
+import com.gym.notificationservice.adapter.in.kafka.dto.ChatMessageCreatedMessage;
+import com.gym.notificationservice.infrastructure.kafka.ChatMessageCreatedMessageDeserializer;
 import com.gym.notificationservice.infrastructure.kafka.PaymentCompletedMessageDeserializer;
 import com.gym.notificationservice.infrastructure.kafka.PaymentFailedMessageDeserializer;
 import com.gym.notificationservice.infrastructure.kafka.SubscriptionCreatedMessageDeserializer;
@@ -77,6 +79,25 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, SubscriptionCreatedMessage> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(subscriptionCreatedConsumerFactory());
+        return factory;
+    }
+
+    @Bean
+    public ConsumerFactory<String, ChatMessageCreatedMessage> chatMessageCreatedConsumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ChatMessageCreatedMessageDeserializer.class);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, ChatMessageCreatedMessage> chatMessageCreatedKafkaListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ChatMessageCreatedMessage> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(chatMessageCreatedConsumerFactory());
         return factory;
     }
 }

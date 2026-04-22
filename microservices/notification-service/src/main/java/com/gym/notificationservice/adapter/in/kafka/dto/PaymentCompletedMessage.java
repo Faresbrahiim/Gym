@@ -1,5 +1,8 @@
 package com.gym.notificationservice.adapter.in.kafka.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentCompletedMessage {
 
     private String paymentId;
@@ -7,6 +10,7 @@ public class PaymentCompletedMessage {
     private String userId;
     private String amount;
     private String currency;
+    private String completedAt;
 
     public PaymentCompletedMessage() {}
 
@@ -24,4 +28,7 @@ public class PaymentCompletedMessage {
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
+
+    public String getCompletedAt() { return completedAt; }
+    public void setCompletedAt(String completedAt) { this.completedAt = completedAt; }
 }

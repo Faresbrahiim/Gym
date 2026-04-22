@@ -286,10 +286,11 @@ services:
       dockerfile: Dockerfile
     container_name: chat-service
     ports:
-    - "5000:5000"
+      - "5000:5000"
     environment:
       PORT: 5000
       MONGO_URI: mongodb://chat-db:27017/chatdb
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
       JWT_ISSUER: ${JWT_ISSUER}
       JWT_AUDIENCE: ${JWT_AUDIENCE}

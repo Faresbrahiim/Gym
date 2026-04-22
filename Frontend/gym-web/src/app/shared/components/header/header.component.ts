@@ -1,8 +1,11 @@
-import { Component, inject, signal, HostListener } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { CurrentUserService } from '../../../core/services/current-user.service';
+import { AppNotification } from '../../../core/models/app-notification.model';
+import { NotificationCenterService } from '../../../core/services/notification-center.service';
 
 @Component({
   standalone: true,
@@ -16,7 +19,9 @@ export class HeaderComponent {
   private readonly authService       = inject(AuthService);
   private readonly tokenService      = inject(TokenService);
   private readonly currentUserService = inject(CurrentUserService);
+  protected readonly notificationCenter = inject(NotificationCenterService);
   private readonly router            = inject(Router);
+  private readonly subs              = new Subscription();
 
   isMobileMenuOpen = signal(false);
   isScrolled       = signal(false);
@@ -28,6 +33,20 @@ export class HeaderComponent {
 
   /** Reactive avatar URL — hydrated by CurrentUserService at app boot. */
   readonly avatarUrl = this.currentUserService.currentAvatarUrl;
+
+  ngOnInit(): void {
+    if (!this.isAuthenticated) return;
+    const accessToken = this.tokenService.getAccessToken();
+    if (accessToken) {
+      this.notificationCenter.connectRealtime(accessToken);
+    }
+    this.subs.add(this.notificationCenter.load().subscribe());
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+    this.notificationCenter.disconnectRealtime();
+  }
 
   get username(): string {
     const fromProfile = this.currentUserService.currentUsername();
@@ -60,6 +79,49 @@ export class HeaderComponent {
   closeMobileMenu(): void {
     this.isMobileMenuOpen.set(false);
     document.body.classList.remove('menu-opened');
+  }
+
+  onNotificationsToggle(): void {
+    this.subs.add(this.notificationCenter.load().subscribe());
+  }
+
+  onMarkAllNotificationsRead(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.subs.add(this.notificationCenter.markAllAsRead().subscribe());
+  }
+
+  onNotificationSelected(notification: AppNotification, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const navigate = () => {
+      if (notification.actionUrl) {
+        this.router.navigateByUrl(notification.actionUrl);
+      }
+    };
+
+    if (notification.status === 'UNREAD') {
+      this.subs.add(
+        this.notificationCenter.markAsRead(notification.id).subscribe({ next: navigate, error: navigate })
+      );
+      return;
+    }
+
+    navigate();
+  }
+
+  relativeNotificationTime(isoDate: string): string {
+    const diff = Date.now() - new Date(isoDate).getTime();
+    const mins = Math.floor(diff / 60_000);
+    const hours = Math.floor(diff / 3_600_000);
+    const days = Math.floor(diff / 86_400_000);
+
+    if (mins < 1) return 'now';
+    if (mins < 60) return `${mins}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return new Date(isoDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 
   onLogout(): void {
