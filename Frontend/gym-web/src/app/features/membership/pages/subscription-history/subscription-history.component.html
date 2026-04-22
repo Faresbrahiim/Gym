@@ -1,7 +1,7 @@
 @if (isLoading()) {
   <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
     <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading…</span>
+      <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 }
@@ -38,50 +38,45 @@
 
       <div class="history-header">
         <div>
-          <h4 class="history-title">All Subscriptions</h4>
-          <p class="history-subtitle">{{ subscriptions().length }} record{{ subscriptions().length !== 1 ? 's' : '' }} found</p>
+          <h4 class="history-title">Membership Activity</h4>
+          <p class="history-subtitle">{{ entries().length }} event{{ entries().length !== 1 ? 's' : '' }} found</p>
         </div>
         <a routerLink="/membership" class="btn-back">
           <i class="feather-arrow-left"></i> Back to Membership
         </a>
       </div>
 
-      @if (subscriptions().length === 0) {
+      @if (entries().length === 0) {
         <div class="empty-state">
           <div class="empty-icon"><i class="feather-clock"></i></div>
-          <h5 class="mb-2">No Subscription Records</h5>
-          <p class="text-muted mb-4">You haven't had any subscriptions yet.</p>
+          <h5 class="mb-2">No Membership Activity Yet</h5>
+          <p class="text-muted mb-4">Your membership changes and payment outcomes will appear here over time.</p>
           <a routerLink="/membership/plans" class="btn btn-primary px-4">
             <i class="feather-zap me-2"></i>Browse Plans
           </a>
         </div>
       }
 
-      @if (subscriptions().length > 0) {
+      @if (entries().length > 0) {
         <div class="timeline">
-          @for (sub of subscriptions(); track sub.subscriptionId; let i = $index) {
-            <div class="timeline-item" [class.terminal]="isTerminal(sub.status)">
-              <div class="timeline-dot" [class.dot-active]="sub.status === 'ACTIVE'"></div>
+          @for (entry of entries(); track entry.historyId) {
+            <div class="timeline-item" [class.terminal]="isTerminal(entry.newStatus)">
+              <div class="timeline-dot" [class.dot-active]="entry.newStatus === 'ACTIVE'"></div>
               <div class="timeline-card">
                 <div class="card-top">
                   <div class="card-plan">
-                    <span class="plan-name">{{ sub.planName }}</span>
-                    <span class="plan-price">{{ priceLabel(sub.planPrice) }}</span>
+                    <span class="plan-name">{{ titleFor(entry) }}</span>
                   </div>
-                  <app-status-badge [status]="sub.status" />
+                  <app-status-badge [status]="entry.newStatus" />
                 </div>
+
+                <p class="history-note">{{ descriptionFor(entry) }}</p>
+
                 <div class="card-dates">
                   <span class="date-item">
-                    <i class="feather-play-circle"></i>
-                    Started {{ formatDate(sub.startDate) }}
+                    <i class="feather-clock"></i>
+                    {{ formatDate(entry.changedAt) }} at {{ formatTime(entry.changedAt) }}
                   </span>
-                  @if (sub.endDate) {
-                    <span class="date-sep">→</span>
-                    <span class="date-item">
-                      <i class="feather-stop-circle"></i>
-                      Ended {{ formatDate(sub.endDate) }}
-                    </span>
-                  }
                 </div>
               </div>
             </div>

@@ -105,6 +105,12 @@
 .plan-name    { font-size: 16px; font-weight: 700; color: #1e2433; }
 .plan-price   { font-size: 13px; color: #7a8a9a; font-weight: 500; }
 
+.history-note {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #7a8a9a;
+}
+
 .card-dates {
   display: flex;
   align-items: center;

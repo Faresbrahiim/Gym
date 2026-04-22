@@ -69,6 +69,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId) {
+        return historyService.getHistoryForUser(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<SubscriptionResponseDTO> getAllSubscriptions() {
         List<Subscription> subs = subscriptionRepository.findAll();
 

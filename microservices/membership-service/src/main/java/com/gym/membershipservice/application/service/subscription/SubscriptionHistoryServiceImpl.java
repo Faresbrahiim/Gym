@@ -44,4 +44,11 @@ public class SubscriptionHistoryServiceImpl implements SubscriptionHistoryServic
                 repository.findBySubscription_Id(subscriptionId)
         );
     }
+
+    @Override
+    public List<SubscriptionHistoryResponseDTO> getHistoryForUser(UUID userId) {
+        return SubscriptionMapper.toHistoryDTOList(
+                repository.findBySubscription_UserIdOrderByChangedAtDesc(userId)
+        );
+    }
 }

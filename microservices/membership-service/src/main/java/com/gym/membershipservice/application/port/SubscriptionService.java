@@ -12,6 +12,7 @@ public interface SubscriptionService {
     // Basic
     List<SubscriptionResponseDTO> getAllSubscriptions();
     List<SubscriptionResponseDTO> getUserSubscriptions(UUID userId);
+    List<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId);
     SubscriptionResponseDTO getSubscriptionById(UUID subscriptionId);
 
     // User actions

@@ -41,6 +41,13 @@ public class UserSubscriptionController {
     }
 
     @PreAuthorize("hasRole('MEMBER')")
+    @GetMapping("/me/history")
+    public List<SubscriptionHistoryResponseDTO> getMySubscriptionHistory(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.getUserSubscriptionHistory(userId);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/cancel")
     public SubscriptionResponseDTO cancelSubscription(@PathVariable UUID subscriptionId) {
         return subscriptionService.cancelSubscription(subscriptionId);
