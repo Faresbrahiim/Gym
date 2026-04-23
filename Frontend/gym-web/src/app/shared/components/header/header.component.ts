@@ -223,6 +223,9 @@ export class HeaderComponent {
           this.peopleSearchOpen.set(true);
 
           return this.peopleService.search(query).pipe(
+            tap(response => {
+              this.peopleSearchResults.set(response.items);
+            }),
             catchError(() => {
               this.peopleSearchError.set(true);
               return of([] as UserSearchResult[]);
@@ -232,7 +235,11 @@ export class HeaderComponent {
       ).subscribe(results => {
         if (results === null) return;
         this.peopleSearchLoading.set(false);
-        this.peopleSearchResults.set(results);
+        if (Array.isArray(results)) {
+          this.peopleSearchResults.set(results);
+        } else {
+          this.peopleSearchResults.set(results.items);
+        }
         this.peopleSearchOpen.set(true);
       })
     );

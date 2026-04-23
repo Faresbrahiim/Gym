@@ -2,7 +2,9 @@ package com.gym.payment.adapter.in.web;
 
 import com.gym.payment.adapter.in.web.dto.InitiatePaymentRequest;
 import com.gym.payment.adapter.in.web.dto.InitiatePaymentResponse;
+import com.gym.payment.adapter.in.web.dto.PagedResponse;
 import com.gym.payment.adapter.in.web.dto.PaymentResponse;
+import com.gym.payment.domain.model.PaymentStatus;
 import com.gym.payment.domain.port.in.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,11 +21,14 @@ public class PaymentController {
 
     private final InitiatePaymentUseCase initiatePaymentUseCase;
     private final GetMyPaymentHistoryUseCase getMyPaymentHistoryUseCase;
+    private final GetMyPaymentByIdUseCase getMyPaymentByIdUseCase;
 
     public PaymentController(InitiatePaymentUseCase initiatePaymentUseCase,
-                             GetMyPaymentHistoryUseCase getMyPaymentHistoryUseCase) {
+                             GetMyPaymentHistoryUseCase getMyPaymentHistoryUseCase,
+                             GetMyPaymentByIdUseCase getMyPaymentByIdUseCase) {
         this.initiatePaymentUseCase = initiatePaymentUseCase;
         this.getMyPaymentHistoryUseCase = getMyPaymentHistoryUseCase;
+        this.getMyPaymentByIdUseCase = getMyPaymentByIdUseCase;
     }
 
     @PostMapping("/initiate")
@@ -47,15 +52,39 @@ public class PaymentController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<PaymentResponse>> getMyPayments(JwtAuthenticationToken token) {
+    public ResponseEntity<PagedResponse<PaymentResponse>> getMyPayments(
+            JwtAuthenticationToken token,
+            @RequestParam(required = false) PaymentStatus status,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
         UUID userId = UUID.fromString(token.getToken().getSubject());
 
-        List<PaymentResponse> responses = getMyPaymentHistoryUseCase.execute(userId)
+        PagedResult<com.gym.payment.domain.port.in.PaymentResponse> result =
+                getMyPaymentHistoryUseCase.execute(userId, status, page, pageSize);
+
+        List<PaymentResponse> responses = result.items()
                 .stream()
                 .map(this::toDto)
                 .toList();
 
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.ok(PagedResponse.of(
+                responses,
+                result.page(),
+                result.pageSize(),
+                result.totalItems()
+        ));
+    }
+
+    @GetMapping("/me/{paymentId}")
+    public ResponseEntity<PaymentResponse> getMyPaymentById(
+            @PathVariable UUID paymentId,
+            JwtAuthenticationToken token) {
+        UUID userId = UUID.fromString(token.getToken().getSubject());
+
+        return getMyPaymentByIdUseCase.execute(userId, paymentId)
+                .map(this::toDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     private PaymentResponse toDto(com.gym.payment.domain.port.in.PaymentResponse r) {

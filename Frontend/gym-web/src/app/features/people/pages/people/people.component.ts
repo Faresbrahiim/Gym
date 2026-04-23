@@ -1,19 +1,20 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, tap, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Subscription, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, tap, catchError, map } from 'rxjs/operators';
 
 import { PeopleService } from '../../services/people.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { UserSearchResult } from '../../models/user-search-result.model';
 import { ContactCacheService } from '../../../chat/services/contact-cache.service';
+import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
+import { PagedResponse } from '../../../../core/models/paged-response.model';
 
 @Component({
   selector: 'app-people',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, PaginationBarComponent],
   templateUrl: './people.component.html',
   styleUrls: ['./people.component.css']
 })
@@ -21,16 +22,20 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   searchControl = new FormControl('');
 
-  results  = signal<UserSearchResult[]>([]);
-  loading  = signal(false);
-  error    = signal(false);
+  results = signal<UserSearchResult[]>([]);
+  loading = signal(false);
+  error = signal(false);
   searched = signal(false);
+
+  currentPage = signal(1);
+  totalItems = signal(0);
+  totalPages = signal(0);
+  pageSize = 12;
 
   startingConvFor = signal<string | null>(null);
 
   currentUserId = '';
   private subs = new Subscription();
-  private isSyncingQueryParam = false;
 
   constructor(
     private peopleService: PeopleService,
@@ -43,68 +48,96 @@ export class PeopleComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.currentUserId = this.tokenService.getUserId() ?? '';
     this.bindSearch();
-    this.bindQueryParamPrefill();
+    this.bindRouteState();
   }
 
   private bindSearch(): void {
     this.subs.add(
       this.searchControl.valueChanges.pipe(
         debounceTime(300),
-        distinctUntilChanged(),
-        tap(q => {
-          const trimmed = (q ?? '').trim();
-          this.syncQueryParam(trimmed);
-          if (trimmed.length < 2) {
-            this.results.set([]);
-            this.searched.set(false);
-            this.loading.set(false);
-            this.error.set(false);
+        map(value => (value ?? '').trim()),
+        distinctUntilChanged()
+      ).subscribe(query => {
+        if (query.length < 2) {
+          this.syncQueryParams('', 1);
+          this.resetSearchState();
+          return;
+        }
+
+        this.syncQueryParams(query, 1);
+      })
+    );
+  }
+
+  private bindRouteState(): void {
+    this.subs.add(
+      this.route.queryParamMap.pipe(
+        map(params => {
+          const query = (params.get('q') ?? '').trim();
+          const parsedPage = Number(params.get('page') ?? '1');
+          const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+          return { query, page };
+        }),
+        distinctUntilChanged((a, b) => a.query === b.query && a.page === b.page),
+        tap(({ query }) => {
+          if (query !== this.queryValue) {
+            this.searchControl.setValue(query, { emitEvent: false });
           }
         }),
-        switchMap(q => {
-          const trimmed = (q ?? '').trim();
-          if (trimmed.length < 2) return of(null);
+        switchMap(({ query, page }) => {
+          if (query.length < 2) {
+            this.resetSearchState();
+            return of(null);
+          }
 
           this.loading.set(true);
           this.error.set(false);
           this.searched.set(true);
+          this.currentPage.set(page);
 
-          return this.peopleService.search(trimmed).pipe(
+          return this.peopleService.search(query, page, this.pageSize).pipe(
             catchError(() => {
               this.error.set(true);
-              return of([] as UserSearchResult[]);
+              return of(this.emptyPage(page));
             })
           );
         })
-      ).subscribe(res => {
-        if (res === null) return;
+      ).subscribe(page => {
+        if (!page) return;
+
         this.loading.set(false);
-        this.results.set(res);
+        this.results.set(page.items);
+        this.totalItems.set(page.totalItems);
+        this.totalPages.set(page.totalPages);
+        this.currentPage.set(page.page);
       })
     );
   }
 
   onSearchSubmit(): void {
     const query = this.queryValue;
-    this.syncQueryParam(query);
 
     if (query.length < 2) {
-      this.results.set([]);
-      this.searched.set(false);
-      this.loading.set(false);
-      this.error.set(false);
+      this.syncQueryParams('', 1);
+      this.resetSearchState();
+      return;
     }
+
+    this.syncQueryParams(query, 1);
   }
 
   clearSearch(): void {
     this.searchControl.setValue('');
   }
 
+  goToPage(page: number): void {
+    if (page === this.currentPage()) return;
+    this.syncQueryParams(this.queryValue, page);
+  }
+
   startChat(person: UserSearchResult): void {
     this.startingConvFor.set(person.id);
 
-    // Seed the contact cache before navigating so the chat page can display
-    // the person's name and avatar without needing a backend lookup.
     this.contactCache.seedFromResult(person);
 
     this.subs.add(
@@ -145,13 +178,13 @@ export class PeopleComponent implements OnInit, OnDestroy {
 
   get heroTitle(): string {
     if (this.loading()) return 'Searching the community';
-    if (this.queryValue.length >= 2 && this.resultCount > 0) return 'People ready to connect';
+    if (this.queryValue.length >= 2 && this.totalItems() > 0) return 'People ready to connect';
     return 'Discover people in your gym community';
   }
 
   get heroSubtitle(): string {
-    if (this.queryValue.length >= 2 && this.resultCount > 0) {
-      return `Browse ${this.resultCount} matching ${this.resultCount === 1 ? 'profile' : 'profiles'} and jump into a conversation fast.`;
+    if (this.queryValue.length >= 2 && this.totalItems() > 0) {
+      return `Browse ${this.totalItems()} matching ${this.totalItems() === 1 ? 'profile' : 'profiles'} and jump into a conversation fast.`;
     }
     return 'Find members and coaches by name or username, then open the full profile list or start chatting right away.';
   }
@@ -160,8 +193,8 @@ export class PeopleComponent implements OnInit, OnDestroy {
     if (this.queryValue.length < 2) return 'Start with a first name, last name, or username.';
     if (this.loading()) return `Looking for "${this.queryValue}"...`;
     if (this.error()) return 'Search is having trouble right now. Try again in a moment.';
-    if (this.resultCount === 0) return `No matches for "${this.queryValue}" yet.`;
-    return `${this.resultCount} match${this.resultCount === 1 ? '' : 'es'} for "${this.queryValue}"`;
+    if (this.totalItems() === 0) return `No matches for "${this.queryValue}" yet.`;
+    return `${this.totalItems()} match${this.totalItems() === 1 ? '' : 'es'} for "${this.queryValue}"`;
   }
 
   getRoleLabel(person: UserSearchResult): string {
@@ -192,32 +225,37 @@ export class PeopleComponent implements OnInit, OnDestroy {
     this.subs.unsubscribe();
   }
 
-  private bindQueryParamPrefill(): void {
-    this.subs.add(
-      this.route.queryParamMap.subscribe(params => {
-        const query = (params.get('q') ?? '').trim();
-        if (query !== this.queryValue) {
-          this.isSyncingQueryParam = true;
-          this.searchControl.setValue(query);
-          queueMicrotask(() => {
-            this.isSyncingQueryParam = false;
-          });
-        }
-      })
-    );
-  }
-
-  private syncQueryParam(query: string): void {
-    if (this.isSyncingQueryParam) return;
-
-    const current = (this.route.snapshot.queryParamMap.get('q') ?? '').trim();
-    if (current === query) return;
-
+  private syncQueryParams(query: string, page: number): void {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { q: query || null },
+      queryParams: {
+        q: query || null,
+        page: query ? page : null
+      },
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+  }
+
+  private resetSearchState(): void {
+    this.results.set([]);
+    this.searched.set(false);
+    this.loading.set(false);
+    this.error.set(false);
+    this.currentPage.set(1);
+    this.totalItems.set(0);
+    this.totalPages.set(0);
+  }
+
+  private emptyPage(page: number): PagedResponse<UserSearchResult> {
+    return {
+      items: [],
+      page,
+      pageSize: this.pageSize,
+      totalItems: 0,
+      totalPages: 0,
+      hasNext: false,
+      hasPrevious: page > 1
+    };
   }
 }

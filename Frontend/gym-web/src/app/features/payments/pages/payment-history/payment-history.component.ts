@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -11,6 +11,7 @@ import { PaymentResponse } from '../../models/payment.model';
 import { PaymentStatus } from '../../models/payment-status.enum';
 import { PaymentStatusBadgeComponent } from '../../components/payment-status-badge/payment-status-badge.component';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
 
 interface EnrichedPayment extends PaymentResponse {
   planName: string;
@@ -19,7 +20,7 @@ interface EnrichedPayment extends PaymentResponse {
 @Component({
   selector: 'app-payment-history',
   standalone: true,
-  imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent],
+  imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent, PaginationBarComponent],
   templateUrl: './payment-history.component.html',
   styleUrl: './payment-history.component.css'
 })
@@ -31,15 +32,12 @@ export class PaymentHistoryComponent implements OnInit {
   payments = signal<EnrichedPayment[]>([]);
   isLoading = signal<boolean>(true);
   errorMessage = signal<string | null>(null);
+  currentPage = signal(1);
+  totalItems = signal(0);
+  totalPages = signal(0);
+  pageSize = 10;
 
   filterStatus = signal<PaymentStatus | 'ALL'>('ALL');
-
-  filteredPayments = computed(() => {
-    const status = this.filterStatus();
-    const all = this.payments();
-    if (status === 'ALL') return all;
-    return all.filter(p => p.status === status);
-  });
 
   ngOnInit(): void {
     this.loadData();
@@ -48,9 +46,15 @@ export class PaymentHistoryComponent implements OnInit {
   loadData(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
+    const status = this.filterStatus();
+    const selectedStatus = status === 'ALL' ? undefined : status;
 
     forkJoin({
-      payments: this.paymentService.getMyPayments().pipe(take(1)),
+      payments: this.paymentService.getMyPayments(
+        this.currentPage(),
+        this.pageSize,
+        selectedStatus
+      ).pipe(take(1)),
       plans: this.planService.getAllPlans().pipe(take(1))
     }).pipe(
       takeUntilDestroyed(this.destroyRef),
@@ -65,17 +69,28 @@ export class PaymentHistoryComponent implements OnInit {
       const planMap = new Map<string, string>();
       data.plans.forEach(plan => planMap.set(plan.id, plan.name));
 
-      const enriched = data.payments.map(payment => ({
+      const enriched = data.payments.items.map(payment => ({
         ...payment,
         planName: planMap.get(payment.planId) || 'Unknown plan'
       }));
 
       this.payments.set(enriched);
+      this.totalItems.set(data.payments.totalItems);
+      this.totalPages.set(data.payments.totalPages);
+      this.currentPage.set(data.payments.page);
       this.isLoading.set(false);
     });
   }
 
   setFilter(status: string): void {
     this.filterStatus.set(status as PaymentStatus | 'ALL');
+    this.currentPage.set(1);
+    this.loadData();
+  }
+
+  goToPage(page: number): void {
+    if (page === this.currentPage()) return;
+    this.currentPage.set(page);
+    this.loadData();
   }
 }

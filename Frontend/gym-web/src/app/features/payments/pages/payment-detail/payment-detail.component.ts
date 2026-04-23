@@ -52,18 +52,15 @@ export class PaymentDetailComponent implements OnInit {
 
     this.paymentService.getPaymentById(paymentId).pipe(
       switchMap(payment => {
-        if (!payment) {
-          throw new Error('Payment not found');
-        }
         return forkJoin({
-          payment: of(payment),
+          payment: of(payment as PaymentResponse),
           plan: this.planService.getPlan(payment.planId),
           user: this.currentUserService.getMe()
         });
       }),
       takeUntilDestroyed(this.destroyRef),
       catchError(err => {
-        if (err.message === 'Payment not found') {
+        if (err?.status === 404 || err?.message === 'Payment not found') {
           this.router.navigate(['/payments']);
         } else {
           this.errorMessage.set('Failed to load payment details. Please try again later.');
@@ -123,4 +120,3 @@ export class PaymentDetailComponent implements OnInit {
     setTimeout(() => { win.print(); win.close(); }, 800);
   }
 }
-

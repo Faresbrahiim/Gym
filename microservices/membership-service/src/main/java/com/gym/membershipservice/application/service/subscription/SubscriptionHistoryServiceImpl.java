@@ -2,11 +2,15 @@ package com.gym.membershipservice.application.service.subscription;
 
 import com.gym.membershipservice.api.mapper.SubscriptionMapper;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionHistoryRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -46,9 +50,15 @@ public class SubscriptionHistoryServiceImpl implements SubscriptionHistoryServic
     }
 
     @Override
-    public List<SubscriptionHistoryResponseDTO> getHistoryForUser(UUID userId) {
-        return SubscriptionMapper.toHistoryDTOList(
-                repository.findBySubscription_UserIdOrderByChangedAtDesc(userId)
+    public PagedResponseDTO<SubscriptionHistoryResponseDTO> getHistoryForUser(UUID userId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(Math.max(page - 1, 0), Math.max(pageSize, 1));
+        Page<SubscriptionHistory> historyPage = repository.findBySubscription_UserIdOrderByChangedAtDesc(userId, pageable);
+
+        return PagedResponseDTO.of(
+                SubscriptionMapper.toHistoryDTOList(historyPage.getContent()),
+                page,
+                pageSize,
+                historyPage.getTotalElements()
         );
     }
 }

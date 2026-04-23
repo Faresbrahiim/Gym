@@ -2,7 +2,12 @@ package com.gym.payment.adapter.out.persistence;
 
 import com.gym.payment.domain.model.Payment;
 import com.gym.payment.domain.port.in.GetAllPaymentsQuery;
+import com.gym.payment.domain.port.in.PagedResult;
 import com.gym.payment.domain.port.out.PaymentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
@@ -59,6 +64,24 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
     }
 
     @Override
+    public PagedResult<Payment> findPage(GetAllPaymentsQuery query, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(
+                Math.max(page - 1, 0),
+                Math.max(pageSize, 1),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Page<PaymentJpaEntity> result = repository.findAll(buildSpecification(query), pageable);
+
+        return new PagedResult<>(
+                result.getContent().stream().map(mapper::toDomain).toList(),
+                page,
+                pageSize,
+                result.getTotalElements()
+        );
+    }
+
+    @Override
     public List<Payment> findAll(GetAllPaymentsQuery query) {
         return repository.findAll(buildSpecification(query))
                 .stream()
@@ -72,9 +95,7 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
     }
 
     private Specification<PaymentJpaEntity> buildSpecification(GetAllPaymentsQuery query) {
-        Specification<PaymentJpaEntity> spec = Specification.where(
-                (Specification<PaymentJpaEntity>) null
-        );
+        Specification<PaymentJpaEntity> spec = (root, q, cb) -> cb.conjunction();
 
         if (query.userId() != null) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("userId"), query.userId()));

@@ -26,6 +26,7 @@ public class PaymentApplicationService implements
         InitiatePaymentUseCase,
         HandleWebhookUseCase,
         GetMyPaymentHistoryUseCase,
+        GetMyPaymentByIdUseCase,
         GetAllPaymentsUseCase,
         GetLatestSubscriptionPaymentUseCase {
 
@@ -89,11 +90,26 @@ public class PaymentApplicationService implements
     }
 
     @Override
-    public List<PaymentResponse> execute(UUID userId) {
-        return paymentRepository.findByUserId(userId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public PagedResult<PaymentResponse> execute(UUID userId, PaymentStatus status, int page, int pageSize) {
+        PagedResult<Payment> pagedPayments = paymentRepository.findPage(
+                new GetAllPaymentsQuery(userId, status, null, null),
+                page,
+                pageSize
+        );
+
+        return new PagedResult<>(
+                pagedPayments.items().stream().map(this::toResponse).toList(),
+                pagedPayments.page(),
+                pagedPayments.pageSize(),
+                pagedPayments.totalItems()
+        );
+    }
+
+    @Override
+    public Optional<PaymentResponse> execute(UUID userId, UUID paymentId) {
+        return paymentRepository.findById(paymentId)
+                .filter(payment -> payment.getUserId().equals(userId))
+                .map(this::toResponse);
     }
 
     @Override

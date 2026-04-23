@@ -6,6 +6,7 @@ import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.api.mapper.SubscriptionMapper;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.dto.kafka.SubscriptionCreatedEvent;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
@@ -69,8 +70,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId) {
-        return historyService.getHistoryForUser(userId);
+    public PagedResponseDTO<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId, int page, int pageSize) {
+        return historyService.getHistoryForUser(userId, page, pageSize);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.gym.membershipservice.api.controller;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionRequestDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -42,9 +43,12 @@ public class UserSubscriptionController {
 
     @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/me/history")
-    public List<SubscriptionHistoryResponseDTO> getMySubscriptionHistory(@AuthenticationPrincipal Jwt jwt) {
+    public PagedResponseDTO<SubscriptionHistoryResponseDTO> getMySubscriptionHistory(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.getUserSubscriptionHistory(userId);
+        return subscriptionService.getUserSubscriptionHistory(userId, page, pageSize);
     }
 
     @PreAuthorize("hasRole('MEMBER')")

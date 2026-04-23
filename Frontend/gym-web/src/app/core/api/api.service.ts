@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+
+type ApiQueryValue = string | number | boolean;
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -10,8 +12,18 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
-  get<T>(url: string): Observable<T> {
-    return this.http.get<T>(`${this.base}${url}`);
+  get<T>(url: string, options?: { params?: Record<string, ApiQueryValue | null | undefined> }): Observable<T> {
+    let params = new HttpParams();
+
+    if (options?.params) {
+      for (const [key, value] of Object.entries(options.params)) {
+        if (value !== null && value !== undefined) {
+          params = params.set(key, String(value));
+        }
+      }
+    }
+
+    return this.http.get<T>(`${this.base}${url}`, { params });
   }
 
   post<T>(url: string, body: unknown): Observable<T> {

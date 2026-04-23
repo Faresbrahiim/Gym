@@ -113,14 +113,15 @@ namespace user_service.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<User>> SearchAsync(
+        public async Task<(IReadOnlyList<User> Users, int TotalCount)> SearchAsync(
             string query,
-            int limit,
+            int skip,
+            int take,
             CancellationToken cancellationToken = default)
         {
             var pattern = $"%{query}%";
 
-            return await _context.Users
+            var baseQuery = _context.Users
                 .AsNoTracking()
                 .Include(u => u.Profile)
                 .Where(u =>
@@ -131,9 +132,16 @@ namespace user_service.Infrastructure.Repositories
                         (u.Profile != null && EF.Functions.ILike(u.Profile.FirstName, pattern)) ||
                         (u.Profile != null && EF.Functions.ILike(u.Profile.LastName, pattern))
                     ))
-                .OrderBy(u => u.Username)
-                .Take(limit)
+                .OrderBy(u => u.Username);
+
+            var totalCount = await baseQuery.CountAsync(cancellationToken);
+
+            var users = await baseQuery
+                .Skip(Math.Max(skip, 0))
+                .Take(Math.Max(take, 1))
                 .ToListAsync(cancellationToken);
+
+            return (users, totalCount);
         }
 
         public async Task<IEnumerable<User>> GetByIdsAsync(

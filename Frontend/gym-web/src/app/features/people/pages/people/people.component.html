@@ -21,7 +21,7 @@
             <span class="people-highlight__icon"><i class="feather-users"></i></span>
             <div>
               <h3>See who matches right now</h3>
-              <p>{{ resultCount }} current match{{ resultCount === 1 ? '' : 'es' }}, including {{ coachCount }} coach{{ coachCount === 1 ? '' : 'es' }} and {{ memberCount }} member{{ memberCount === 1 ? '' : 's' }}.</p>
+              <p>Showing {{ resultCount }} of {{ totalItems() }} match{{ totalItems() === 1 ? '' : 'es' }}, including {{ coachCount }} coach{{ coachCount === 1 ? '' : 'es' }} and {{ memberCount }} member{{ memberCount === 1 ? '' : 's' }} on this page.</p>
             </div>
           </article>
           <article class="people-highlight">
@@ -102,7 +102,8 @@
 
         @if (!loading() && !error() && results().length > 0) {
           <div class="results-panel__chips">
-            <span class="results-chip">{{ resultCount }} total</span>
+            <span class="results-chip">{{ totalItems() }} total</span>
+            <span class="results-chip">Page {{ currentPage() }} of {{ totalPages() }}</span>
             <span class="results-chip results-chip--coach">{{ coachCount }} coaches</span>
             <span class="results-chip results-chip--member">{{ memberCount }} members</span>
           </div>
@@ -217,6 +218,15 @@
             </article>
           }
         </div>
+
+        <app-pagination-bar
+          [page]="currentPage()"
+          [pageSize]="pageSize"
+          [totalItems]="totalItems()"
+          [totalPages]="totalPages()"
+          label="people"
+          (pageChange)="goToPage($event)"
+        />
       }
     </section>
   </div>

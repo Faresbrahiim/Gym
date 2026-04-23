@@ -7,11 +7,12 @@ import { SubscriptionHistoryEntry } from '../../models/subscription-history-entr
 import { SubscriptionStatus } from '../../models/subscription-status.enum';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { StatusBadgeComponent } from '../../components/status-badge/status-badge.component';
+import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
 
 @Component({
   standalone: true,
   selector: 'app-subscription-history',
-  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent],
+  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent, PaginationBarComponent],
   templateUrl: './subscription-history.component.html',
   styleUrl: './subscription-history.component.css'
 })
@@ -20,6 +21,10 @@ export class SubscriptionHistoryComponent implements OnInit {
   entries = signal<SubscriptionHistoryEntry[]>([]);
   isLoading = signal(true);
   errorMessage = signal<string | null>(null);
+  currentPage = signal(1);
+  totalItems = signal(0);
+  totalPages = signal(0);
+  pageSize = 10;
 
   private readonly membershipService = inject(MembershipService);
   private readonly errorService = inject(ErrorService);
@@ -32,11 +37,14 @@ export class SubscriptionHistoryComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.membershipService.getMySubscriptionHistory().pipe(
+    this.membershipService.getMySubscriptionHistory(this.currentPage(), this.pageSize).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
-      next: entries => {
-        this.entries.set(entries);
+      next: page => {
+        this.entries.set(page.items);
+        this.totalItems.set(page.totalItems);
+        this.totalPages.set(page.totalPages);
+        this.currentPage.set(page.page);
         this.isLoading.set(false);
       },
       error: err => {
@@ -79,6 +87,12 @@ export class SubscriptionHistoryComponent implements OnInit {
 
   isTerminal(status: SubscriptionStatus): boolean {
     return ['CANCELLED', 'EXPIRED', 'PAYMENT_FAILED', 'UPGRADED', 'DOWNGRADED'].includes(status);
+  }
+
+  goToPage(page: number): void {
+    if (page === this.currentPage()) return;
+    this.currentPage.set(page);
+    this.load();
   }
 
   private labelFor(status: SubscriptionStatus): string {

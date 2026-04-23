@@ -2,6 +2,7 @@ package com.gym.membershipservice.application.port;
 
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +13,7 @@ public interface SubscriptionService {
     // Basic
     List<SubscriptionResponseDTO> getAllSubscriptions();
     List<SubscriptionResponseDTO> getUserSubscriptions(UUID userId);
-    List<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId);
+    PagedResponseDTO<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId, int page, int pageSize);
     SubscriptionResponseDTO getSubscriptionById(UUID subscriptionId);
 
     // User actions

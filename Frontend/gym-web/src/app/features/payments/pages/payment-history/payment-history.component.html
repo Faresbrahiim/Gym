@@ -81,7 +81,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (payment of filteredPayments(); track payment.id) {
+                    @for (payment of payments(); track payment.id) {
                       <tr>
                         <!-- Ref ID -->
                         <td>
@@ -140,6 +140,17 @@
                     }
                   </tbody>
                 </table>
+              </div>
+
+              <div class="p-4 pt-0">
+                <app-pagination-bar
+                  [page]="currentPage()"
+                  [pageSize]="pageSize"
+                  [totalItems]="totalItems()"
+                  [totalPages]="totalPages()"
+                  label="payments"
+                  (pageChange)="goToPage($event)"
+                />
               </div>
             }
           </div>

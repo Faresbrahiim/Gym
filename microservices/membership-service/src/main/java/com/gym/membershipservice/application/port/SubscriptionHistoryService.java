@@ -1,6 +1,7 @@
 package com.gym.membershipservice.application.port;
 
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
@@ -17,5 +18,5 @@ public interface SubscriptionHistoryService {
                                      String note);
 
     List<SubscriptionHistoryResponseDTO> getHistory(UUID subscriptionId);
-    List<SubscriptionHistoryResponseDTO> getHistoryForUser(UUID userId);
+    PagedResponseDTO<SubscriptionHistoryResponseDTO> getHistoryForUser(UUID userId, int page, int pageSize);
 }

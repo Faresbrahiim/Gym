@@ -41,9 +41,10 @@ namespace user_service.Application.Contracts.Repositories
             CancellationToken cancellationToken = default);
         Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<User>> SearchAsync(
+        Task<(IReadOnlyList<User> Users, int TotalCount)> SearchAsync(
             string query,
-            int limit,
+            int skip,
+            int take,
             CancellationToken cancellationToken = default);
 
         Task<IEnumerable<User>> GetByIdsAsync(

@@ -5,6 +5,7 @@ import { ApiService } from '../../../core/api/api.service';
 import { Subscription } from '../models/subscription.model';
 import { SubscriptionHistoryEntry } from '../models/subscription-history-entry.model';
 import { ACTIVE_STATUSES } from '../models/subscription-status.enum';
+import { PagedResponse } from '../../../core/models/paged-response.model';
 
 @Injectable({ providedIn: 'root' })
 export class MembershipService {
@@ -22,8 +23,10 @@ export class MembershipService {
     return this.api.get<Subscription[]>(`${this.BASE}/me`);
   }
 
-  getMySubscriptionHistory(): Observable<SubscriptionHistoryEntry[]> {
-    return this.api.get<SubscriptionHistoryEntry[]>(`${this.BASE}/me/history`);
+  getMySubscriptionHistory(page = 1, pageSize = 10): Observable<PagedResponse<SubscriptionHistoryEntry>> {
+    return this.api.get<PagedResponse<SubscriptionHistoryEntry>>(`${this.BASE}/me/history`, {
+      params: { page, pageSize }
+    });
   }
 
   // Derives the "current" subscription: first with an active-ish status,
