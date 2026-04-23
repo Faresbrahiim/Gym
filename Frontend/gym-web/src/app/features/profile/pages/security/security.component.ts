@@ -238,4 +238,36 @@ export class SecurityComponent implements OnInit {
       return dateStr;
     }
   }
+
+  get totalSessions(): number {
+    return this.sessions().length;
+  }
+
+  get currentDeviceSession(): Session | null {
+    const tokenId = this.currentSessionTokenId;
+    return tokenId ? this.sessions().find(session => session.tokenId === tokenId) ?? null : null;
+  }
+
+  get otherDevicesCount(): number {
+    return Math.max(0, this.totalSessions - (this.currentDeviceSession ? 1 : 0));
+  }
+
+  get securityPostureLabel(): string {
+    if (this.totalSessions <= 1) return 'Tight';
+    if (this.totalSessions <= 3) return 'Balanced';
+    return 'Review Needed';
+  }
+
+  get securitySummary(): string {
+    if (this.totalSessions === 0) {
+      return 'No active sessions were found. Once you sign in, your devices will appear here.';
+    }
+
+    if (this.otherDevicesCount === 0) {
+      return 'Your account is currently active only on this device.';
+    }
+
+    return `Your account is also active on ${this.otherDevicesCount} other ${this.otherDevicesCount === 1 ? 'device' : 'devices'}.`;
+  }
+
 }

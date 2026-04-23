@@ -1,60 +1,72 @@
-<div class="dashboard-section">
+<section class="dashboard-section account-deck-section">
   <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <div class="dashboard-menu">
-          <ul>
-            <li>
-              <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                <img src="assets/img/icons/dashboard-icon.svg" alt="Icon">
-                <span>Dashboard</span>
+    <div class="account-deck">
+      <div class="account-deck__intro">
+        <span class="account-deck__eyebrow">Account Deck</span>
+        <div class="account-deck__headline">
+          <h2>My Space</h2>
+          <p>Manage your profile, membership, payments, and activity from one place.</p>
+        </div>
+      </div>
+
+      <div class="account-deck__content">
+        <div class="account-deck__group">
+          <div class="account-deck__group-header">
+            <span>Main Sections</span>
+          </div>
+
+          <nav class="account-deck__rail" aria-label="Account sections">
+            @for (item of primaryItems; track item.label) {
+              <a
+                class="account-chip"
+                [routerLink]="item.route"
+                routerLinkActive="account-chip--active"
+                [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+              >
+                <span class="account-chip__icon-wrap">
+                  <img [src]="item.icon" [alt]="item.label + ' icon'" class="account-chip__icon">
+                </span>
+                <span class="account-chip__label">{{ item.label }}</span>
               </a>
-            </li>
-            <li>
-              <a href="javascript:void(0);">
-                <img src="assets/img/icons/booking-icon.svg" alt="Icon">
-                <span>My Bookings</span>
-              </a>
-            </li>
-            <li>
-              <a [routerLink]="['/chat']">
-              <img src="assets/img/icons/chat-icon.svg" alt="Icon">
-              <span>Chat</span>
-              </a>
-            </li>
-            <li>
-              <a routerLink="/membership" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                <img src="assets/img/icons/wallet-icon.svg" alt="Icon">
-                <span>Membership</span>
-              </a>
-            </li>
-            <li>
-              <a routerLink="/membership/history" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                <img src="assets/img/icons/booking-icon.svg" alt="Icon">
-                <span>History</span>
-              </a>
-            </li>
-            <li>
-              <a routerLink="/payments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-                <img src="assets/img/icons/invoice-icon.svg" alt="Icon">
-                <span>Payments</span>
-              </a>
-            </li>
-            <li>
-              <a routerLink="/profile" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                <img src="assets/img/icons/profile-icon.svg" alt="Icon">
-                <span>Profile</span>
-              </a>
-            </li>
-            <li>
-              <a routerLink="/profile/security" routerLinkActive="active">
-                <img src="assets/img/icons/sessions.svg" alt="Icon">
-                <span>Security</span>
-              </a>
-            </li>
-          </ul>
+            }
+          </nav>
+        </div>
+
+        <div class="account-deck__group account-deck__group--utility">
+          <div class="account-deck__group-header">
+            <span>Quick Access</span>
+          </div>
+
+          <div class="account-deck__utility">
+            @for (item of utilityItems; track item.label) {
+              @if (item.disabled) {
+                <span class="utility-chip utility-chip--disabled" aria-disabled="true">
+                  <span class="utility-chip__icon-wrap">
+                    <img [src]="item.icon" [alt]="item.label + ' icon'" class="utility-chip__icon">
+                  </span>
+                  <span class="utility-chip__label">{{ item.label }}</span>
+                  @if (item.note) {
+                    <span class="utility-chip__note">{{ item.note }}</span>
+                  }
+                </span>
+              } @else {
+                <a
+                  class="utility-chip"
+                  [class.utility-chip--accent]="item.tone === 'accent'"
+                  [routerLink]="item.route"
+                  routerLinkActive="utility-chip--active"
+                  [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+                >
+                  <span class="utility-chip__icon-wrap">
+                    <img [src]="item.icon" [alt]="item.label + ' icon'" class="utility-chip__icon">
+                  </span>
+                  <span class="utility-chip__label">{{ item.label }}</span>
+                </a>
+              }
+            }
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>

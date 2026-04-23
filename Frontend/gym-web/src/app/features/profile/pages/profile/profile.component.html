@@ -1,6 +1,5 @@
-<!-- Loading -->
 @if (isLoading()) {
-  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+  <div class="profile-edit-loading">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
@@ -8,369 +7,389 @@
 }
 
 @if (!isLoading() && userMe()) {
-
-  <!-- Breadcrumb -->
   <section class="breadcrumb breadcrumb-list mb-0">
     <span class="primary-right-round"></span>
     <div class="container">
-      <h1 class="text-white">User Profile</h1>
+      <h1 class="text-white">Edit Profile</h1>
       <ul>
         <li><a routerLink="/home">Home</a></li>
-        <li>User Profile</li>
+        <li><a routerLink="/profile">My Profile</a></li>
+        <li>Edit Profile</li>
       </ul>
     </div>
   </section>
-  <!-- /Breadcrumb -->
 
-  <!-- Dashboard Menu -->
   <app-dashboard-menu />
-  <!-- /Dashboard Menu -->
 
-  <!-- Page Content -->
-  <div class="content court-bg">
+  <div class="content court-bg profile-edit-page">
     <div class="container">
+      <div class="profile-edit-shell">
+        <aside class="profile-edit-sidebar">
+          <section class="profile-edit-summary">
+            <div class="profile-edit-summary__top">
+              <div class="profile-edit-summary__avatar-wrap">
+                <img
+                  [src]="avatarPreview()"
+                  (error)="onAvatarError($event)"
+                  class="profile-edit-summary__avatar"
+                  alt="Profile photo"
+                />
+                @if (pendingAvatarFile()) {
+                  <span class="profile-edit-summary__pending">Pending</span>
+                }
+              </div>
 
-      <!-- Profile Tab Nav -->
-      <div class="coach-court-list profile-court-list">
-        <ul class="nav">
-          <li>
-            <a [class.active]="activeTab() === 'personal'"
-               (click)="setTab('personal')"
-               style="cursor:pointer;">
-              Profile
-            </a>
-          </li>
-          @if (role === 'MEMBER') {
-            <li>
-              <a [class.active]="activeTab() === 'extra'"
-                 (click)="setTab('extra')"
-                 style="cursor:pointer;">
-                Fitness Profile
-              </a>
-            </li>
+              <div class="profile-edit-summary__identity">
+                <span class="profile-edit-summary__eyebrow">Editing Workspace</span>
+                <h2>{{ fullName }}</h2>
+                <p>{{ roleLabel }}</p>
+              </div>
+            </div>
+
+            <div class="profile-edit-health">
+              <div class="profile-edit-health__score" [style.--progress]="completionScore">
+                <strong>{{ completionScore }}%</strong>
+                <span>{{ completionTone }}</span>
+              </div>
+              <div class="profile-edit-health__copy">
+                <h3>Profile health</h3>
+                <p>Use this page to sharpen the details other people rely on across search, chat, and coaching flows.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="profile-edit-nav">
+            <span class="profile-edit-nav__eyebrow">Sections</span>
+
+            <button
+              type="button"
+              class="profile-edit-nav__item"
+              [class.profile-edit-nav__item--active]="activeTab() === 'personal'"
+              (click)="setTab('personal')"
+            >
+              <span class="profile-edit-nav__copy">
+                <strong>Account</strong>
+                <small>Identity, photo, and contact information</small>
+              </span>
+              @if (personalDirty) {
+                <span class="profile-edit-nav__dot"></span>
+              }
+            </button>
+
+            <button
+              type="button"
+              class="profile-edit-nav__item"
+              [class.profile-edit-nav__item--active]="activeTab() === 'extra'"
+              (click)="setTab('extra')"
+            >
+              <span class="profile-edit-nav__copy">
+                <strong>{{ extraTabLabel }}</strong>
+                <small>
+                  @if (role === 'COACH') {
+                    Bio, credentials, and coaching background
+                  } @else {
+                    Goals, metrics, and training context
+                  }
+                </small>
+              </span>
+              @if (extraDirty) {
+                <span class="profile-edit-nav__dot"></span>
+              }
+            </button>
+          </section>
+
+          <section class="profile-edit-checklist">
+            <div class="profile-edit-checklist__header">
+              <span class="profile-edit-nav__eyebrow">Checklist</span>
+              <h3>What still needs attention</h3>
+            </div>
+
+            <div class="profile-edit-checklist__list">
+              @for (item of editorChecklist; track item.label) {
+                <div class="profile-edit-checklist__item" [class.profile-edit-checklist__item--done]="item.done">
+                  <span class="profile-edit-checklist__icon">
+                    <i class="feather-check"></i>
+                  </span>
+                  <div>
+                    <strong>{{ item.label }}</strong>
+                    <p>{{ item.detail }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+
+          <section class="profile-edit-side-note">
+            <span class="profile-edit-nav__eyebrow">Snapshot</span>
+            <h3>{{ extraTabLabel }}</h3>
+            <p>{{ roleSummary }}</p>
+          </section>
+        </aside>
+
+        <main class="profile-edit-main">
+          <section class="profile-edit-hero">
+            <span class="profile-edit-hero__eyebrow">Edit Profile</span>
+            <h2>{{ activeSectionTitle }}</h2>
+            <p>{{ activeSectionDescription }}</p>
+          </section>
+
+          @if (profileSuccess() && activeTab() === 'personal') {
+            <div class="profile-edit-alert profile-edit-alert--success">Profile updated successfully.</div>
           }
-          @if (role === 'COACH') {
-            <li>
-              <a [class.active]="activeTab() === 'extra'"
-                 (click)="setTab('extra')"
-                 style="cursor:pointer;">
-                Coach Profile
-              </a>
-            </li>
+          @if (profileError() && activeTab() === 'personal') {
+            <div class="profile-edit-alert profile-edit-alert--error">{{ profileError() }}</div>
           }
-        </ul>
+          @if (extraSuccess() && activeTab() === 'extra') {
+            <div class="profile-edit-alert profile-edit-alert--success">{{ extraTabLabel }} updated successfully.</div>
+          }
+          @if (extraError() && activeTab() === 'extra') {
+            <div class="profile-edit-alert profile-edit-alert--error">{{ extraError() }}</div>
+          }
+
+          @if (activeTab() === 'personal') {
+            <div class="profile-edit-grid profile-edit-grid--split">
+              <section class="profile-edit-card">
+                <div class="profile-edit-card__header">
+                  <div>
+                    <span class="profile-edit-card__eyebrow">Photo</span>
+                    <h3>Profile image</h3>
+                    <p>Choose the image that will represent you in profile surfaces and chat.</p>
+                  </div>
+                </div>
+
+                <div class="profile-avatar-panel">
+                  <div class="profile-avatar-panel__preview-wrap">
+                    <img
+                      [src]="avatarPreview()"
+                      (error)="onAvatarError($event)"
+                      class="profile-avatar-panel__preview"
+                      alt="Profile photo"
+                    />
+                  </div>
+
+                  <div class="profile-avatar-panel__copy">
+                    <h4>Refresh your identity</h4>
+                    <p>Upload a JPG, PNG, or WebP image up to 5 MB. It stays pending until you save.</p>
+
+                    <label class="profile-avatar-btn">
+                      <i class="feather-upload"></i>
+                      Change photo
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        class="profile-avatar-file-input"
+                        (change)="onFileSelected($event)"
+                      >
+                    </label>
+
+                    @if (avatarError()) {
+                      <p class="profile-avatar-error">{{ avatarError() }}</p>
+                    }
+
+                    <div class="profile-avatar-panel__meta">
+                      <span>Visible across profile and chat</span>
+                      @if (pendingAvatarFile()) {
+                        <span class="profile-avatar-panel__pending-chip">Pending upload</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="profile-edit-card">
+                <div class="profile-edit-card__header">
+                  <div>
+                    <span class="profile-edit-card__eyebrow">Identity</span>
+                    <h3>Core account details</h3>
+                    <p>These are the main profile details that shape how people recognize you inside the app.</p>
+                  </div>
+                </div>
+
+                <form [formGroup]="profileForm" class="profile-form-grid">
+                  <div class="profile-field">
+                    <label class="form-label">First Name <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="firstName"
+                      placeholder="Enter first name"
+                      [class.is-invalid]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
+                    />
+                    @if (profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
+                      <div class="invalid-feedback">First name is required.</div>
+                    }
+                  </div>
+
+                  <div class="profile-field">
+                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="lastName"
+                      placeholder="Enter last name"
+                      [class.is-invalid]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
+                    />
+                    @if (profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
+                      <div class="invalid-feedback">Last name is required.</div>
+                    }
+                  </div>
+
+                  <div class="profile-field">
+                    <label class="form-label">Phone Number</label>
+                    <input
+                      type="tel"
+                      class="form-control"
+                      formControlName="phone"
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+
+                  <div class="profile-field">
+                    <label class="form-label">Email</label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      [value]="userMe()?.email ?? ''"
+                      readonly
+                    />
+                  </div>
+                </form>
+              </section>
+            </div>
+          }
+
+          @if (activeTab() === 'extra' && role === 'MEMBER') {
+            <section class="profile-edit-card">
+              <div class="profile-edit-card__header">
+                <div>
+                  <span class="profile-edit-card__eyebrow">Fitness Profile</span>
+                  <h3>Training profile</h3>
+                  <p>Capture your current body metrics, goals, and experience so the profile stays useful over time.</p>
+                </div>
+              </div>
+
+              <form [formGroup]="memberForm" class="profile-form-grid">
+                <div class="profile-field">
+                  <label class="form-label">Gender</label>
+                  <select class="form-control" formControlName="gender">
+                    <option value="">Select gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Date of Birth</label>
+                  <input type="date" class="form-control" formControlName="dateOfBirth" />
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Height (cm)</label>
+                  <input type="number" class="form-control" formControlName="heightCm" min="50" max="300" placeholder="175" />
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Weight (kg)</label>
+                  <input type="number" class="form-control" formControlName="weightKg" min="20" max="500" placeholder="70" />
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Fitness Goal</label>
+                  <select class="form-control" formControlName="fitnessGoal">
+                    <option value="">Select goal</option>
+                    <option value="Build muscle">Build muscle</option>
+                    <option value="Lose weight">Lose weight</option>
+                    <option value="Improve endurance">Improve endurance</option>
+                    <option value="Stay active">Stay active</option>
+                    <option value="Flexibility">Flexibility</option>
+                  </select>
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Experience Level</label>
+                  <select class="form-control" formControlName="experienceLevel">
+                    <option value="">Select level</option>
+                    <option value="0">Beginner</option>
+                    <option value="1">Intermediate</option>
+                    <option value="2">Advanced</option>
+                  </select>
+                </div>
+              </form>
+            </section>
+          }
+
+          @if (activeTab() === 'extra' && role === 'COACH') {
+            <section class="profile-edit-card">
+              <div class="profile-edit-card__header">
+                <div>
+                  <span class="profile-edit-card__eyebrow">Coach Profile</span>
+                  <h3>Professional profile</h3>
+                  <p>Show members what you do best, how long you have been coaching, and what they can trust about your background.</p>
+                </div>
+              </div>
+
+              <form [formGroup]="coachForm" class="profile-form-grid">
+                <div class="profile-field profile-field--full">
+                  <label class="form-label">Bio</label>
+                  <textarea class="form-control" formControlName="bio" rows="4" placeholder="Tell members about your coaching style and specialties..."></textarea>
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Years of Experience</label>
+                  <input type="number" class="form-control" formControlName="yearsOfExperience" min="0" max="60" placeholder="5" />
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Certifications</label>
+                  <input type="text" class="form-control" formControlName="certifications" placeholder="NSCA-CPT, ACE..." />
+                </div>
+
+                <div class="profile-field">
+                  <label class="form-label">Language</label>
+                  <input type="text" class="form-control" formControlName="language" placeholder="English, French..." />
+                </div>
+              </form>
+            </section>
+          }
+
+          <div class="profile-edit-action-bar" [class.profile-edit-action-bar--active]="activeDirty">
+            <div class="profile-edit-action-bar__status">
+              <strong>{{ activeSectionTitle }}</strong>
+              <span>
+                @if (activeDirty) {
+                  You have unsaved changes in this section.
+                } @else {
+                  Everything in this section is saved.
+                }
+              </span>
+            </div>
+
+            <div class="profile-edit-action-bar__actions">
+              <button
+                type="button"
+                class="btn-edit-action btn-edit-action--ghost"
+                (click)="onDiscardActive()"
+                [disabled]="!activeDirty || isSavingProfile() || isSavingExtra()"
+              >
+                Discard changes
+              </button>
+
+              <button
+                type="button"
+                class="btn-edit-action btn-edit-action--primary"
+                (click)="saveActiveSection()"
+                [disabled]="activeTab() === 'personal' ? !canSavePersonal : !canSaveExtra"
+              >
+                @if ((activeTab() === 'personal' && isSavingProfile()) || (activeTab() === 'extra' && isSavingExtra())) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                }
+                Save changes
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
-
-      <!-- ===== PERSONAL INFO TAB ===== -->
-      @if (activeTab() === 'personal') {
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="profile-detail-group">
-              <div class="card">
-                <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()">
-                  <div class="row">
-
-                    <!-- Avatar upload -->
-                    <div class="col-md-12">
-                      <div class="profile-avatar-row">
-                        <div class="profile-avatar-wrap">
-                          <img
-                            [src]="avatarPreview()"
-                            (error)="onAvatarError($event)"
-                            class="profile-avatar-img"
-                            alt="Profile photo"
-                          />
-                          @if (pendingAvatarFile()) {
-                            <span class="profile-avatar-badge">Pending</span>
-                          }
-                        </div>
-                        <div class="profile-avatar-actions">
-                          <label class="profile-avatar-btn">
-                            <i class="feather-upload"></i>
-                            Change photo
-                            <input type="file" accept="image/jpeg,image/png,image/webp"
-                                   class="profile-avatar-file-input"
-                                   (change)="onFileSelected($event)">
-                          </label>
-                          @if (avatarError()) {
-                            <p class="profile-avatar-error">{{ avatarError() }}</p>
-                          }
-                          <p class="profile-avatar-hint">JPG, PNG or WebP · max 5 MB</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Alerts -->
-                    @if (profileSuccess()) {
-                      <div class="col-12">
-                        <div class="alert alert-success py-2">Profile updated successfully.</div>
-                      </div>
-                    }
-                    @if (profileError()) {
-                      <div class="col-12">
-                        <div class="alert alert-danger py-2">{{ profileError() }}</div>
-                      </div>
-                    }
-
-                    <!-- First Name -->
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">First Name <span class="text-danger">*</span></label>
-                        <input
-                          type="text"
-                          class="form-control"
-                          formControlName="firstName"
-                          placeholder="Enter First Name"
-                          [class.is-invalid]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched"
-                        />
-                        @if (profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched) {
-                          <div class="invalid-feedback">First name is required.</div>
-                        }
-                      </div>
-                    </div>
-
-                    <!-- Last Name -->
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                        <input
-                          type="text"
-                          class="form-control"
-                          formControlName="lastName"
-                          placeholder="Enter Last Name"
-                          [class.is-invalid]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched"
-                        />
-                        @if (profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched) {
-                          <div class="invalid-feedback">Last name is required.</div>
-                        }
-                      </div>
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Phone Number</label>
-                        <input
-                          type="tel"
-                          class="form-control"
-                          formControlName="phone"
-                          placeholder="Enter Phone Number"
-                        />
-                      </div>
-                    </div>
-
-                    <!-- Email (read-only) -->
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Email</label>
-                        <input
-                          type="email"
-                          class="form-control"
-                          [value]="userMe()?.email ?? ''"
-                          readonly
-                        />
-                      </div>
-                    </div>
-
-                  </div>
-                </form>
-              </div>
-
-              <!-- Save -->
-              <div class="save-changes text-end">
-                <button
-                  type="submit"
-                  class="btn btn-secondary save-profile"
-                  (click)="onSaveProfile()"
-                  [disabled]="isSavingProfile() || (profileForm.pristine && !pendingAvatarFile()) || profileForm.invalid"
-                >
-                  @if (isSavingProfile()) {
-                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                  }
-                  Save Changes
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- ===== FITNESS PROFILE TAB (MEMBER) ===== -->
-      @if (activeTab() === 'extra' && role === 'MEMBER') {
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="profile-detail-group">
-              <div class="card">
-                <form [formGroup]="memberForm" (ngSubmit)="onSaveMemberProfile()">
-                  <div class="row">
-
-                    @if (extraSuccess()) {
-                      <div class="col-12">
-                        <div class="alert alert-success py-2">Fitness profile updated successfully.</div>
-                      </div>
-                    }
-                    @if (extraError()) {
-                      <div class="col-12">
-                        <div class="alert alert-danger py-2">{{ extraError() }}</div>
-                      </div>
-                    }
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Gender</label>
-                        <select class="form-control" formControlName="gender">
-                          <option value="">Select gender</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Date of Birth</label>
-                        <input type="date" class="form-control" formControlName="dateOfBirth" />
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Height (cm)</label>
-                        <input type="number" class="form-control" formControlName="heightCm" min="50" max="300" placeholder="175" />
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Weight (kg)</label>
-                        <input type="number" class="form-control" formControlName="weightKg" min="20" max="500" placeholder="70" />
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Fitness Goal</label>
-                        <select class="form-control" formControlName="fitnessGoal">
-                          <option value="">Select goal</option>
-                          <option value="Build muscle">Build muscle</option>
-                          <option value="Lose weight">Lose weight</option>
-                          <option value="Improve endurance">Improve endurance</option>
-                          <option value="Stay active">Stay active</option>
-                          <option value="Flexibility">Flexibility</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Experience Level</label>
-                        <select class="form-control" formControlName="experienceLevel">
-                          <option value="">Select level</option>
-                          <option value="0">Beginner</option>
-                          <option value="1">Intermediate</option>
-                          <option value="2">Advanced</option>
-                        </select>
-                      </div>
-                    </div>
-
-                  </div>
-                </form>
-              </div>
-
-              <div class="save-changes text-end">
-                <button
-                  type="button"
-                  class="btn btn-secondary save-profile"
-                  (click)="onSaveMemberProfile()"
-                  [disabled]="isSavingExtra() || memberForm.pristine"
-                >
-                  @if (isSavingExtra()) {
-                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                  }
-                  Save Changes
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- ===== COACH PROFILE TAB (COACH) ===== -->
-      @if (activeTab() === 'extra' && role === 'COACH') {
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="profile-detail-group">
-              <div class="card">
-                <form [formGroup]="coachForm" (ngSubmit)="onSaveCoachProfile()">
-                  <div class="row">
-
-                    @if (extraSuccess()) {
-                      <div class="col-12">
-                        <div class="alert alert-success py-2">Coach profile updated successfully.</div>
-                      </div>
-                    }
-                    @if (extraError()) {
-                      <div class="col-12">
-                        <div class="alert alert-danger py-2">{{ extraError() }}</div>
-                      </div>
-                    }
-
-                    <div class="col-lg-12">
-                      <div class="input-space">
-                        <label class="form-label">Bio</label>
-                        <textarea class="form-control" formControlName="bio" rows="3" placeholder="Tell members about yourself..."></textarea>
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Years of Experience</label>
-                        <input type="number" class="form-control" formControlName="yearsOfExperience" min="0" max="60" placeholder="5" />
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Certifications</label>
-                        <input type="text" class="form-control" formControlName="certifications" placeholder="NSCA-CPT, ACE..." />
-                      </div>
-                    </div>
-
-                    <div class="col-lg-4 col-md-6">
-                      <div class="input-space">
-                        <label class="form-label">Language</label>
-                        <input type="text" class="form-control" formControlName="language" placeholder="English, French..." />
-                      </div>
-                    </div>
-
-                  </div>
-                </form>
-              </div>
-
-              <div class="save-changes text-end">
-                <button
-                  type="button"
-                  class="btn btn-secondary save-profile"
-                  (click)="onSaveCoachProfile()"
-                  [disabled]="isSavingExtra() || coachForm.pristine"
-                >
-                  @if (isSavingExtra()) {
-                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                  }
-                  Save Changes
-                </button>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      }
-
     </div>
   </div>
-  <!-- /Page Content -->
-
 }

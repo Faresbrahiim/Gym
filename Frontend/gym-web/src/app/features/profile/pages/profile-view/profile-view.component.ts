@@ -13,7 +13,8 @@ const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
   standalone: true,
   selector: 'app-profile-view',
   imports: [CommonModule, RouterLink, DashboardMenuComponent],
-  templateUrl: './profile-view.component.html'
+  templateUrl: './profile-view.component.html',
+  styleUrl: './profile-view.component.css'
 })
 export class ProfileViewComponent implements OnInit {
 
@@ -120,5 +121,121 @@ export class ProfileViewComponent implements OnInit {
     } catch {
       return dob.substring(0, 10);
     }
+  }
+
+  get completionScore(): number {
+    const me = this.userMe();
+    const profile = me?.profile;
+    let completed = 0;
+
+    if (profile?.firstName && profile?.lastName) completed += 1;
+    if (profile?.profilePictureUrl) completed += 1;
+    if (profile?.phone) completed += 1;
+    if (this.hasRoleDetails) completed += 1;
+
+    return Math.round((completed / 4) * 100);
+  }
+
+  get completionTone(): string {
+    if (this.completionScore >= 100) return 'Complete';
+    if (this.completionScore >= 75) return 'Strong';
+    if (this.completionScore >= 50) return 'In Progress';
+    return 'Getting Started';
+  }
+
+  get accountFacts(): Array<{ label: string; value: string }> {
+    const me = this.userMe();
+
+    return [
+      { label: 'Full Name', value: this.fullName || 'Not added yet' },
+      { label: 'Username', value: me ? `@${me.username}` : 'Not available' },
+      { label: 'Email', value: me?.email ?? 'Not available' },
+      { label: 'Role', value: this.roleLabel },
+      { label: 'Phone', value: me?.profile?.phone ?? 'Add this in edit profile' }
+    ];
+  }
+
+  get roleFacts(): Array<{ label: string; value: string }> {
+    const me = this.userMe();
+
+    if (this.role === 'COACH') {
+      const coach = me?.coachProfile;
+      return [
+        { label: 'Experience', value: coach?.yearsOfExperience !== null && coach?.yearsOfExperience !== undefined ? `${coach.yearsOfExperience} years` : 'Not added yet' },
+        { label: 'Certifications', value: coach?.certifications || 'Add credentials in edit profile' },
+        { label: 'Language', value: coach?.language || 'Not added yet' }
+      ];
+    }
+
+    const member = me?.memberProfile;
+    return [
+      { label: 'Gender', value: member?.gender || 'Not added yet' },
+      { label: 'Date of Birth', value: this.formattedDob || 'Not added yet' },
+      { label: 'Height', value: member?.heightCm ? `${member.heightCm} cm` : 'Not added yet' },
+      { label: 'Weight', value: member?.weightKg ? `${member.weightKg} kg` : 'Not added yet' },
+      { label: 'Goal', value: member?.fitnessGoal || 'Add your fitness goal' },
+      { label: 'Experience', value: this.experienceLabel || 'Not added yet' }
+    ];
+  }
+
+  get roleCardTitle(): string {
+    if (this.role === 'COACH') return 'Coach Snapshot';
+    if (this.role === 'MEMBER') return 'Fitness Snapshot';
+    return 'Profile Snapshot';
+  }
+
+  get roleCardDescription(): string {
+    if (this.role === 'COACH') {
+      return 'This is the information members will use to understand your coaching background and style.';
+    }
+    if (this.role === 'MEMBER') {
+      return 'These details shape the training profile attached to your account.';
+    }
+    return 'Role-specific details attached to this profile.';
+  }
+
+  get roleSummaryNote(): string {
+    if (this.role === 'COACH') {
+      return this.userMe()?.coachProfile?.bio || 'Add a short coach bio in Edit Profile so members understand your approach before chatting with you.';
+    }
+    return 'Keep your fitness profile current so goals, experience, and body metrics stay aligned with the rest of your gym journey.';
+  }
+
+  get profileChecklist(): Array<{ label: string; done: boolean; detail: string }> {
+    const me = this.userMe();
+    const profile = me?.profile;
+
+    return [
+      {
+        label: 'Identity',
+        done: !!profile?.firstName && !!profile?.lastName,
+        detail: !!profile?.firstName && !!profile?.lastName ? 'Name is visible across the app.' : 'Add your full name.'
+      },
+      {
+        label: 'Photo',
+        done: !!profile?.profilePictureUrl,
+        detail: !!profile?.profilePictureUrl ? 'Avatar is ready for chat and profile.' : 'Upload a recognizable profile photo.'
+      },
+      {
+        label: 'Contact',
+        done: !!profile?.phone,
+        detail: !!profile?.phone ? 'Phone number is saved.' : 'Add a phone number for completeness.'
+      },
+      {
+        label: this.role === 'COACH' ? 'Coach Details' : 'Fitness Details',
+        done: this.hasRoleDetails,
+        detail: this.hasRoleDetails ? 'Role-specific information is available.' : 'Complete your role-specific profile.'
+      }
+    ];
+  }
+
+  private get hasRoleDetails(): boolean {
+    if (this.role === 'COACH') {
+      const coach = this.userMe()?.coachProfile;
+      return !!(coach?.bio || coach?.certifications || coach?.language || coach?.yearsOfExperience !== null && coach?.yearsOfExperience !== undefined);
+    }
+
+    const member = this.userMe()?.memberProfile;
+    return !!(member?.gender || member?.fitnessGoal || member?.heightCm || member?.weightKg || member?.dateOfBirth || member?.experienceLevel !== null && member?.experienceLevel !== undefined);
   }
 }
