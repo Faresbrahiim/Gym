@@ -44,6 +44,7 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers("/api/plans/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/plans/**").permitAll()
 
                         // everything else needs auth
                         .anyRequest().authenticated()

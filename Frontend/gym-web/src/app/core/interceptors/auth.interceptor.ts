@@ -33,7 +33,9 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const http         = inject(HttpClient);
 
   // Attach Bearer token if present
-  const token = tokenService.getAccessToken();
+  const token = tokenService.isAuthenticated()
+    ? tokenService.getAccessToken()
+    : null;
   const authRequest = token
     ? request.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : request;
