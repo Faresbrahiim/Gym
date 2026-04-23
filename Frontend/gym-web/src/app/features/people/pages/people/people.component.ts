@@ -178,6 +178,16 @@ export class PeopleComponent implements OnInit, OnDestroy {
       : 'Part of the member community and ready to connect.';
   }
 
+  get canStartChat(): boolean {
+    return this.tokenService.isAuthenticated();
+  }
+
+  onGuestChatIntent(): void {
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url }
+    });
+  }
+
   ngOnDestroy(): void {
     this.subs.unsubscribe();
   }

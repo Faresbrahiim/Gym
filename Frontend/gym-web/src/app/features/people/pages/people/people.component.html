@@ -186,19 +186,30 @@
 
               <div class="person-card__footer">
                 @if (person.id !== currentUserId) {
-                  <button
-                    class="btn-chat"
-                    [class.btn-chat--loading]="startingConvFor() === person.id"
-                    [disabled]="startingConvFor() === person.id"
-                    (click)="startChat(person)"
-                  >
-                    @if (startingConvFor() === person.id) {
-                      <span class="btn-chat-spinner"></span>
-                    } @else {
-                      <i class="feather-message-circle"></i>
-                    }
-                    <span>Start chat</span>
-                  </button>
+                  @if (canStartChat) {
+                    <button
+                      class="btn-chat"
+                      [class.btn-chat--loading]="startingConvFor() === person.id"
+                      [disabled]="startingConvFor() === person.id"
+                      (click)="startChat(person)"
+                    >
+                      @if (startingConvFor() === person.id) {
+                        <span class="btn-chat-spinner"></span>
+                      } @else {
+                        <i class="feather-message-circle"></i>
+                      }
+                      <span>Start chat</span>
+                    </button>
+                  } @else {
+                    <button
+                      class="btn-chat btn-chat--guest"
+                      type="button"
+                      (click)="onGuestChatIntent()"
+                    >
+                      <i class="feather-log-in"></i>
+                      <span>Sign in to chat</span>
+                    </button>
+                  }
                 } @else {
                   <span class="you-badge">You</span>
                 }

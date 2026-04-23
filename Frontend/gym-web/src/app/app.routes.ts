@@ -50,7 +50,6 @@ export const routes: Routes = [
       },
       {
         path: 'people',
-        canActivate: [authGuard],
         loadChildren: () =>
           import('./features/people/people.routes').then(m => m.peopleRoutes)
       },

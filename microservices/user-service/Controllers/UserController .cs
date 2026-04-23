@@ -31,7 +31,7 @@ namespace user_service.Controllers
             return Ok(users);
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<UserSearchResultDto>>> SearchUsers(
             [FromQuery] string q,

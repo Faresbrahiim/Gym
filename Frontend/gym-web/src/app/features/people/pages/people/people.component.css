@@ -542,6 +542,12 @@
   box-shadow: 0 14px 24px rgba(23, 124, 130, 0.18);
 }
 
+.btn-chat--guest {
+  background: linear-gradient(135deg, #f5fafb 0%, #e8f2f4 100%);
+  color: #177c82;
+  box-shadow: none;
+}
+
 .btn-chat:disabled,
 .btn-chat--loading {
   opacity: 0.65;
