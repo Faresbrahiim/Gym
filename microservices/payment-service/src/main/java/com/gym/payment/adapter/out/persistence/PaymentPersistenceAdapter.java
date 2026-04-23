@@ -25,7 +25,15 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
     @Override
     public Payment save(Payment payment) {
         try {
-            PaymentJpaEntity entity = mapper.toEntity(payment);
+            PaymentJpaEntity entity = repository.findById(payment.getId())
+                    .map(existing -> {
+                        existing.setStatus(payment.getStatus());
+                        existing.setStripePaymentIntentId(payment.getStripePaymentIntentId());
+                        existing.setFailureReason(payment.getFailureReason());
+                        existing.setCompletedAt(payment.getCompletedAt());
+                        return existing;
+                    })
+                    .orElseGet(() -> mapper.toEntity(payment));
             return mapper.toDomain(repository.save(entity));
         } catch (ObjectOptimisticLockingFailureException e) {
             return payment;

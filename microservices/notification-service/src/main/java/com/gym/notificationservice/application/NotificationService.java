@@ -18,6 +18,8 @@ import java.util.UUID;
 @Transactional
 public class NotificationService {
 
+    private static final String CHAT_NOTIFICATION_TYPE = "CHAT_MESSAGE_RECEIVED";
+
     private final NotificationRepository notificationRepository;
     private final WebSocketPublisher webSocketPublisher;
 
@@ -28,11 +30,26 @@ public class NotificationService {
     }
 
     public NotificationResponse createNotification(UUID userId, String title, String message, String type) {
+        return createNotification(userId, title, message, type, null, null, null);
+    }
+
+    public NotificationResponse createNotification(
+            UUID userId,
+            String title,
+            String message,
+            String type,
+            String resourceType,
+            String resourceId,
+            String actionUrl
+    ) {
         Notification notification = new Notification();
         notification.setUserId(userId);
         notification.setTitle(title);
         notification.setMessage(message);
         notification.setType(type);
+        notification.setResourceType(resourceType);
+        notification.setResourceId(resourceId);
+        notification.setActionUrl(actionUrl);
 
         Notification saved = notificationRepository.save(notification);
         NotificationResponse response = toResponse(saved);
@@ -46,13 +63,18 @@ public class NotificationService {
     public List<NotificationResponse> getMyNotifications(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
+                .filter(this::isChatNotification)
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public long getUnreadCount(UUID userId) {
-        return notificationRepository.countByUserIdAndStatus(userId, NotificationStatus.UNREAD);
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .filter(this::isChatNotification)
+                .filter(n -> n.getStatus() == NotificationStatus.UNREAD)
+                .count();
     }
 
     public NotificationResponse markAsRead(UUID notificationId, UUID userId) {
@@ -69,8 +91,30 @@ public class NotificationService {
     public void markAllAsRead(UUID userId) {
         List<Notification> unread = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
+                .filter(this::isChatNotification)
                 .filter(n -> n.getStatus() == NotificationStatus.UNREAD)
                 .toList();
+
+        LocalDateTime now = LocalDateTime.now();
+        unread.forEach(n -> {
+            n.setStatus(NotificationStatus.READ);
+            n.setReadAt(now);
+        });
+
+        notificationRepository.saveAll(unread);
+    }
+
+    public void markByResourceAsRead(UUID userId, String resourceType, String resourceId) {
+        List<Notification> unread = notificationRepository.findByUserIdAndStatusAndResourceTypeAndResourceId(
+                userId,
+                NotificationStatus.UNREAD,
+                resourceType,
+                resourceId
+        );
+
+        if (unread.isEmpty()) {
+            return;
+        }
 
         LocalDateTime now = LocalDateTime.now();
         unread.forEach(n -> {
@@ -88,9 +132,16 @@ public class NotificationService {
                 n.getTitle(),
                 n.getMessage(),
                 n.getType(),
+                n.getResourceType(),
+                n.getResourceId(),
+                n.getActionUrl(),
                 n.getStatus(),
                 n.getCreatedAt(),
                 n.getReadAt()
         );
+    }
+
+    private boolean isChatNotification(Notification notification) {
+        return CHAT_NOTIFICATION_TYPE.equals(notification.getType());
     }
 }

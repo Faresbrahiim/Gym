@@ -36,7 +36,6 @@ public class StripePaymentGatewayAdapter implements PaymentGatewayPort {
                     .setAmount(amountInCents)
                     .setCurrency(money.currency().toLowerCase())
                     .setPaymentMethod(paymentMethodToken)
-                    .setConfirmationMethod(PaymentIntentCreateParams.ConfirmationMethod.MANUAL)
                     .build();
 
             PaymentIntent intent = PaymentIntent.create(params);

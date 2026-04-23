@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface SubscriptionHistoryRepository extends JpaRepository<SubscriptionHistory, UUID> {
     List<SubscriptionHistory> findBySubscription_Id(UUID subscriptionId);
+    List<SubscriptionHistory> findBySubscription_UserIdOrderByChangedAtDesc(UUID userId);
 }

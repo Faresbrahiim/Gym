@@ -7,10 +7,37 @@ services:
   - name: membership-service
     url: http://membership-service:8080
     routes:
+      - name: membership-plans-route
+        paths:
+          - /api/plans
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 60
+              hour: 1000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
       - name: membership-route
         paths:
           - /api/subscriptions
-          - /api/plans
           - /api/admin/subscriptions
         strip_path: false
         plugins:
@@ -301,6 +328,110 @@ services:
             config:
               minute: 100
               hour: 2000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - POST
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
+  # ==============================
+  # Presence Service
+  # ==============================
+  - name: presence-service
+    url: http://presence-service:8080
+    routes:
+      # --- WebSocket heartbeat endpoint ---
+      # Token is a query param (?token=...). The Rust service validates JWT itself.
+      # No CORS plugin — WebSocket upgrades are not preflight requests.
+      - name: presence-ws-route
+        paths:
+          - /ws
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 10
+              hour: 100
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+      # --- REST presence endpoints ---
+      # GET /presence/online   — admin only (JWT + role=ADMIN enforced by service)
+      # GET /presence/{userId} — no auth (returns bool only, internal use)
+      # Service validates JWT itself — no Kong JWT plugin needed, same pattern as user-service.
+      - name: presence-rest-route
+        paths:
+          - /presence
+          - /api/presence
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 60
+              hour: 1000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - POST
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
+  # ==============================
+  # Notification Service
+  # ==============================
+  - name: notification-service
+    url: http://notification-service:8080
+    routes:
+      - name: notification-ws-route
+        paths:
+          - /ws/notifications
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 30
+              hour: 500
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+      - name: notification-rest-route
+        paths:
+          - /api/notifications
+        strip_path: false
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 60
+              hour: 1000
               policy: local
               fault_tolerant: true
               hide_client_headers: false

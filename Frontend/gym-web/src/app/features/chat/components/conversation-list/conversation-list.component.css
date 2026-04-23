@@ -1,0 +1,256 @@
+/* ── Shell ───────────────────────────────────────────────────────────────── */
+.conv-list-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* ── Search bar ──────────────────────────────────────────────────────────── */
+.conv-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 12px 8px;
+  padding: 0 12px;
+  height: 38px;
+  background: #f4f6f8;
+  border-radius: 10px;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.conv-search:focus-within {
+  background: #edf0f4;
+}
+
+.conv-search-icon {
+  font-size: 14px;
+  color: #9e9e9e;
+  flex-shrink: 0;
+}
+
+.conv-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: "Outfit", sans-serif;
+  color: #1e2433;
+}
+
+.conv-search-input::placeholder {
+  color: #b0bec5;
+}
+
+.conv-search-clear {
+  background: none;
+  border: none;
+  color: #b0bec5;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.conv-search-clear:hover {
+  color: #5a6a7a;
+}
+
+/* ── Scrollable list ─────────────────────────────────────────────────────── */
+.conv-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0 12px;
+}
+
+.conv-list::-webkit-scrollbar        { width: 4px; }
+.conv-list::-webkit-scrollbar-thumb  { background: #dde3ea; border-radius: 4px; }
+.conv-list::-webkit-scrollbar-track  { background: transparent; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.conv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 20px;
+  text-align: center;
+  color: #7a8a9a;
+  font-size: 13px;
+  font-family: "Outfit", sans-serif;
+}
+
+.conv-empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e8f5f6;
+  color: #177c82;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.conv-empty p {
+  margin: 0;
+  font-weight: 600;
+  color: #1e2433;
+}
+
+.conv-empty-hint {
+  font-size: 12px;
+  color: #b0bec5;
+}
+
+.conv-empty-hint a {
+  color: #177c82;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.conv-empty-hint a:hover {
+  text-decoration: underline;
+}
+
+/* ── Conversation item ───────────────────────────────────────────────────── */
+.conv-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+
+.conv-item:hover {
+  background: #f8f9fb;
+}
+
+.conv-item--active {
+  background: #f0fafa;
+  border-left-color: #177c82;
+}
+
+.conv-item--active:hover {
+  background: #e8f5f6;
+}
+
+/* ── Avatar ──────────────────────────────────────────────────────────────── */
+.conv-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+}
+
+.conv-avatar-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.conv-avatar-initials {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #e8f5f6;
+  color: #177c82;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: "Outfit", sans-serif;
+}
+
+.conv-item--active .conv-avatar-initials {
+  background: #177c82;
+  color: #fff;
+}
+
+.conv-online-dot {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #2e7d32;
+  border: 2px solid #fff;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.conv-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.conv-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.conv-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e2433;
+  font-family: "Outfit", sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conv-name--unread {
+  font-weight: 800;
+}
+
+.conv-time {
+  font-size: 11px;
+  color: #b0bec5;
+  flex-shrink: 0;
+  font-family: "Outfit", sans-serif;
+}
+
+.conv-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.conv-preview {
+  font-size: 12px;
+  color: #7a8a9a;
+  font-family: "Outfit", sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conv-preview--unread {
+  color: #1e2433;
+  font-weight: 600;
+}
+
+.conv-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #177c82;
+  flex-shrink: 0;
+}

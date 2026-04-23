@@ -42,6 +42,22 @@ export const routes: Routes = [
         path: 'membership',
         loadChildren: () =>
           import('./features/membership/membership.routes').then(m => m.membershipRoutes)
+      },
+      {
+        path: 'payments',
+        loadChildren: () =>
+          import('./features/payments/payments.routes').then(m => m.paymentsRoutes)
+      },
+      {
+        path: 'people',
+        loadChildren: () =>
+          import('./features/people/people.routes').then(m => m.peopleRoutes)
+      },
+      {
+        path: 'chat',
+        canActivate: [authGuard],
+        loadChildren: () =>
+          import('./features/chat/chat.routes').then(m => m.chatRoutes)
       }
     ]
   },
@@ -72,13 +88,6 @@ export const routes: Routes = [
       import('./features/admin/admin.routes').then(m => m.adminRoutes)
   },
   // Chat feature — protected, no layout (full-screen chat interface)
-  {
-  path: 'chat',
-  canActivate: [authGuard],
-  loadChildren: () =>
-    import('./features/chat/chat.routes').then(m => m.chatRoutes)
-  },
-
   // 404
   {
     path: '**',

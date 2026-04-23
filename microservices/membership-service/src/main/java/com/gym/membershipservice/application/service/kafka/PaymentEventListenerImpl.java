@@ -4,6 +4,7 @@ import com.gym.membershipservice.application.dto.kafka.PaymentCompletedMessage;
 import com.gym.membershipservice.application.dto.kafka.PaymentFailedMessage;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
+import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import com.gym.membershipservice.application.port.kafka.PaymentEventHandler;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +19,12 @@ import java.util.UUID;
 public class PaymentEventListenerImpl implements PaymentEventHandler {
 
     private final SubscriptionRepository subscriptionRepository;
+    private final SubscriptionHistoryService historyService;
 
-    public PaymentEventListenerImpl(SubscriptionRepository subscriptionRepository) {
+    public PaymentEventListenerImpl(SubscriptionRepository subscriptionRepository,
+                                    SubscriptionHistoryService historyService) {
         this.subscriptionRepository = subscriptionRepository;
+        this.historyService = historyService;
     }
 
     @KafkaListener(
@@ -47,8 +51,11 @@ public class PaymentEventListenerImpl implements PaymentEventHandler {
                 return;
             }
 
+            SubscriptionStatus previous = sub.getStatus();
             sub.setStatus(SubscriptionStatus.ACTIVE);
-            subscriptionRepository.save(sub);
+            Subscription saved = subscriptionRepository.save(sub);
+            historyService.recordChange(saved, previous, SubscriptionStatus.ACTIVE, null,
+                    "Payment completed - membership activated");
 
             log.info("Subscription {} activated after successful payment", subscriptionId);
 
@@ -81,8 +88,11 @@ public class PaymentEventListenerImpl implements PaymentEventHandler {
                 return;
             }
 
+            SubscriptionStatus previous = sub.getStatus();
             sub.setStatus(SubscriptionStatus.PAYMENT_FAILED);
-            subscriptionRepository.save(sub);
+            Subscription saved = subscriptionRepository.save(sub);
+            historyService.recordChange(saved, previous, SubscriptionStatus.PAYMENT_FAILED, null,
+                    "Payment failed");
 
             log.info("Subscription {} marked as PAYMENT_FAILED. Reason: {}", subscriptionId, message.getFailureReason());
 

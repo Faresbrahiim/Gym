@@ -1,4 +1,3 @@
-<!-- Breadcrumb — always visible -->
 <section class="breadcrumb breadcrumb-list mb-0">
   <span class="primary-right-round"></span>
   <div class="container">
@@ -11,179 +10,224 @@
   </div>
 </section>
 
-<!-- Dashboard Menu — always visible -->
 <app-dashboard-menu />
 
-<!-- Page Content -->
-<div class="content court-bg">
+<div class="content court-bg security-page">
   <div class="container">
+    <div class="security-shell">
+      <aside class="security-sidebar">
+        <section class="security-summary">
+          <span class="security-summary__eyebrow">Security Workspace</span>
+          <h2>Account protection</h2>
+          <p>{{ securitySummary }}</p>
 
-    <!-- Logout-all confirmation banner -->
-    @if (showLogoutConfirm()) {
-      <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4" role="alert">
-        <span>
-          <i class="feather-alert-circle me-2"></i>
-          This will sign you out of <strong>all devices</strong>, including this one. Are you sure?
-        </span>
-        <div class="d-flex gap-2 flex-shrink-0 ms-3">
-          <button class="btn btn-sm btn-danger" (click)="confirmLogoutAll()" [disabled]="isLoggingOutAll()">
-            @if (isLoggingOutAll()) {
-              <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-            }
-            Sign out all
-          </button>
-          <button class="btn btn-sm btn-secondary" (click)="cancelLogoutAll()" [disabled]="isLoggingOutAll()">
-            Cancel
-          </button>
-        </div>
-      </div>
-    }
+          <div class="security-health">
+            <div class="security-health__score" [style.--progress]="totalSessions === 0 ? 25 : otherDevicesCount === 0 ? 100 : otherDevicesCount <= 2 ? 72 : 48">
+              <strong>{{ totalSessions }}</strong>
+              <span>{{ securityPostureLabel }}</span>
+            </div>
 
-    <!-- 2FA card — static, no data dependency -->
-    <div class="profile-card mb-4">
-      <div class="profile-card-title d-flex align-items-center justify-content-between">
-        <div>
-          <h4 class="mb-1">Two-Factor Authentication</h4>
-          <p class="text-muted small mb-0">Add an extra layer of security. Use an authenticator app to generate a login code.</p>
-        </div>
-        <a routerLink="/setup-2fa" class="btn btn-sm btn-outline-secondary flex-shrink-0 ms-3">
-          <i class="feather-shield me-1"></i>Set up / Reconfigure 2FA
-        </a>
-      </div>
-    </div>
-
-    <!-- Change Password card — static, no data dependency -->
-    <div class="profile-card mb-4">
-      <div class="profile-card-title d-flex align-items-center justify-content-between">
-        <div>
-          <h4 class="mb-1">Change Password</h4>
-          <p class="text-muted small mb-0">We'll send a reset link to your email address.</p>
-        </div>
-        <button
-          class="btn btn-sm btn-outline-secondary flex-shrink-0 ms-3"
-          (click)="requestPasswordChange()"
-          [disabled]="isSendingReset() || resetSent()">
-          @if (isSendingReset()) {
-            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-          } @else {
-            <i class="feather-lock me-1"></i>
-          }
-          {{ resetSent() ? 'Email sent' : 'Send reset link' }}
-        </button>
-      </div>
-      @if (resetSent()) {
-        <div class="alert alert-success py-2 mt-3 mb-0">
-          <i class="feather-check-circle me-2"></i>
-          A password reset link has been sent to your email. Check your inbox.
-        </div>
-      }
-      @if (resetError()) {
-        <div class="alert alert-danger py-2 mt-3 mb-0">
-          <i class="feather-alert-circle me-2"></i>
-          {{ resetError() }}
-        </div>
-      }
-    </div>
-
-    <!-- Sessions card — loading scoped here only -->
-    <div class="profile-card">
-
-      @if (isLoading()) {
-        <div class="d-flex justify-content-center align-items-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+            <div class="security-health__copy">
+              <h3>Session posture</h3>
+              <p>Review your signed-in devices, recovery path, and authentication setup from one place.</p>
+            </div>
           </div>
-        </div>
-      }
+        </section>
 
-      @if (!isLoading() && hasError()) {
-        <div class="text-center py-5">
-          <p class="text-muted mb-3">Unable to load sessions. Please try again.</p>
-          <button class="btn btn-secondary" (click)="retry()">Retry</button>
-        </div>
-      }
+        <section class="security-stats">
+          <div class="security-stat-card">
+            <span class="security-stat-card__label">Signed-in devices</span>
+            <strong>{{ totalSessions }}</strong>
+            <p>All currently active sessions tied to your account.</p>
+          </div>
 
-      @if (!isLoading() && !hasError()) {
-        <div class="profile-card-title d-flex align-items-center justify-content-between">
-          <h4 class="mb-0">Active Sessions</h4>
-          <button
-            class="btn btn-sm btn-outline-danger"
-            (click)="promptLogoutAll()"
-            [disabled]="isLoggingOutAll() || showLogoutConfirm()"
-          >
-            <i class="feather-log-out me-1"></i>Sign out all devices
-          </button>
-        </div>
+          <div class="security-stat-card">
+            <span class="security-stat-card__label">Other devices</span>
+            <strong>{{ otherDevicesCount }}</strong>
+            <p>Sessions you may want to review or revoke.</p>
+          </div>
+        </section>
+      </aside>
 
-        <!-- Empty state -->
-        @if (sessions().length === 0) {
-          <div class="text-center py-5 text-muted">
-            <i class="feather-shield" style="font-size:2.5rem;display:block;margin-bottom:12px;"></i>
-            No active sessions found.
+      <main class="security-main">
+        <section class="security-hero">
+          <span class="security-summary__eyebrow">Profile Security</span>
+          <h2>Protect access without clutter</h2>
+          <p>Keep authentication, password recovery, and session management tidy and easy to review.</p>
+        </section>
+
+        @if (showLogoutConfirm()) {
+          <div class="security-alert security-alert--warning">
+            <div>
+              <strong>Sign out from all devices</strong>
+              <p>This will end every active session, including the one you are using right now.</p>
+            </div>
+
+            <div class="security-alert__actions">
+              <button class="btn-security btn-security--danger" (click)="confirmLogoutAll()" [disabled]="isLoggingOutAll()">
+                @if (isLoggingOutAll()) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                }
+                Sign out all
+              </button>
+              <button class="btn-security btn-security--ghost" (click)="cancelLogoutAll()" [disabled]="isLoggingOutAll()">
+                Cancel
+              </button>
+            </div>
           </div>
         }
 
-        <!-- Session list -->
-        @if (sessions().length > 0) {
-          <div class="session-list">
-            @for (session of sessions(); track session.tokenId) {
-              <div class="session-item">
+        <div class="security-card-grid">
+          <section class="security-card">
+            <div class="security-card__header">
+              <div>
+                <span class="security-card__eyebrow">Authentication</span>
+                <h3>Two-factor authentication</h3>
+                <p>Add a second verification step with an authenticator app before sign-in is approved.</p>
+              </div>
+              <a routerLink="/setup-2fa" class="btn-security btn-security--ghost btn-security--compact">
+                <i class="feather-shield me-1"></i>
+                Configure 2FA
+              </a>
+            </div>
+          </section>
 
-                <div class="session-icon">
-                  @if (parseAgent(session.userAgent).isMobile) {
-                    <i class="feather-smartphone"></i>
-                  } @else {
-                    <i class="feather-monitor"></i>
-                  }
-                </div>
+          <section class="security-card">
+            <div class="security-card__header">
+              <div>
+                <span class="security-card__eyebrow">Recovery</span>
+                <h3>Password reset</h3>
+                <p>Send a secure reset link to your email whenever you want to rotate your password.</p>
+              </div>
+              <button
+                class="btn-security btn-security--ghost btn-security--compact"
+                (click)="requestPasswordChange()"
+                [disabled]="isSendingReset() || resetSent()"
+              >
+                @if (isSendingReset()) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                } @else {
+                  <i class="feather-lock me-1"></i>
+                }
+                {{ resetSent() ? 'Reset sent' : 'Send reset' }}
+              </button>
+            </div>
 
-                <div class="session-info">
-                  <div class="session-name">
-                    {{ parseAgent(session.userAgent).browser }}
-                    <span class="session-os">on {{ parseAgent(session.userAgent).os }}</span>
-                    @if (isCurrentSession(session)) {
-                      <span class="badge session-current-badge ms-2">This device</span>
-                    }
-                  </div>
-                  <div class="session-meta">
-                    <span>
-                      <i class="feather-map-pin me-1"></i>
-                      {{ session.ipAddress ?? 'Unknown IP' }}
-                    </span>
-                    <span class="session-meta-sep">·</span>
-                    <span>
-                      <i class="feather-clock me-1"></i>
-                      Signed in {{ formatDate(session.createdAt) }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="session-action flex-shrink-0">
-                  @if (!isCurrentSession(session)) {
-                    <button
-                      class="btn btn-sm btn-outline-secondary"
-                      (click)="revoke(session.tokenId)"
-                      [disabled]="isRevoking(session.tokenId)"
-                    >
-                      @if (isRevoking(session.tokenId)) {
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                      } @else {
-                        <i class="feather-x me-1"></i>Revoke
-                      }
-                    </button>
-                  } @else {
-                    <span class="session-current-label">Current</span>
-                  }
-                </div>
-
+            @if (resetSent()) {
+              <div class="security-inline-note security-inline-note--success">
+                <i class="feather-check-circle"></i>
+                <span>A password reset link has been sent to your email. Check your inbox.</span>
               </div>
             }
+
+            @if (resetError()) {
+              <div class="security-inline-note security-inline-note--error">
+                <i class="feather-alert-circle"></i>
+                <span>{{ resetError() }}</span>
+              </div>
+            }
+          </section>
+        </div>
+
+        <section class="security-card security-card--sessions">
+          <div class="security-card__header">
+            <div>
+              <span class="security-card__eyebrow">Sessions</span>
+              <h3>Active sessions</h3>
+              <p>Inspect where your account is signed in and revoke any device you no longer trust.</p>
+            </div>
+
+            <button
+              class="btn-security btn-security--outline-danger"
+              (click)="promptLogoutAll()"
+              [disabled]="isLoggingOutAll() || showLogoutConfirm() || isLoading() || hasError() || sessions().length === 0"
+            >
+              <i class="feather-log-out me-1"></i>
+              Sign out all devices
+            </button>
           </div>
-        }
-      }
 
+          @if (isLoading()) {
+            <div class="security-state">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span>Loading your active sessions...</span>
+            </div>
+          }
+
+          @if (!isLoading() && hasError()) {
+            <div class="security-state security-state--error">
+              <p>{{ loadErrorMessage() ?? 'Unable to load sessions right now.' }}</p>
+              <button class="btn-security btn-security--ghost" (click)="retry()">Retry</button>
+            </div>
+          }
+
+          @if (!isLoading() && !hasError() && sessions().length === 0) {
+            <div class="security-state">
+              <i class="feather-shield"></i>
+              <span>No active sessions found.</span>
+            </div>
+          }
+
+          @if (!isLoading() && !hasError() && sessions().length > 0) {
+            <div class="session-list">
+              @for (session of sessions(); track session.tokenId) {
+                <div class="session-item">
+                  <div class="session-icon">
+                    @if (parseAgent(session.userAgent).isMobile) {
+                      <i class="feather-smartphone"></i>
+                    } @else {
+                      <i class="feather-monitor"></i>
+                    }
+                  </div>
+
+                  <div class="session-info">
+                    <div class="session-name">
+                      {{ parseAgent(session.userAgent).browser }}
+                      <span class="session-os">on {{ parseAgent(session.userAgent).os }}</span>
+                      @if (isCurrentSession(session)) {
+                        <span class="session-current-badge">This device</span>
+                      }
+                    </div>
+
+                    <div class="session-meta">
+                      <span>
+                        <i class="feather-map-pin me-1"></i>
+                        {{ session.ipAddress ?? 'Unknown IP' }}
+                      </span>
+                      <span class="session-meta-sep">|</span>
+                      <span>
+                        <i class="feather-clock me-1"></i>
+                        Signed in {{ formatDate(session.createdAt) }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="session-action">
+                    @if (!isCurrentSession(session)) {
+                      <button
+                        class="btn-security btn-security--ghost"
+                        (click)="revoke(session.tokenId)"
+                        [disabled]="isRevoking(session.tokenId)"
+                      >
+                        @if (isRevoking(session.tokenId)) {
+                          <span class="spinner-border spinner-border-sm" role="status"></span>
+                        } @else {
+                          <i class="feather-x me-1"></i>
+                          Revoke
+                        }
+                      </button>
+                    } @else {
+                      <span class="session-current-label">Current session</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      </main>
     </div>
-    <!-- /Sessions card -->
-
   </div>
 </div>

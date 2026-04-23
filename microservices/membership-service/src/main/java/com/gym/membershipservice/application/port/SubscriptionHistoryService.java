@@ -16,5 +16,6 @@ public interface SubscriptionHistoryService {
                                      UUID changedBy,
                                      String note);
 
-     List<SubscriptionHistoryResponseDTO> getHistory(UUID subscriptionId) ;
+    List<SubscriptionHistoryResponseDTO> getHistory(UUID subscriptionId);
+    List<SubscriptionHistoryResponseDTO> getHistoryForUser(UUID userId);
 }

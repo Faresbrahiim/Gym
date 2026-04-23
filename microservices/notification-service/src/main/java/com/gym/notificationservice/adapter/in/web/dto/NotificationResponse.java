@@ -11,6 +11,9 @@ public record NotificationResponse(
         String title,
         String message,
         String type,
+        String resourceType,
+        String resourceId,
+        String actionUrl,
         NotificationStatus status,
         LocalDateTime createdAt,
         LocalDateTime readAt

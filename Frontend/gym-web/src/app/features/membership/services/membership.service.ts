@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { tap, map } from 'rxjs/operators';
 import { ApiService } from '../../../core/api/api.service';
 import { Subscription } from '../models/subscription.model';
+import { SubscriptionHistoryEntry } from '../models/subscription-history-entry.model';
 import { ACTIVE_STATUSES } from '../models/subscription-status.enum';
 
 @Injectable({ providedIn: 'root' })
@@ -19,6 +20,10 @@ export class MembershipService {
 
   getMySubscriptions(): Observable<Subscription[]> {
     return this.api.get<Subscription[]>(`${this.BASE}/me`);
+  }
+
+  getMySubscriptionHistory(): Observable<SubscriptionHistoryEntry[]> {
+    return this.api.get<SubscriptionHistoryEntry[]>(`${this.BASE}/me/history`);
   }
 
   // Derives the "current" subscription: first with an active-ish status,

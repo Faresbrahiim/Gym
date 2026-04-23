@@ -1,7 +1,9 @@
 package com.gym.notificationservice.adapter.in.web;
 
 import com.gym.notificationservice.adapter.in.web.dto.NotificationResponse;
+import com.gym.notificationservice.adapter.in.web.dto.NotificationResourceReadRequest;
 import com.gym.notificationservice.application.NotificationService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +44,16 @@ public class NotificationController {
     public ResponseEntity<Void> markAllAsRead(JwtAuthenticationToken token) {
         UUID userId = UUID.fromString(token.getToken().getSubject());
         notificationService.markAllAsRead(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/me/read-resource")
+    public ResponseEntity<Void> markResourceAsRead(
+            @Valid @RequestBody NotificationResourceReadRequest request,
+            JwtAuthenticationToken token
+    ) {
+        UUID userId = UUID.fromString(token.getToken().getSubject());
+        notificationService.markByResourceAsRead(userId, request.resourceType(), request.resourceId());
         return ResponseEntity.noContent().build();
     }
 }

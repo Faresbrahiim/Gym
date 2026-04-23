@@ -129,16 +129,27 @@
                 <i class="feather-gift"></i>
                 <p>No payment required — activate instantly.</p>
               </div>
-            } @else if (isChangingPlan) {
-              <div class="checkout-notice info">
-                <i class="feather-refresh-cw"></i>
-                <p>Your current plan is replaced with <strong>{{ plan()!.name }}</strong> right away.</p>
-              </div>
             } @else {
-              <div class="checkout-notice info">
-                <i class="feather-zap"></i>
-                <p>You'll be subscribed to <strong>{{ plan()!.name }}</strong> immediately after confirmation.</p>
+              <div class="mt-4 mb-4">
+                <h6 class="text-muted mb-3"><i class="feather-credit-card me-2"></i>Payment Details</h6>
+                <app-stripe-card (errorChange)="paymentErrorMessage.set($event)"></app-stripe-card>
+                @if (paymentErrorMessage()) {
+                  <div class="text-danger mt-2 small fw-medium">
+                    <i class="feather-alert-circle me-1"></i> {{ paymentErrorMessage() }}
+                  </div>
+                }
               </div>
+              @if (isChangingPlan) {
+                <div class="checkout-notice info">
+                  <i class="feather-refresh-cw"></i>
+                  <p>Your current plan is replaced with <strong>{{ plan()!.name }}</strong> right away.</p>
+                </div>
+              } @else {
+                <div class="checkout-notice info">
+                  <i class="feather-zap"></i>
+                  <p>You'll be subscribed to <strong>{{ plan()!.name }}</strong> immediately after confirmation.</p>
+                </div>
+              }
             }
 
             <!-- CTA -->

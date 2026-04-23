@@ -12,4 +12,11 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
     List<Notification> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     long countByUserIdAndStatus(UUID userId, NotificationStatus status);
+
+    List<Notification> findByUserIdAndStatusAndResourceTypeAndResourceId(
+            UUID userId,
+            NotificationStatus status,
+            String resourceType,
+            String resourceId
+    );
 }

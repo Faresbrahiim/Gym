@@ -1,0 +1,26 @@
+<div class="input-bar" [class.input-bar--disabled]="disabled">
+  <textarea
+    #textarea
+    [(ngModel)]="content"
+    (input)="onInput()"
+    (keydown)="onKeydown($event)"
+    [disabled]="disabled"
+    class="input-textarea"
+    placeholder="Type a message…"
+    rows="1"
+    autocomplete="off"
+    spellcheck="true"
+  ></textarea>
+
+  <button
+    class="send-btn"
+    [class.send-btn--active]="content.trim().length > 0"
+    [disabled]="disabled || content.trim().length === 0"
+    (click)="send()"
+    aria-label="Send"
+  >
+    <i class="feather-send"></i>
+  </button>
+</div>
+
+<p class="input-hint">Enter to send &nbsp;·&nbsp; Shift + Enter for new line</p>

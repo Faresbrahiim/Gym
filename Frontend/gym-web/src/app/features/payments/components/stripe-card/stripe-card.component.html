@@ -1,0 +1,8 @@
+<div class="stripe-card-container p-3 border rounded">
+  <div #cardElement id="card-element"></div>
+</div>
+@if (errorMessage) {
+  <div class="text-danger mt-2 small fw-medium">
+    <i class="feather-alert-circle me-1"></i> {{ errorMessage }}
+  </div>
+}

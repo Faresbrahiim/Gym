@@ -5,7 +5,7 @@ mod presence;
 mod state;
 mod ws;
 
-use axum::{Router, routing::get};
+use axum::{Router, routing::{get, post}};
 use redis::{Client, aio::ConnectionManager};
 use state::{AppState, SharedState};
 use std::sync::Arc;
@@ -29,6 +29,10 @@ async fn main() {
     let app = Router::new()
         .route("/health", get(|| async { "ok" }))
         .route("/ws", get(ws::ws_handler))
+        .route("/api/presence/bulk", post(handlers::get_bulk_presence))
+        .route("/api/presence/online", get(handlers::get_all_online))
+        .route("/api/presence/{user_id}", get(handlers::get_user_presence))
+        .route("/presence/bulk", post(handlers::get_bulk_presence))
         .route("/presence/online", get(handlers::get_all_online))
         .route("/presence/{user_id}", get(handlers::get_user_presence))
         .with_state(state);

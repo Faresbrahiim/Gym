@@ -41,6 +41,15 @@ builder.Services.AddScoped<ITwoFactorService, TwoFactorService>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 
+var presenceServiceUrl = Environment.GetEnvironmentVariable("PRESENCE_SERVICE_URL")
+    ?? "http://presence-service:8080";
+
+builder.Services.AddHttpClient<IPresenceClient, PresenceHttpClient>(client =>
+{
+    client.BaseAddress = new Uri(presenceServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(3); // presence check is non-critical — fail fast
+});
+
 // Immediate Session Invalidation — JTI Blacklist  author: Anas
 builder.Services.AddScoped<IRevokedTokenRepository, RevokedTokenRepository>();
 builder.Services.AddHostedService<RevokedTokenCleanupService>();

@@ -1,6 +1,8 @@
 package com.gym.payment.adapter.in.web;
 
 import com.gym.payment.domain.exception.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,6 +19,8 @@ import java.util.Map;
         InternalPaymentController.class
 })
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(PaymentNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(PaymentNotFoundException e) {
@@ -35,6 +39,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(PaymentGatewayException.class)
     public ResponseEntity<Map<String, Object>> handleGateway(PaymentGatewayException e) {
+        log.error("Payment gateway error: {}", e.getMessage());
         return build(HttpStatus.BAD_GATEWAY, "Bad Gateway", "Payment gateway unavailable");
     }
 

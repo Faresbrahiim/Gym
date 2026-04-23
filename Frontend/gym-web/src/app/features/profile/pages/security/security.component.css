@@ -1,28 +1,308 @@
-/* Session list */
+.security-page {
+  padding-bottom: 64px;
+}
+
+.security-shell {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.security-sidebar,
+.security-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.security-summary,
+.security-stats,
+.security-hero,
+.security-card,
+.security-alert {
+  background: #fff;
+  border: 1px solid #e5eef2;
+  box-shadow: 0 18px 48px rgba(17, 38, 47, 0.06);
+  border-radius: 28px;
+  padding: 24px;
+}
+
+.security-summary {
+  background:
+    radial-gradient(circle at top right, rgba(23, 124, 130, 0.1), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fcfd 100%);
+}
+
+.security-summary__eyebrow,
+.security-card__eyebrow {
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #177c82;
+}
+
+.security-summary h2,
+.security-health__copy h3,
+.security-hero h2,
+.security-card__header h3 {
+  margin: 10px 0 0;
+  color: #17313a;
+  letter-spacing: -0.04em;
+}
+
+.security-summary p,
+.security-health__copy p,
+.security-hero p,
+.security-card__header p,
+.security-stat-card p,
+.security-alert p,
+.security-state p,
+.session-meta {
+  margin: 10px 0 0;
+  color: #6f838f;
+  line-height: 1.7;
+}
+
+.security-health {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #fbfdfd 0%, #f3f8f9 100%);
+  border: 1px solid #e3edf0;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.security-health__score {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #fff 52%, transparent 53%),
+    conic-gradient(#177c82 0deg, #177c82 calc(var(--progress, 0) * 3.6deg), #e5eff1 0deg);
+  border: 1px solid #e0eaed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.security-health__score strong {
+  font-size: 24px;
+  line-height: 1;
+  color: #17313a;
+}
+
+.security-health__score span {
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #748895;
+  text-align: center;
+}
+
+.security-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.security-stat-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fbfdfe 0%, #f5fafb 100%);
+  border: 1px solid #e6eef2;
+}
+
+.security-stat-card__label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7a8f9a;
+}
+
+.security-stat-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 30px;
+  line-height: 1;
+  color: #17313a;
+}
+
+.security-alert strong,
+.session-name {
+  color: #17313a;
+}
+
+.security-hero {
+  background:
+    radial-gradient(circle at top right, rgba(23, 124, 130, 0.09), transparent 32%),
+    linear-gradient(180deg, #ffffff 0%, #f9fcfd 100%);
+}
+
+.security-hero h2 {
+  font-size: 34px;
+  line-height: 0.98;
+}
+
+.security-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-color: #f0ddad;
+  background: linear-gradient(180deg, #fff9ea 0%, #fff4d8 100%);
+}
+
+.security-alert__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.security-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.security-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.security-card__header h3 {
+  font-size: 28px;
+}
+
+.security-card--sessions .security-card__header {
+  margin-bottom: 18px;
+}
+
+.security-inline-note {
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.security-inline-note--success {
+  background: #eaf7f0;
+  border: 1px solid #cdebd8;
+  color: #18794e;
+}
+
+.security-inline-note--error {
+  background: #fff1f1;
+  border: 1px solid #f0d0d0;
+  color: #b74141;
+}
+
+.btn-security {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.btn-security:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-security--compact {
+  min-width: 154px;
+  white-space: nowrap;
+}
+
+.btn-security:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-security--ghost {
+  background: #f4f8f9;
+  border-color: #e1ecef;
+  color: #17313a;
+}
+
+.btn-security--danger {
+  background: linear-gradient(135deg, #d9534f 0%, #bc3c39 100%);
+  color: #fff;
+  box-shadow: 0 16px 30px rgba(217, 83, 79, 0.18);
+}
+
+.btn-security--outline-danger {
+  background: #fff7f7;
+  border-color: #f0d0d0;
+  color: #b74141;
+}
+
+.security-state {
+  min-height: 220px;
+  border-radius: 22px;
+  border: 1px dashed #d7e3e8;
+  background: linear-gradient(180deg, #fbfdfe 0%, #f5fafb 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+  color: #6f838f;
+}
+
+.security-state i {
+  font-size: 34px;
+  color: #177c82;
+}
+
+.security-state--error {
+  border-color: #f0d0d0;
+  background: #fff8f8;
+}
+
 .session-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 14px;
 }
 
 .session-item {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 18px 24px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 18px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fbfdfe 0%, #f5fafb 100%);
+  border: 1px solid #e6eef2;
 }
 
-.session-item:last-child {
-  border-bottom: none;
-}
-
-/* Device icon circle */
 .session-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #f5f6fa;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  background: #edf6f7;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,7 +311,6 @@
   font-size: 20px;
 }
 
-/* Info block */
 .session-info {
   flex: 1;
   min-width: 0;
@@ -39,63 +318,105 @@
 
 .session-name {
   font-size: 15px;
-  font-weight: 600;
-  color: #1a1a2e;
-  margin-bottom: 4px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
 }
 
 .session-os {
   font-weight: 400;
-  color: #6B7385;
+  color: #6b7385;
 }
 
-/* "This device" badge */
 .session-current-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
   background: #e8f5f1;
-  color: #097E52;
+  color: #097e52;
   font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-  letter-spacing: 0.2px;
+  font-weight: 700;
 }
 
-/* Meta row: IP · date */
 .session-meta {
   font-size: 13px;
-  color: #6B7385;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 6px;
 }
 
 .session-meta-sep {
-  margin: 0 2px;
+  color: #9cb0ba;
 }
 
-/* "Current" label (replaces revoke button on current session) */
+.session-action {
+  flex-shrink: 0;
+}
+
 .session-current-label {
-  font-size: 13px;
-  color: #097E52;
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #eaf7f8;
+  color: #177c82;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-/* Responsive */
-@media (max-width: 575px) {
-  .session-item {
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 16px;
+@media (max-width: 1199.98px) {
+  .security-shell,
+  .security-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .security-summary,
+  .security-stats,
+  .security-hero,
+  .security-card,
+  .security-alert {
+    padding: 20px;
+    border-radius: 22px;
   }
 
-  .session-action {
-    width: 100%;
+  .security-health,
+  .security-alert,
+  .security-alert__actions,
+  .security-card__header,
+  .session-item {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .security-health__score {
+    margin: 0 auto;
+  }
+
+  .security-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .security-hero h2,
+  .security-card__header h3 {
+    font-size: 24px;
+  }
+
+  .security-alert__actions,
+  .session-action,
+  .btn-security {
+    width: 100%;
+  }
+
+  .btn-security {
+    justify-content: center;
   }
 }

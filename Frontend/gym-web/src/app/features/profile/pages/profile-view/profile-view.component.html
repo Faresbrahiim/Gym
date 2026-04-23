@@ -1,28 +1,23 @@
-<!-- Loading -->
 @if (isLoading()) {
-  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+  <div class="profile-view-loading">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 }
 
-<!-- Error -->
 @if (!isLoading() && hasError()) {
   <div class="content court-bg">
     <div class="container">
-      <div class="text-center py-5">
-        <p class="text-muted mb-3">Unable to load profile. Please try again.</p>
+      <div class="profile-view-error">
+        <p>Unable to load profile. Please try again.</p>
         <button class="btn btn-secondary" (click)="retry()">Retry</button>
       </div>
     </div>
   </div>
 }
 
-<!-- Profile content -->
 @if (!isLoading() && !hasError() && userMe()) {
-
-  <!-- Breadcrumb -->
   <section class="breadcrumb breadcrumb-list mb-0">
     <span class="primary-right-round"></span>
     <div class="container">
@@ -33,194 +28,154 @@
       </ul>
     </div>
   </section>
-  <!-- /Breadcrumb -->
 
-  <!-- Dashboard Menu -->
   <app-dashboard-menu />
-  <!-- /Dashboard Menu -->
 
-  <!-- Page Content -->
-  <div class="content court-bg">
+  <div class="content court-bg profile-view-page">
     <div class="container">
-
-      <!-- ===== PROFILE HERO ===== -->
-      <div class="profile-detail-group">
-        <div class="card">
-          <div class="profile-set align-items-center">
-
-            <!-- Avatar -->
-            <div class="profile-set-image">
+      <div class="profile-view-shell">
+        <section class="profile-hero-card">
+          <div class="profile-hero-card__identity">
+            <div class="profile-hero-card__avatar-wrap">
               <img
                 [src]="avatarUrl"
                 (error)="onAvatarError($event)"
-                class="rounded-circle"
-                style="width:120px;height:120px;object-fit:cover;"
+                class="profile-hero-card__avatar"
                 alt="Profile photo"
               />
             </div>
 
-            <!-- Name / role / contact -->
-            <div class="profile-set-content">
-              <h3>{{ fullName }}</h3>
-
-              <div class="rating-city d-flex align-items-center mb-2">
-                <span
-                  class="badge"
-                  [style.background]="roleBadgeColor"
-                  style="font-size:13px;font-weight:500;padding:5px 14px;border-radius:20px;color:#fff;">
+            <div class="profile-hero-card__copy">
+              <span class="profile-hero-card__eyebrow">Profile Overview</span>
+              <h2>{{ fullName }}</h2>
+              <div class="profile-hero-card__chips">
+                <span class="profile-chip profile-chip--role" [style.background]="roleBadgeColor">
                   {{ roleLabel }}
                 </span>
+                <span class="profile-chip profile-chip--muted">{{ completionTone }}</span>
+              </div>
+              <p class="profile-hero-card__summary">
+                This page is your profile snapshot. Use it to review how your identity and role-specific details appear before jumping into editing.
+              </p>
+              <div class="profile-hero-card__contact">
+                <span><i class="feather-mail"></i>{{ userMe()!.email }}</span>
+                <span><i class="feather-phone"></i>{{ userMe()!.profile?.phone || 'Phone not added yet' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-health-card">
+            <div class="profile-health-card__score" [style.--progress]="completionScore">
+              <strong>{{ completionScore }}%</strong>
+              <span>Profile health</span>
+            </div>
+            <div class="profile-health-card__copy">
+              <h3>Keep it sharp</h3>
+              <p>Complete profiles feel more trustworthy in chat, community search, and coaching flows.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="profile-view-grid">
+          <div class="profile-view-main">
+            <section class="profile-panel">
+              <div class="profile-panel__header">
+                <div>
+                  <span class="profile-panel__eyebrow">Account Snapshot</span>
+                  <h3>Core identity details</h3>
+                  <p>The essentials that define your account across the app.</p>
+                </div>
               </div>
 
-              <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
-                <li class="d-flex align-items-center me-4 mb-1">
-                  <img src="assets/img/icons/mail.svg" alt="Email" style="width:15px;margin-right:6px;">
-                  <h6 class="mb-0" style="color:#6B7385;">{{ userMe()!.email }}</h6>
-                </li>
-                @if (userMe()!.profile?.phone) {
-                  <li class="d-flex align-items-center mb-1">
-                    <img src="assets/img/icons/call.svg" alt="Phone" style="width:15px;margin-right:6px;">
-                    <h6 class="mb-0" style="color:#6B7385;">{{ userMe()!.profile!.phone }}</h6>
-                  </li>
+              <div class="profile-facts-grid">
+                @for (fact of accountFacts; track fact.label) {
+                  <article class="profile-fact-card">
+                    <span class="profile-fact-card__label">{{ fact.label }}</span>
+                    <strong class="profile-fact-card__value">{{ fact.value }}</strong>
+                  </article>
                 }
-              </ul>
-            </div>
+              </div>
+            </section>
 
-            <!-- Edit CTA -->
-            <div class="ms-auto flex-shrink-0 mt-3 mt-md-0">
-              <a routerLink="/profile/edit" class="btn btn-secondary">
-                <i class="feather-edit-3 me-1"></i>Edit Profile
-              </a>
-            </div>
+            <section class="profile-panel">
+              <div class="profile-panel__header">
+                <div>
+                  <span class="profile-panel__eyebrow">{{ roleCardTitle }}</span>
+                  <h3>{{ roleCardTitle }}</h3>
+                  <p>{{ roleCardDescription }}</p>
+                </div>
+              </div>
 
+              <div class="profile-facts-grid profile-facts-grid--role">
+                @for (fact of roleFacts; track fact.label) {
+                  <article class="profile-fact-card">
+                    <span class="profile-fact-card__label">{{ fact.label }}</span>
+                    <strong class="profile-fact-card__value">{{ fact.value }}</strong>
+                  </article>
+                }
+              </div>
+
+              <div class="profile-note-card">
+                <span class="profile-note-card__eyebrow">Profile Note</span>
+                <p>{{ roleSummaryNote }}</p>
+              </div>
+            </section>
           </div>
+
+          <aside class="profile-view-side">
+            <section class="profile-panel profile-panel--compact">
+              <div class="profile-panel__header">
+                <div>
+                  <span class="profile-panel__eyebrow">Profile Actions</span>
+                  <h3>Manage this profile</h3>
+                  <p>Only the actions that belong here, without repeating the rest of the dashboard.</p>
+                </div>
+              </div>
+
+              <div class="profile-action-list">
+                <a routerLink="/profile/edit" class="profile-action-button profile-action-button--primary">
+                  <span>
+                    <strong>Edit Profile</strong>
+                    <small>Update personal, fitness, or coach details.</small>
+                  </span>
+                  <i class="feather-edit-3"></i>
+                </a>
+
+                <a routerLink="/profile/security" class="profile-action-button profile-action-button--secondary">
+                  <span>
+                    <strong>Security</strong>
+                    <small>Manage sessions, password reset, and 2FA.</small>
+                  </span>
+                  <i class="feather-shield"></i>
+                </a>
+              </div>
+            </section>
+
+            <section class="profile-panel profile-panel--compact">
+              <div class="profile-panel__header">
+                <div>
+                  <span class="profile-panel__eyebrow">Checklist</span>
+                  <h3>What still needs love</h3>
+                </div>
+              </div>
+
+              <div class="profile-checklist">
+                @for (item of profileChecklist; track item.label) {
+                  <div class="profile-checklist__item" [class.profile-checklist__item--done]="item.done">
+                    <span class="profile-checklist__icon">
+                      <i class="feather-check"></i>
+                    </span>
+                    <div>
+                      <strong>{{ item.label }}</strong>
+                      <p>{{ item.detail }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          </aside>
         </div>
       </div>
-      <!-- /Profile Hero -->
-
-      <!-- ===== ACCOUNT INFORMATION ===== -->
-      <div class="profile-card">
-        <div class="profile-card-title">
-          <h4>Account Information</h4>
-        </div>
-        <div class="profile-contact-details" style="border-bottom:0;padding-bottom:0;margin-bottom:0;">
-          <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
-            <li>
-              <span>Full Name</span>
-              <h6>{{ fullName }}</h6>
-            </li>
-            <li>
-              <span>Username</span>
-              <h6>&#64;{{ userMe()!.username }}</h6>
-            </li>
-            <li>
-              <span>Email</span>
-              <h6>{{ userMe()!.email }}</h6>
-            </li>
-            <li>
-              <span>Role</span>
-              <h6>{{ roleLabel }}</h6>
-            </li>
-            @if (userMe()!.profile?.phone) {
-              <li>
-                <span>Phone</span>
-                <h6>{{ userMe()!.profile!.phone }}</h6>
-              </li>
-            }
-          </ul>
-        </div>
-      </div>
-      <!-- /Account Information -->
-
-      <!-- ===== FITNESS PROFILE (MEMBER) ===== -->
-      @if (role === 'MEMBER' && userMe()!.memberProfile) {
-        <div class="profile-card">
-          <div class="profile-card-title">
-            <h4>Fitness Profile</h4>
-          </div>
-          <div class="profile-contact-details" style="border-bottom:0;padding-bottom:0;margin-bottom:0;">
-            <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
-              @if (userMe()!.memberProfile!.gender) {
-                <li>
-                  <span>Gender</span>
-                  <h6>{{ userMe()!.memberProfile!.gender }}</h6>
-                </li>
-              }
-              @if (userMe()!.memberProfile!.dateOfBirth) {
-                <li>
-                  <span>Date of Birth</span>
-                  <h6>{{ formattedDob }}</h6>
-                </li>
-              }
-              @if (userMe()!.memberProfile!.heightCm) {
-                <li>
-                  <span>Height</span>
-                  <h6>{{ userMe()!.memberProfile!.heightCm }} cm</h6>
-                </li>
-              }
-              @if (userMe()!.memberProfile!.weightKg) {
-                <li>
-                  <span>Weight</span>
-                  <h6>{{ userMe()!.memberProfile!.weightKg }} kg</h6>
-                </li>
-              }
-              @if (userMe()!.memberProfile!.fitnessGoal) {
-                <li>
-                  <span>Fitness Goal</span>
-                  <h6>{{ userMe()!.memberProfile!.fitnessGoal }}</h6>
-                </li>
-              }
-              @if (userMe()!.memberProfile!.experienceLevel !== null && userMe()!.memberProfile!.experienceLevel !== undefined) {
-                <li>
-                  <span>Experience Level</span>
-                  <h6>{{ experienceLabel }}</h6>
-                </li>
-              }
-            </ul>
-          </div>
-        </div>
-      }
-      <!-- /Fitness Profile -->
-
-      <!-- ===== COACH PROFILE (COACH) ===== -->
-      @if (role === 'COACH' && userMe()!.coachProfile) {
-        <div class="profile-card">
-          <div class="profile-card-title">
-            <h4>Coach Profile</h4>
-          </div>
-          @if (userMe()!.coachProfile!.bio) {
-            <div class="profile-card-content info-about">
-              <p>{{ userMe()!.coachProfile!.bio }}</p>
-            </div>
-          }
-          <div class="profile-contact-details" style="border-bottom:0;padding-bottom:0;margin-bottom:0;">
-            <ul class="d-flex flex-wrap mb-0" style="list-style:none;padding:0;">
-              @if (userMe()!.coachProfile!.yearsOfExperience !== null && userMe()!.coachProfile!.yearsOfExperience !== undefined) {
-                <li>
-                  <span>Experience</span>
-                  <h6>{{ userMe()!.coachProfile!.yearsOfExperience }} years</h6>
-                </li>
-              }
-              @if (userMe()!.coachProfile!.certifications) {
-                <li>
-                  <span>Certifications</span>
-                  <h6>{{ userMe()!.coachProfile!.certifications }}</h6>
-                </li>
-              }
-              @if (userMe()!.coachProfile!.language) {
-                <li>
-                  <span>Language</span>
-                  <h6>{{ userMe()!.coachProfile!.language }}</h6>
-                </li>
-              }
-            </ul>
-          </div>
-        </div>
-      }
-      <!-- /Coach Profile -->
-
     </div>
   </div>
-  <!-- /Page Content -->
-
 }

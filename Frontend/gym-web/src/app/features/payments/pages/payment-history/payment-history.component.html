@@ -1,0 +1,151 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">Payments</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>Payments</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-dashboard-menu></app-dashboard-menu>
+
+<div class="content py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-11">
+        
+        <div class="premium-card">
+          <!-- Card Header -->
+          <div class="premium-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h4 class="premium-card-title mb-0">
+              <i class="feather-credit-card"></i> Payment History
+            </h4>
+            <div class="custom-select-wrapper">
+              <select class="form-select" (change)="setFilter($any($event.target).value)">
+                <option value="ALL">All Transactions</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="PENDING">Pending</option>
+                <option value="FAILED">Failed</option>
+                <option value="REFUNDED">Refunded</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Card Body -->
+          <div class="card-body p-0">
+            @if (isLoading()) {
+              <div class="spinner-wrap">
+                <div class="spinner-border premium-spinner" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            } @else if (errorMessage()) {
+              <div class="p-4">
+                <div class="status-notice danger">
+                  <i class="feather-alert-circle"></i>
+                  <div>
+                    <p class="notice-title">Failed to load data</p>
+                    <p class="notice-text">{{ errorMessage() }}</p>
+                  </div>
+                  <button class="btn btn-primary mt-3" (click)="loadData()">Retry</button>
+                </div>
+              </div>
+            } @else if (payments().length === 0) {
+              <!-- Empty State -->
+              <div class="premium-empty">
+                <div class="empty-icon-wrap">
+                  <i class="feather-inbox"></i>
+                </div>
+                <h5 class="empty-title">No transactions yet</h5>
+                <p class="empty-desc">When you subscribe or make a payment, your transaction history will appear here.</p>
+                <a routerLink="/membership/plans" class="btn-premium">
+                  <i class="feather-award"></i> View Memberships
+                </a>
+              </div>
+            } @else {
+              <!-- Data Table -->
+              <div class="table-responsive">
+                <table class="premium-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width: 100px;">Reference</th>
+                      <th style="min-width: 200px;">Plan Details</th>
+                      <th style="min-width: 140px;">Amount</th>
+                      <th style="min-width: 140px;">Status</th>
+                      <th style="min-width: 160px;">Date</th>
+                      <th class="text-end" style="min-width: 100px;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (payment of filteredPayments(); track payment.id) {
+                      <tr>
+                        <!-- Ref ID -->
+                        <td>
+                          <a [routerLink]="['/payments', payment.id]" class="id-tag">
+                            #{{ payment.id.substring(0, 8) | uppercase }}
+                          </a>
+                        </td>
+                        
+                        <!-- Plan Details -->
+                        <td>
+                          <div class="d-flex align-items-center gap-3">
+                            <div class="plan-avatar">
+                              {{ payment.planName.charAt(0) | uppercase }}
+                            </div>
+                            <div>
+                              <div class="plan-name">{{ payment.planName }}</div>
+                              <div class="plan-sub">Sub: {{ payment.subscriptionId.substring(0, 8) }}</div>
+                            </div>
+                          </div>
+                        </td>
+                        
+                        <!-- Amount -->
+                        <td>
+                          <span class="amount-text">
+                            {{ payment.amount | number:'1.2-2' }} <span class="text-muted fs-6">{{ payment.currency }}</span>
+                          </span>
+                        </td>
+                        
+                        <!-- Status -->
+                        <td>
+                          <app-payment-status-badge [status]="payment.status"></app-payment-status-badge>
+                        </td>
+                        
+                        <!-- Date -->
+                        <td>
+                          <div class="date-primary">{{ payment.createdAt | date:'MMM d, yyyy' }}</div>
+                          <div class="date-secondary">{{ payment.createdAt | date:'h:mm a' }}</div>
+                        </td>
+                        
+                        <!-- Action -->
+                        <td class="text-end">
+                          <a [routerLink]="['/payments', payment.id]" class="btn-view">
+                            View <i class="feather-chevron-right"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6" class="text-center py-5">
+                          <div class="text-muted my-4">
+                            <i class="feather-filter fs-1 d-block mb-3 text-light"></i>
+                            <span class="fw-medium">No payments match your selected filter.</span>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

@@ -2,180 +2,167 @@ import {
   Component,
   OnInit,
   OnDestroy,
-  signal,
-  ElementRef,
-  ViewChild,
-  AfterViewChecked
+  signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 
-import { ChatService } from '../../services/chat.service';
-import { SocketService } from '../../services/socket.service';
-import { TokenService } from '../../../../core/auth/token.service';
-import { CurrentUserService } from '../../../../core/services/current-user.service';
-import { UserService } from '../../services/user.service';
-import { User } from '../../models/user.model';
+import { ChatService }              from '../../services/chat.service';
+import { SocketService }            from '../../services/socket.service';
+import { PresenceService }          from '../../services/presence.service';
+import { PresenceHeartbeatService } from '../../services/presence-heartbeat.service';
+import { ContactCacheService }      from '../../services/contact-cache.service';
+import { TokenService }             from '../../../../core/auth/token.service';
+import { NotificationCenterService } from '../../../../core/services/notification-center.service';
+
 import { Conversation } from '../../models/conversation.model';
-import { Message } from '../../models/message.model';
+import { Message }      from '../../models/message.model';
+import { Contact }      from '../../models/contact.model';
+
+import { ConversationListComponent } from '../../components/conversation-list/conversation-list.component';
+import { MessageThreadComponent }    from '../../components/message-thread/message-thread.component';
+import { MessageInputComponent }     from '../../components/message-input/message-input.component';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    RouterLink,
+    ConversationListComponent,
+    MessageThreadComponent,
+    MessageInputComponent
+  ],
   templateUrl: './chat.component.html',
   styleUrls: ['./chat.component.css']
 })
-export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class ChatComponent implements OnInit, OnDestroy {
 
-  conversations = signal<Conversation[]>([]);
-  messages = signal<Message[]>([]);
-  activeConversation = signal<Conversation | null>(null);
-
-  users = signal<User[]>([]);
-  onlineUsers = signal<string[]>([]);
-  typingUsers = signal<string[]>([]);
+  conversations        = signal<Conversation[]>([]);
+  messages             = signal<Message[]>([]);
+  activeConversation   = signal<Conversation | null>(null);
+  typingUserIds        = signal<string[]>([]);
+  loadingConversations = signal(true);
+  loadingMessages      = signal(false);
+  mobileShowThread     = signal(false);
 
   currentUserId = '';
-  newMessage = '';
 
+  private deepLinkId: string | null = null;
   private subs = new Subscription();
-  private typingTimeout: any;
-
-  @ViewChild('messagesContainer') private messagesContainer!: ElementRef;
 
   constructor(
-    private chatService: ChatService,
-    private userService: UserService,
-    private socketService: SocketService,
-    private tokenService: TokenService,
-    public currentUserService: CurrentUserService
+    private chatService:       ChatService,
+    private socketService:     SocketService,
+    private presenceService:   PresenceService,
+    private presenceHeartbeat: PresenceHeartbeatService,
+    private contactCache:      ContactCacheService,
+    private tokenService:      TokenService,
+    private notificationCenter: NotificationCenterService,
+    private route:             ActivatedRoute,
+    private router:            Router
   ) {}
 
   ngOnInit(): void {
     this.currentUserId = this.tokenService.getUserId() ?? '';
 
+    // Capture deep-link before anything async runs
+    this.deepLinkId =
+      (history.state as { openConversationId?: string })?.openConversationId ??
+      this.route.snapshot.queryParamMap.get('conversationId');
+
+    this.subs.add(
+      this.route.queryParamMap.subscribe(params => {
+        const conversationId = params.get('conversationId');
+        if (!conversationId) return;
+        this.requestConversationOpen(conversationId);
+      })
+    );
+
+    this.presenceHeartbeat.connect();
     this.socketService.connect();
-
-    this.loadInitialData();
     this.listenToSocket();
-  }
-
-  loadInitialData(): void {
-    this.loadUsers();
     this.loadConversations();
   }
 
-  ngAfterViewChecked(): void {
-    this.scrollToBottom();
-  }
+  // ── Data loading ────────────────────────────────────────────────────────
 
-  loadUsers(): void {
+  private loadConversations(): void {
+    this.loadingConversations.set(true);
+
     this.subs.add(
-      this.userService.getUsers().subscribe(users => {
-        this.users.set(users.filter(u => u.id !== this.currentUserId));
+      this.chatService.getUserConversations(this.currentUserId).subscribe({
+        next: convs => {
+          this.conversations.set(convs);
+          this.loadingConversations.set(false);
+          const participantIds = this.collectOtherParticipantIds(convs);
+
+          this.trackParticipants(participantIds);
+          this.subs.add(
+            this.contactCache.hydrate(participantIds).subscribe({
+              next: () => this.refreshConversationContacts(),
+              error: () => this.handleDeepLink(convs),
+              complete: () => {
+                this.refreshConversationContacts();
+                this.handleDeepLink(convs);
+              }
+            })
+          );
+        },
+        error: () => this.loadingConversations.set(false)
       })
-    );
-  }
-
-  getUserById(id: string): User | undefined {
-    return this.users().find(u => u.id === id);
-  }
-
-  loadConversations(): void {
-    this.subs.add(
-      this.chatService.getUserConversations(this.currentUserId)
-        .subscribe(convs => this.conversations.set(convs))
     );
   }
 
   openConversation(conv: Conversation): void {
     this.activeConversation.set(conv);
-    this.socketService.joinConversation(conv._id);
+    this.typingUserIds.set([]);
     this.messages.set([]);
+    this.loadingMessages.set(true);
+    this.mobileShowThread.set(true);
+    this.notificationCenter.setActiveConversation(conv._id);
+
+    this.socketService.joinConversation(conv._id);
 
     this.subs.add(
-      this.chatService.getMessages(conv._id).subscribe(msgs => {
-        this.messages.set(msgs);
-        this.chatService.markAsRead(conv._id, this.currentUserId).subscribe();
-        this.scrollToBottom();
+      this.chatService.getMessages(conv._id).subscribe({
+        next: msgs => {
+          this.messages.set(msgs);
+          this.loadingMessages.set(false);
+          this.markRead(conv._id);
+        },
+        error: () => this.loadingMessages.set(false)
       })
     );
   }
 
-  startConversation(receiverId: string): void {
+  private markRead(conversationId: string): void {
+    this.chatService.markAsRead(conversationId, this.currentUserId).subscribe();
+    this.notificationCenter.markConversationAsRead(conversationId).subscribe({ error: () => undefined });
+  }
+
+  // ── Socket events ────────────────────────────────────────────────────────
+
+  private listenToSocket(): void {
     this.subs.add(
-      this.chatService.getOrCreateConversation(this.currentUserId, receiverId)
-        .subscribe(conv => {
-
-          const exists = this.conversations().some(c => c._id === conv._id);
-
-          if (!exists) {
-            this.conversations.update(c => [conv, ...c]);
-          }
-
-          this.openConversation(conv);
-        })
-    );
-  }
-
-  sendMessage(): void {
-    const content = this.newMessage.trim();
-    const conv = this.activeConversation();
-
-    if (!content || !conv) return;
-
-    this.socketService.sendMessage(conv._id, this.currentUserId, content);
-
-    this.newMessage = '';
-    this.socketService.emitTypingStop(conv._id, this.currentUserId);
-  }
-
-  onTyping(): void {
-    const conv = this.activeConversation();
-    if (!conv) return;
-
-    this.socketService.emitTypingStart(conv._id, this.currentUserId);
-
-    clearTimeout(this.typingTimeout);
-    this.typingTimeout = setTimeout(() => {
-      this.socketService.emitTypingStop(conv._id, this.currentUserId);
-    }, 1500);
-  }
-
-  listenToSocket(): void {
-
-    this.subs.add(
-      this.socketService.onMessage().subscribe(message => {
-
-        const conv = this.activeConversation();
-
-        if (conv && message.conversationId === conv._id) {
-          this.messages.update(msgs => [...msgs, message]);
-          this.scrollToBottom();
+      this.socketService.onMessage().subscribe(msg => {
+        const active = this.activeConversation();
+        if (active && msg.conversationId === active._id) {
+          this.messages.update(list => [...list, msg]);
+          this.markRead(active._id);
         }
 
+        // Update lastMessage in the sidebar regardless of which conv is open
         this.conversations.update(convs =>
-          convs.map(c =>
-            c._id === message.conversationId
-              ? { ...c, lastMessage: message }
-              : c
-          )
+          convs.map(c => c._id === msg.conversationId ? { ...c, lastMessage: msg } : c)
         );
       })
     );
 
     this.subs.add(
-      this.socketService.onUsersOnline()
-        .subscribe(users => this.onlineUsers.set(users))
-    );
-
-    this.subs.add(
       this.socketService.onTypingStart().subscribe(({ userId }) => {
         if (userId !== this.currentUserId) {
-          this.typingUsers.update(users =>
-            users.includes(userId) ? users : [...users, userId]
+          this.typingUserIds.update(ids =>
+            ids.includes(userId) ? ids : [...ids, userId]
           );
         }
       })
@@ -183,28 +170,106 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.subs.add(
       this.socketService.onTypingStop().subscribe(({ userId }) => {
-        this.typingUsers.update(users => users.filter(u => u !== userId));
+        this.typingUserIds.update(ids => ids.filter(id => id !== userId));
+      })
+    );
+
+    this.subs.add(
+      this.socketService.onError().subscribe(({ message }) => {
+        console.error('Socket error:', message);
       })
     );
   }
 
-  isOnline(userId: string): boolean {
-    return this.onlineUsers().includes(userId);
+  // ── Input events from child components ───────────────────────────────────
+
+  onMessageSent(content: string): void {
+    const conv = this.activeConversation();
+    if (!conv) return;
+    this.socketService.sendMessage(conv._id, content);
   }
 
-  getOtherParticipant(conv: Conversation): string {
-    return conv.participants.find(p => p !== this.currentUserId) ?? '';
+  onTypingStart(): void {
+    const conv = this.activeConversation();
+    if (conv) this.socketService.emitTypingStart(conv._id);
   }
 
-  scrollToBottom(): void {
-    try {
-      this.messagesContainer.nativeElement.scrollTop =
-        this.messagesContainer.nativeElement.scrollHeight;
-    } catch {}
+  onTypingStop(): void {
+    const conv = this.activeConversation();
+    if (conv) this.socketService.emitTypingStop(conv._id);
+  }
+
+  onBackClicked(): void {
+    this.mobileShowThread.set(false);
+    this.notificationCenter.setActiveConversation(null);
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  getActiveContact(): Contact | null {
+    const conv = this.activeConversation();
+    if (!conv) return null;
+    if (conv.isGroup) {
+      return { userId: conv._id, displayName: conv.name ?? 'Group', initials: (conv.name ?? 'G').slice(0, 2).toUpperCase() };
+    }
+    const otherId = conv.participants.find(p => p !== this.currentUserId) ?? '';
+    return this.contactCache.resolve(otherId);
+  }
+
+  isActiveContactOnline(): boolean {
+    const conv = this.activeConversation();
+    if (!conv || conv.isGroup) return false;
+    const otherId = conv.participants.find(p => p !== this.currentUserId) ?? '';
+    return this.presenceService.isOnline(otherId);
+  }
+
+  private collectOtherParticipantIds(convs: Conversation[]): string[] {
+    const ids = new Set<string>();
+    for (const c of convs) {
+      for (const p of c.participants) {
+        if (p !== this.currentUserId) ids.add(p);
+      }
+    }
+    return [...ids];
+  }
+
+  private trackParticipants(userIds: string[]): void {
+    if (userIds.length > 0) {
+      this.presenceService.startTracking(userIds);
+    }
+  }
+
+  private refreshConversationContacts(): void {
+    this.conversations.update(convs => [...convs]);
+  }
+
+  private handleDeepLink(convs: Conversation[]): void {
+    if (!this.deepLinkId) return;
+    const targetId = this.deepLinkId;
+    const target = convs.find(c => c._id === targetId);
+    this.deepLinkId = null;
+    if (target) this.openConversation(target);
+    else this.deepLinkId = targetId;
+  }
+
+  private requestConversationOpen(conversationId: string): void {
+    const activeId = this.activeConversation()?._id ?? null;
+    if (activeId === conversationId) return;
+
+    const target = this.conversations().find(c => c._id === conversationId);
+    if (target) {
+      this.openConversation(target);
+      return;
+    }
+
+    this.deepLinkId = conversationId;
   }
 
   ngOnDestroy(): void {
+    this.notificationCenter.setActiveConversation(null);
     this.subs.unsubscribe();
     this.socketService.disconnect();
+    this.presenceHeartbeat.disconnect();
+    this.presenceService.stopTracking();
   }
 }

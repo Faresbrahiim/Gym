@@ -41,5 +41,13 @@ namespace user_service.Application.Contracts.Repositories
             CancellationToken cancellationToken = default);
         Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default);
 
+        Task<IEnumerable<User>> SearchAsync(
+            string query,
+            int limit,
+            CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<User>> GetByIdsAsync(
+            IEnumerable<Guid> userIds,
+            CancellationToken cancellationToken = default);
     }
 }

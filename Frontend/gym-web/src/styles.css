@@ -52,6 +52,25 @@
   line-height: normal;
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f7fbfc;
+  color: #17313a;
+  font-family: "Outfit", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+}
+
 .lang-select select {
   -webkit-appearance: none;
   appearance: none;

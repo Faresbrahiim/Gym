@@ -1,32 +1,71 @@
-import { Component, inject, signal, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, of, Subscription, switchMap, tap, catchError } from 'rxjs';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { CurrentUserService } from '../../../core/services/current-user.service';
+import { AppNotification } from '../../../core/models/app-notification.model';
+import { NotificationCenterService } from '../../../core/services/notification-center.service';
+import { PeopleService } from '../../../features/people/services/people.service';
+import { UserSearchResult } from '../../../features/people/models/user-search-result.model';
 
 @Component({
   standalone: true,
   selector: 'app-header',
-  imports: [RouterLink, RouterLinkActive],
-  templateUrl: './header.component.html'
+  imports: [RouterLink, RouterLinkActive, ReactiveFormsModule],
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.css']
 })
 export class HeaderComponent {
 
   private readonly authService       = inject(AuthService);
   private readonly tokenService      = inject(TokenService);
   private readonly currentUserService = inject(CurrentUserService);
+  protected readonly notificationCenter = inject(NotificationCenterService);
   private readonly router            = inject(Router);
+  private readonly peopleService     = inject(PeopleService);
+  private readonly elementRef        = inject(ElementRef<HTMLElement>);
+  private readonly subs              = new Subscription();
 
   isMobileMenuOpen = signal(false);
   isScrolled       = signal(false);
+  peopleSearchControl = new FormControl('', { nonNullable: true });
+  peopleSearchResults = signal<UserSearchResult[]>([]);
+  peopleSearchLoading = signal(false);
+  peopleSearchOpen = signal(false);
+  peopleSearchError = signal(false);
 
   @HostListener('window:scroll')
   onScroll(): void {
     this.isScrolled.set(window.scrollY > 0);
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.peopleSearchOpen.set(false);
+    }
+  }
+
   /** Reactive avatar URL — hydrated by CurrentUserService at app boot. */
   readonly avatarUrl = this.currentUserService.currentAvatarUrl;
+
+  ngOnInit(): void {
+    this.bindPeopleSearch();
+
+    if (!this.isAuthenticated) return;
+    const accessToken = this.tokenService.getAccessToken();
+    if (accessToken) {
+      this.notificationCenter.connectRealtime(accessToken);
+    }
+    this.subs.add(this.notificationCenter.load().subscribe());
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+    this.notificationCenter.disconnectRealtime();
+  }
 
   get username(): string {
     const fromProfile = this.currentUserService.currentUsername();
@@ -61,10 +100,141 @@ export class HeaderComponent {
     document.body.classList.remove('menu-opened');
   }
 
+  onPeopleSearchFocus(): void {
+    if (this.peopleQuery.length >= 2 || this.peopleSearchLoading()) {
+      this.peopleSearchOpen.set(true);
+    }
+  }
+
+  onPeopleSearchSubmit(): void {
+    const query = this.peopleQuery;
+    if (!query) return;
+
+    this.peopleSearchOpen.set(false);
+    this.router.navigate(['/people'], { queryParams: { q: query } });
+  }
+
+  clearPeopleSearch(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.peopleSearchControl.setValue('');
+    this.peopleSearchResults.set([]);
+    this.peopleSearchLoading.set(false);
+    this.peopleSearchError.set(false);
+    this.peopleSearchOpen.set(false);
+  }
+
+  openPeopleSearchPage(query?: string): void {
+    const value = (query ?? this.peopleQuery).trim();
+    if (!value) return;
+
+    this.peopleSearchOpen.set(false);
+    this.router.navigate(['/people'], { queryParams: { q: value } });
+  }
+
+  get peopleQuery(): string {
+    return this.peopleSearchControl.value.trim();
+  }
+
+  get peopleHintText(): string {
+    if (this.peopleSearchError()) return 'We hit a snag. Press Enter to continue in the full search.';
+    if (this.peopleQuery.length < 2) return 'Search members and coaches without leaving the page.';
+    return 'Press Enter to open the full People search.';
+  }
+
+  getPeopleInitials(person: UserSearchResult): string {
+    const first = person.firstName?.[0] ?? '';
+    const last = person.lastName?.[0] ?? '';
+    return (first + last).toUpperCase() || person.username[0]?.toUpperCase() || 'U';
+  }
+
+  onNotificationsToggle(): void {
+    this.subs.add(this.notificationCenter.load().subscribe());
+  }
+
+  onMarkAllNotificationsRead(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.subs.add(this.notificationCenter.markAllAsRead().subscribe());
+  }
+
+  onNotificationSelected(notification: AppNotification, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const navigate = () => {
+      if (notification.actionUrl) {
+        this.router.navigateByUrl(notification.actionUrl);
+      }
+    };
+
+    if (notification.status === 'UNREAD') {
+      this.subs.add(
+        this.notificationCenter.markAsRead(notification.id).subscribe({ next: navigate, error: navigate })
+      );
+      return;
+    }
+
+    navigate();
+  }
+
+  relativeNotificationTime(isoDate: string): string {
+    const diff = Date.now() - new Date(isoDate).getTime();
+    const mins = Math.floor(diff / 60_000);
+    const hours = Math.floor(diff / 3_600_000);
+    const days = Math.floor(diff / 86_400_000);
+
+    if (mins < 1) return 'now';
+    if (mins < 60) return `${mins}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return new Date(isoDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
   onLogout(): void {
     this.authService.logout().subscribe({
       next:  () => this.router.navigate(['/login']),
       error: () => this.router.navigate(['/login'])
     });
+  }
+
+  private bindPeopleSearch(): void {
+    this.subs.add(
+      this.peopleSearchControl.valueChanges.pipe(
+        debounceTime(220),
+        distinctUntilChanged(),
+        tap(value => {
+          const query = value.trim();
+          if (query.length < 2) {
+            this.peopleSearchResults.set([]);
+            this.peopleSearchLoading.set(false);
+            this.peopleSearchError.set(false);
+            this.peopleSearchOpen.set(false);
+          }
+        }),
+        switchMap(value => {
+          const query = value.trim();
+          if (query.length < 2) {
+            return of(null);
+          }
+
+          this.peopleSearchLoading.set(true);
+          this.peopleSearchError.set(false);
+          this.peopleSearchOpen.set(true);
+
+          return this.peopleService.search(query).pipe(
+            catchError(() => {
+              this.peopleSearchError.set(true);
+              return of([] as UserSearchResult[]);
+            })
+          );
+        })
+      ).subscribe(results => {
+        if (results === null) return;
+        this.peopleSearchLoading.set(false);
+        this.peopleSearchResults.set(results);
+        this.peopleSearchOpen.set(true);
+      })
+    );
   }
 }

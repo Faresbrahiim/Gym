@@ -41,6 +41,17 @@
               <li><a href="javascript:void(0);">Coaches List</a></li>
             </ul>
           </li>
+          <li routerLinkActive="active">
+            <a routerLink="/people">People</a>
+          </li>
+          @if (isAuthenticated) {
+            <li routerLinkActive="active">
+              <a routerLink="/chat" class="chat-nav-link">
+                <i class="feather-message-circle"></i>
+                <span>Chat</span>
+              </a>
+            </li>
+          }
           <li class="has-submenu">
             <a href="javascript:void(0);">User <i class="fas fa-chevron-down"></i></a>
             <ul class="submenu">
@@ -58,6 +69,102 @@
       </div>
 
       <!-- Right nav — unauthenticated: Login / Register -->
+      <div class="header-people-search d-none d-xl-flex">
+        <form class="header-people-search__form" (ngSubmit)="onPeopleSearchSubmit()">
+          <div class="header-people-search__field" [class.header-people-search__field--open]="peopleSearchOpen()">
+            <i class="feather-search header-people-search__icon"></i>
+            <input
+              type="search"
+              class="header-people-search__input"
+              [formControl]="peopleSearchControl"
+              (focus)="onPeopleSearchFocus()"
+              placeholder="Search people, coaches, or members"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search people"
+            />
+            @if (peopleSearchLoading()) {
+              <span class="header-people-search__spinner"></span>
+            }
+            @if (!peopleSearchLoading() && peopleQuery.length > 0) {
+              <button
+                type="button"
+                class="header-people-search__clear"
+                (click)="clearPeopleSearch($event)"
+                aria-label="Clear people search"
+              >
+                <i class="feather-x"></i>
+              </button>
+            }
+          </div>
+
+          @if (peopleSearchOpen()) {
+            <div class="header-people-search__panel">
+              <div class="header-people-search__panel-header">
+                <span class="header-people-search__eyebrow">People search</span>
+                <p>{{ peopleHintText }}</p>
+              </div>
+
+              @if (peopleSearchLoading()) {
+                <div class="header-people-search__state">
+                  <span class="header-people-search__panel-spinner"></span>
+                  <span>Searching people...</span>
+                </div>
+              } @else if (peopleSearchError()) {
+                <div class="header-people-search__state header-people-search__state--error">
+                  <i class="feather-alert-circle"></i>
+                  <span>We couldn't load results right now.</span>
+                </div>
+              } @else if (peopleQuery.length < 2) {
+                <div class="header-people-search__state">
+                  <i class="feather-users"></i>
+                  <span>Type at least 2 characters to preview people here.</span>
+                </div>
+              } @else if (peopleSearchResults().length === 0) {
+                <div class="header-people-search__state">
+                  <i class="feather-user-x"></i>
+                  <span>No people found for "{{ peopleQuery }}".</span>
+                </div>
+              } @else {
+                <div class="header-people-search__results">
+                  @for (person of peopleSearchResults().slice(0, 5); track person.id) {
+                    <button
+                      type="button"
+                      class="header-people-search__result"
+                      (click)="openPeopleSearchPage(peopleQuery)"
+                    >
+                      <span class="header-people-search__avatar">
+                        @if (person.avatarUrl) {
+                          <img [src]="person.avatarUrl" [alt]="person.username" />
+                        } @else {
+                          <span>{{ getPeopleInitials(person) }}</span>
+                        }
+                      </span>
+                      <span class="header-people-search__result-copy">
+                        <strong>{{ person.firstName }} {{ person.lastName }}</strong>
+                        <small>&#64;{{ person.username }} · {{ person.role === 'COACH' ? 'Coach' : 'Member' }}</small>
+                      </span>
+                      <span class="header-people-search__result-action">Open</span>
+                    </button>
+                  }
+                </div>
+              }
+
+              <div class="header-people-search__footer">
+                <button
+                  type="button"
+                  class="header-people-search__submit"
+                  [disabled]="peopleQuery.length < 2"
+                  (click)="openPeopleSearchPage()"
+                >
+                  Open full People search
+                </button>
+              </div>
+            </div>
+          }
+        </form>
+      </div>
+
       @if (!isAuthenticated) {
         <ul class="nav header-navbar-rht">
           <li class="nav-item">
@@ -74,28 +181,68 @@
 
           <!-- Notifications -->
           <li class="nav-item dropdown noti-nav">
-            <a href="javascript:void(0);" class="dropdown-toggle nav-link position-relative" data-bs-toggle="dropdown">
-              <i class="feather-bell"></i> <span class="alert-bg"></span>
+            <a
+              href="javascript:void(0);"
+              class="dropdown-toggle nav-link position-relative"
+              data-bs-toggle="dropdown"
+              (click)="onNotificationsToggle()"
+            >
+              <i class="feather-bell"></i>
+              @if (notificationCenter.unreadCount() > 0) {
+                <span class="notification-count">{{ notificationCenter.unreadCount() > 99 ? '99+' : notificationCenter.unreadCount() }}</span>
+              } @else {
+                <span class="alert-bg"></span>
+              }
             </a>
             <div class="dropdown-menu notifications dropdown-menu-end">
               <div class="topnav-dropdown-header">
                 <span class="notification-title">Notifications</span>
+                @if (notificationCenter.unreadCount() > 0) {
+                  <a href="javascript:void(0);" class="clear-noti" (click)="onMarkAllNotificationsRead($event)">Mark all as read</a>
+                }
               </div>
               <div class="noti-content">
                 <ul class="notification-list">
-                  <li class="notification-message">
-                    <a href="javascript:void(0);">
+                  @if (notificationCenter.loading()) {
+                    <li class="notification-message">
                       <div class="media d-flex">
-                        <span class="avatar">
-                          <img class="avatar-img" src="assets/img/profiles/avatar-01.jpg" alt="User">
-                        </span>
+                        <div class="media-body">
+                          <h6>Loading notifications...</h6>
+                        </div>
+                      </div>
+                    </li>
+                  } @else if (notificationCenter.notifications().length === 0) {
+                    <li class="notification-message">
+                      <div class="media d-flex">
                         <div class="media-body">
                           <h6>No new notifications</h6>
                           <p class="noti-details">You're all caught up</p>
                         </div>
                       </div>
-                    </a>
-                  </li>
+                    </li>
+                  } @else {
+                    @for (notification of notificationCenter.notifications().slice(0, 8); track notification.id) {
+                      <li class="notification-message" [class.notification-message--unread]="notification.status === 'UNREAD'">
+                        <a href="javascript:void(0);" (click)="onNotificationSelected(notification, $event)">
+                          <div class="media d-flex">
+                            <span class="notification-bullet" [class.notification-bullet--chat]="notification.type === 'CHAT_MESSAGE_RECEIVED'">
+                              <i class="feather-bell"></i>
+                            </span>
+                            <div class="media-body">
+                              <div class="notification-meta-row">
+                                <h6>{{ notification.title }}</h6>
+                                @if (notification.status === 'UNREAD') {
+                                  <span class="notification-pill">New</span>
+                                }
+                              </div>
+                              <p class="noti-details">{{ notification.message }}</p>
+                              <p class="notification-time">{{ relativeNotificationTime(notification.createdAt) }}</p>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                    }
+                  }
                 </ul>
               </div>
             </div>
@@ -120,7 +267,9 @@
                 </div>
               </div>
               <p><a class="dropdown-item" routerLink="/profile">My Profile</a></p>
+              <p><a class="dropdown-item" routerLink="/chat">Open Full Chat</a></p>
               <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
+              <p><a class="dropdown-item" routerLink="/payments">Payments</a></p>
               <p><a class="dropdown-item" href="javascript:void(0);" (click)="onLogout()">Logout</a></p>
             </div>
           </li>

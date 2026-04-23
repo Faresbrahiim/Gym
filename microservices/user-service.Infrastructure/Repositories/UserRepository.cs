@@ -2,6 +2,7 @@
 using user_service.Infrastructure.Data;
 using user_service.Application.Contracts.Repositories;
 using user_service.Application.Domain.Entities;
+using user_service.Application.Domain.Enums;
 
 namespace user_service.Infrastructure.Repositories
 {
@@ -109,6 +110,44 @@ namespace user_service.Infrastructure.Repositories
             return await _context.Users
                 .AsNoTracking()
                 .Include(u => u.Profile)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<User>> SearchAsync(
+            string query,
+            int limit,
+            CancellationToken cancellationToken = default)
+        {
+            var pattern = $"%{query}%";
+
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .Where(u =>
+                    u.Status == UserStatus.ACTIVE &&
+                    (u.Role == UserRole.MEMBER || u.Role == UserRole.COACH) &&
+                    (
+                        EF.Functions.ILike(u.Username, pattern) ||
+                        (u.Profile != null && EF.Functions.ILike(u.Profile.FirstName, pattern)) ||
+                        (u.Profile != null && EF.Functions.ILike(u.Profile.LastName, pattern))
+                    ))
+                .OrderBy(u => u.Username)
+                .Take(limit)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<User>> GetByIdsAsync(
+            IEnumerable<Guid> userIds,
+            CancellationToken cancellationToken = default)
+        {
+            var ids = userIds.Distinct().ToList();
+            if (ids.Count == 0)
+                return [];
+
+            return await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Profile)
+                .Where(u => ids.Contains(u.Id))
                 .ToListAsync(cancellationToken);
         }
     }

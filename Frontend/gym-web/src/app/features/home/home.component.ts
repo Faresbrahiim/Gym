@@ -17,17 +17,21 @@ export class HomeComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       this.initAos();
       this.initSwipers();
       this.initCounters();
-    }, 100);
+    });
   }
 
   // ── AOS (Animate on Scroll) ──────────────────────────────────────────────────
   private initAos(): void {
     if (typeof AOS !== 'undefined') {
-      AOS.init({ duration: 1200, once: true });
+      AOS.init({
+        duration: 800,
+        once: true,
+        startEvent: 'DOMContentLoaded'
+      });
     }
   }
 
