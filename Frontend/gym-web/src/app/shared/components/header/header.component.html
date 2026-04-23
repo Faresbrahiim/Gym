@@ -69,6 +69,102 @@
       </div>
 
       <!-- Right nav — unauthenticated: Login / Register -->
+      <div class="header-people-search d-none d-xl-flex">
+        <form class="header-people-search__form" (ngSubmit)="onPeopleSearchSubmit()">
+          <div class="header-people-search__field" [class.header-people-search__field--open]="peopleSearchOpen()">
+            <i class="feather-search header-people-search__icon"></i>
+            <input
+              type="search"
+              class="header-people-search__input"
+              [formControl]="peopleSearchControl"
+              (focus)="onPeopleSearchFocus()"
+              placeholder="Search people, coaches, or members"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search people"
+            />
+            @if (peopleSearchLoading()) {
+              <span class="header-people-search__spinner"></span>
+            }
+            @if (!peopleSearchLoading() && peopleQuery.length > 0) {
+              <button
+                type="button"
+                class="header-people-search__clear"
+                (click)="clearPeopleSearch($event)"
+                aria-label="Clear people search"
+              >
+                <i class="feather-x"></i>
+              </button>
+            }
+          </div>
+
+          @if (peopleSearchOpen()) {
+            <div class="header-people-search__panel">
+              <div class="header-people-search__panel-header">
+                <span class="header-people-search__eyebrow">People search</span>
+                <p>{{ peopleHintText }}</p>
+              </div>
+
+              @if (peopleSearchLoading()) {
+                <div class="header-people-search__state">
+                  <span class="header-people-search__panel-spinner"></span>
+                  <span>Searching people...</span>
+                </div>
+              } @else if (peopleSearchError()) {
+                <div class="header-people-search__state header-people-search__state--error">
+                  <i class="feather-alert-circle"></i>
+                  <span>We couldn't load results right now.</span>
+                </div>
+              } @else if (peopleQuery.length < 2) {
+                <div class="header-people-search__state">
+                  <i class="feather-users"></i>
+                  <span>Type at least 2 characters to preview people here.</span>
+                </div>
+              } @else if (peopleSearchResults().length === 0) {
+                <div class="header-people-search__state">
+                  <i class="feather-user-x"></i>
+                  <span>No people found for "{{ peopleQuery }}".</span>
+                </div>
+              } @else {
+                <div class="header-people-search__results">
+                  @for (person of peopleSearchResults().slice(0, 5); track person.id) {
+                    <button
+                      type="button"
+                      class="header-people-search__result"
+                      (click)="openPeopleSearchPage(peopleQuery)"
+                    >
+                      <span class="header-people-search__avatar">
+                        @if (person.avatarUrl) {
+                          <img [src]="person.avatarUrl" [alt]="person.username" />
+                        } @else {
+                          <span>{{ getPeopleInitials(person) }}</span>
+                        }
+                      </span>
+                      <span class="header-people-search__result-copy">
+                        <strong>{{ person.firstName }} {{ person.lastName }}</strong>
+                        <small>&#64;{{ person.username }} · {{ person.role === 'COACH' ? 'Coach' : 'Member' }}</small>
+                      </span>
+                      <span class="header-people-search__result-action">Open</span>
+                    </button>
+                  }
+                </div>
+              }
+
+              <div class="header-people-search__footer">
+                <button
+                  type="button"
+                  class="header-people-search__submit"
+                  [disabled]="peopleQuery.length < 2"
+                  (click)="openPeopleSearchPage()"
+                >
+                  Open full People search
+                </button>
+              </div>
+            </div>
+          }
+        </form>
+      </div>
+
       @if (!isAuthenticated) {
         <ul class="nav header-navbar-rht">
           <li class="nav-item">

@@ -1,125 +1,212 @@
 <div class="people-page">
+  <div class="people-page__backdrop people-page__backdrop--left"></div>
+  <div class="people-page__backdrop people-page__backdrop--right"></div>
 
-  <!-- Hero search section -->
-  <div class="search-hero">
-    <div class="search-hero-inner">
-      <h1 class="search-hero-title">Find People</h1>
-      <p class="search-hero-sub">Search for members and coaches by name or username</p>
+  <div class="people-shell">
+    <section class="people-hero">
+      <div class="people-hero__copy">
+        <span class="people-hero__eyebrow">Community Directory</span>
+        <h1 class="people-hero__title">{{ heroTitle }}</h1>
+        <p class="people-hero__subtitle">{{ heroSubtitle }}</p>
 
-      <div class="search-bar-wrap">
-        <div class="search-bar" [class.search-bar--active]="queryValue.length > 0">
-          <i class="feather-search search-bar-icon"></i>
-          <input
-            [formControl]="searchControl"
-            type="text"
-            class="search-bar-input"
-            placeholder="Search by name or username…"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          @if (loading()) {
-            <span class="search-bar-spinner"></span>
-          }
-          @if (!loading() && queryValue.length > 0) {
-            <button class="search-bar-clear" (click)="searchControl.setValue('')" aria-label="Clear">
-              <i class="feather-x"></i>
-            </button>
-          }
+        <div class="people-hero__highlights">
+          <article class="people-highlight">
+            <span class="people-highlight__icon"><i class="feather-search"></i></span>
+            <div>
+              <h3>Search by name or username</h3>
+              <p>Jump straight to the right coach, member, or training partner without browsing page after page.</p>
+            </div>
+          </article>
+          <article class="people-highlight">
+            <span class="people-highlight__icon"><i class="feather-users"></i></span>
+            <div>
+              <h3>See who matches right now</h3>
+              <p>{{ resultCount }} current match{{ resultCount === 1 ? '' : 'es' }}, including {{ coachCount }} coach{{ coachCount === 1 ? '' : 'es' }} and {{ memberCount }} member{{ memberCount === 1 ? '' : 's' }}.</p>
+            </div>
+          </article>
+          <article class="people-highlight">
+            <span class="people-highlight__icon"><i class="feather-message-circle"></i></span>
+            <div>
+              <h3>Start the conversation immediately</h3>
+              <p>Open chat directly from the people cards below when you find the person you were looking for.</p>
+            </div>
+          </article>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Results section -->
-  <div class="results-section">
+      <div class="people-search-card">
+        <div class="people-search-card__header">
+          <span class="people-search-card__eyebrow">Search People</span>
+          <h2>Find someone fast</h2>
+          <p>Type a first name, last name, or username and we will bring the best matches forward.</p>
+        </div>
 
-    <!-- Loading -->
-    @if (loading()) {
-      <div class="state-block">
-        <span class="spinner-ring"></span>
-        <p>Searching…</p>
-      </div>
-    }
-
-    <!-- Error -->
-    @if (!loading() && error()) {
-      <div class="state-block">
-        <span class="state-icon state-icon--error"><i class="feather-alert-circle"></i></span>
-        <p>Something went wrong. Please try again.</p>
-      </div>
-    }
-
-    <!-- Empty query -->
-    @if (!loading() && !error() && !searched()) {
-      <div class="state-block state-block--hint">
-        <span class="state-icon state-icon--hint"><i class="feather-users"></i></span>
-        <p>Type at least 2 characters to search</p>
-      </div>
-    }
-
-    <!-- No results -->
-    @if (!loading() && !error() && searched() && results().length === 0) {
-      <div class="state-block">
-        <span class="state-icon state-icon--empty"><i class="feather-user-x"></i></span>
-        <p>No results for <strong>"{{ queryValue }}"</strong></p>
-        <span class="state-hint">Try a different name or username</span>
-      </div>
-    }
-
-    <!-- Results grid -->
-    @if (!loading() && !error() && results().length > 0) {
-      <div class="results-meta">
-        {{ results().length }} result{{ results().length === 1 ? '' : 's' }} for
-        <strong>"{{ queryValue }}"</strong>
-      </div>
-
-      <div class="results-grid">
-        @for (person of results(); track person.id) {
-          <div class="person-card">
-
-            <!-- Avatar -->
-            <div class="person-avatar">
-              @if (person.avatarUrl) {
-                <img [src]="person.avatarUrl" [alt]="person.username" class="person-avatar-img" />
-              } @else {
-                <span class="person-avatar-initials">{{ getInitials(person) }}</span>
-              }
-            </div>
-
-            <!-- Info -->
-            <div class="person-info">
-              <p class="person-name">{{ person.firstName }} {{ person.lastName }}</p>
-              <p class="person-username">&#64;{{ person.username }}</p>
-              <span class="person-role-badge"
-                    [class.badge--coach]="person.role === 'COACH'"
-                    [class.badge--member]="person.role === 'MEMBER'">
-                {{ person.role === 'COACH' ? 'Coach' : 'Member' }}
-              </span>
-            </div>
-
-            <!-- Chat button / You badge -->
-            @if (person.id !== currentUserId) {
-              <button
-                class="btn-chat"
-                [class.btn-chat--loading]="startingConvFor() === person.id"
-                [disabled]="startingConvFor() === person.id"
-                (click)="startChat(person)"
-              >
-                @if (startingConvFor() === person.id) {
-                  <span class="btn-chat-spinner"></span>
-                } @else {
-                  <i class="feather-message-circle"></i>
-                }
-                <span>Chat</span>
-              </button>
-            } @else {
-              <span class="you-badge">You</span>
+        <form class="people-search-form" (ngSubmit)="onSearchSubmit()">
+          <div class="people-search-form__field" [class.people-search-form__field--active]="queryValue.length > 0">
+            <i class="feather-search people-search-form__icon"></i>
+            <input
+              [formControl]="searchControl"
+              type="text"
+              class="people-search-form__input"
+              placeholder="Try Sarah, Youssef, or @username"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            @if (loading()) {
+              <span class="people-search-form__spinner"></span>
             }
+            @if (!loading() && queryValue.length > 0) {
+              <button type="button" class="people-search-form__clear" (click)="clearSearch()" aria-label="Clear">
+                <i class="feather-x"></i>
+              </button>
+            }
+          </div>
 
+          <div class="people-search-form__actions">
+            <span class="people-search-form__summary">{{ searchSummary }}</span>
+          </div>
+        </form>
+
+        <div class="people-search-card__tips">
+          <div class="people-tip">
+            <i class="feather-hash"></i>
+            <span>Usernames work great when you know exactly who you want.</span>
+          </div>
+          <div class="people-tip">
+            <i class="feather-message-circle"></i>
+            <span>Open a conversation directly from the result cards below.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="results-panel">
+      <div class="results-panel__header">
+        <div>
+          <span class="results-panel__eyebrow">People Results</span>
+          <h2>
+            @if (queryValue.length >= 2) {
+              Results for "{{ queryValue }}"
+            } @else {
+              Start your search
+            }
+          </h2>
+          <p>
+            @if (queryValue.length >= 2) {
+              Browse the strongest matches and jump into chat without leaving the page.
+            } @else {
+              The directory will populate as soon as you type at least 2 characters.
+            }
+          </p>
+        </div>
+
+        @if (!loading() && !error() && results().length > 0) {
+          <div class="results-panel__chips">
+            <span class="results-chip">{{ resultCount }} total</span>
+            <span class="results-chip results-chip--coach">{{ coachCount }} coaches</span>
+            <span class="results-chip results-chip--member">{{ memberCount }} members</span>
           </div>
         }
       </div>
-    }
 
+      @if (loading()) {
+        <div class="state-block">
+          <span class="spinner-ring"></span>
+          <p>Searching the directory...</p>
+        </div>
+      }
+
+      @if (!loading() && error()) {
+        <div class="state-block state-block--error">
+          <span class="state-icon state-icon--error"><i class="feather-alert-circle"></i></span>
+          <div>
+            <h3>We could not load people right now</h3>
+            <p>Please try the search again in a moment.</p>
+          </div>
+        </div>
+      }
+
+      @if (!loading() && !error() && !searched()) {
+        <div class="state-block state-block--hint">
+          <span class="state-icon state-icon--hint"><i class="feather-users"></i></span>
+          <div>
+            <h3>Your community search starts here</h3>
+            <p>Use at least 2 characters to search across members and coaches.</p>
+          </div>
+        </div>
+      }
+
+      @if (!loading() && !error() && searched() && results().length === 0) {
+        <div class="state-block state-block--empty">
+          <span class="state-icon state-icon--empty"><i class="feather-user-x"></i></span>
+          <div>
+            <h3>No results for "{{ queryValue }}"</h3>
+            <p>Try a different spelling, a shorter name, or the person's username.</p>
+          </div>
+        </div>
+      }
+
+      @if (!loading() && !error() && results().length > 0) {
+        <div class="results-grid">
+          @for (person of results(); track person.id) {
+            <article class="person-card">
+              <div class="person-card__top">
+                <div class="person-avatar" [class.person-avatar--image]="!!person.avatarUrl">
+                  @if (person.avatarUrl) {
+                    <img [src]="person.avatarUrl" [alt]="person.username" class="person-avatar-img" />
+                  } @else {
+                    <span class="person-avatar-initials">{{ getInitials(person) }}</span>
+                  }
+                </div>
+
+                <div class="person-card__identity">
+                  <div class="person-card__title-row">
+                    <h3 class="person-name">{{ person.firstName }} {{ person.lastName }}</h3>
+                    <span
+                      class="person-role-badge"
+                      [class.badge--coach]="person.role === 'COACH'"
+                      [class.badge--member]="person.role === 'MEMBER'"
+                    >
+                      {{ getRoleLabel(person) }}
+                    </span>
+                  </div>
+                  <p class="person-username">&#64;{{ person.username }}</p>
+                  <p class="person-blurb">{{ getProfileBlurb(person) }}</p>
+                </div>
+              </div>
+
+              <div class="person-card__meta">
+                <span class="person-meta-pill">{{ getRoleAccent(person) }}</span>
+                @if (person.id === currentUserId) {
+                  <span class="person-meta-pill person-meta-pill--self">Your profile</span>
+                } @else {
+                  <span class="person-meta-pill">Available to chat</span>
+                }
+              </div>
+
+              <div class="person-card__footer">
+                @if (person.id !== currentUserId) {
+                  <button
+                    class="btn-chat"
+                    [class.btn-chat--loading]="startingConvFor() === person.id"
+                    [disabled]="startingConvFor() === person.id"
+                    (click)="startChat(person)"
+                  >
+                    @if (startingConvFor() === person.id) {
+                      <span class="btn-chat-spinner"></span>
+                    } @else {
+                      <i class="feather-message-circle"></i>
+                    }
+                    <span>Start chat</span>
+                  </button>
+                } @else {
+                  <span class="you-badge">You</span>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
   </div>
 </div>
