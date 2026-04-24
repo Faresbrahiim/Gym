@@ -13,6 +13,7 @@ import com.gym.payment.domain.port.out.PaymentGatewayPort;
 import com.gym.payment.domain.port.out.PaymentRepository;
 import com.gym.payment.domain.port.out.PlanGatewayPort;
 import com.gym.payment.domain.port.out.PlanPricing;
+import com.gym.payment.domain.port.out.SubscriptionGatewayPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,19 +35,23 @@ public class PaymentApplicationService implements
     private final PaymentGatewayPort paymentGatewayPort;
     private final EventPublisherPort eventPublisherPort;
     private final PlanGatewayPort planGatewayPort;
+    private final SubscriptionGatewayPort subscriptionGatewayPort;
 
     public PaymentApplicationService(PaymentRepository paymentRepository,
                                      PaymentGatewayPort paymentGatewayPort,
                                      EventPublisherPort eventPublisherPort,
-                                     PlanGatewayPort planGatewayPort) {
+                                     PlanGatewayPort planGatewayPort,
+                                     SubscriptionGatewayPort subscriptionGatewayPort) {
         this.paymentRepository = paymentRepository;
         this.paymentGatewayPort = paymentGatewayPort;
         this.eventPublisherPort = eventPublisherPort;
         this.planGatewayPort = planGatewayPort;
+        this.subscriptionGatewayPort = subscriptionGatewayPort;
     }
 
     @Override
     public InitiatePaymentResponse execute(InitiatePaymentCommand command) {
+        subscriptionGatewayPort.ensureOwnedByUser(command.userId(), command.subscriptionId());
         PlanPricing pricing = planGatewayPort.getPlanPricing(command.planId());
         Money money = new Money(pricing.amount(), pricing.currency());
         GatewayResult result = paymentGatewayPort.createPaymentIntent(money, command.paymentMethodToken());

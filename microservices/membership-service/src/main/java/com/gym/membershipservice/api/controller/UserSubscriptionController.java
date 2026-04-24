@@ -52,9 +52,19 @@ public class UserSubscriptionController {
     }
 
     @PreAuthorize("hasRole('MEMBER')")
+    @GetMapping("/me/{subscriptionId}")
+    public SubscriptionResponseDTO getMySubscription(@AuthenticationPrincipal Jwt jwt,
+                                                     @PathVariable UUID subscriptionId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.getUserSubscriptionById(userId, subscriptionId);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/cancel")
-    public SubscriptionResponseDTO cancelSubscription(@PathVariable UUID subscriptionId) {
-        return subscriptionService.cancelSubscription(subscriptionId);
+    public SubscriptionResponseDTO cancelSubscription(@AuthenticationPrincipal Jwt jwt,
+                                                      @PathVariable UUID subscriptionId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.cancelSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -66,41 +76,53 @@ public class UserSubscriptionController {
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/pause")
-    public SubscriptionResponseDTO requestPause(@PathVariable UUID subscriptionId) {
-        return subscriptionService.pauseSubscription(subscriptionId);
+    public SubscriptionResponseDTO requestPause(@AuthenticationPrincipal Jwt jwt,
+                                                @PathVariable UUID subscriptionId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.pauseSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/resume")
-    public SubscriptionResponseDTO resumeSubscription(@PathVariable UUID subscriptionId) {
-        return subscriptionService.resumeSubscription(subscriptionId);
+    public SubscriptionResponseDTO resumeSubscription(@AuthenticationPrincipal Jwt jwt,
+                                                      @PathVariable UUID subscriptionId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.resumeSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/renew")
-    public SubscriptionResponseDTO renewSubscription(@PathVariable UUID subscriptionId) {
-        return subscriptionService.renewSubscription(subscriptionId);
+    public SubscriptionResponseDTO renewSubscription(@AuthenticationPrincipal Jwt jwt,
+                                                     @PathVariable UUID subscriptionId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.renewSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/upgrade")
-    public SubscriptionResponseDTO upgradeSubscription(@PathVariable UUID subscriptionId,
+    public SubscriptionResponseDTO upgradeSubscription(@AuthenticationPrincipal Jwt jwt,
+                                                       @PathVariable UUID subscriptionId,
                                                        @RequestParam UUID newPlanId) {
-        return subscriptionService.upgradeSubscription(subscriptionId, newPlanId);
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.upgradeSubscription(userId, subscriptionId, newPlanId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/downgrade")
-    public SubscriptionResponseDTO downgradeSubscription(@PathVariable UUID subscriptionId,
+    public SubscriptionResponseDTO downgradeSubscription(@AuthenticationPrincipal Jwt jwt,
+                                                         @PathVariable UUID subscriptionId,
                                                          @RequestParam UUID newPlanId) {
-        return subscriptionService.downgradeSubscription(subscriptionId, newPlanId);
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.downgradeSubscription(userId, subscriptionId, newPlanId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/{subscriptionId}/change-plan")
-    public SubscriptionResponseDTO changePlan(@PathVariable UUID subscriptionId,
+    public SubscriptionResponseDTO changePlan(@AuthenticationPrincipal Jwt jwt,
+                                              @PathVariable UUID subscriptionId,
                                               @RequestParam UUID newPlanId) {
-        return subscriptionService.changePlan(subscriptionId, newPlanId);
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return subscriptionService.changePlan(userId, subscriptionId, newPlanId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -137,7 +137,7 @@
 
 <!-- ── Pending alert banner ──────────────────────────────────────────── -->
 @if (pendingCount() > 0) {
-  <div class="pending-banner" (click)="statusFilter.set('PENDING')">
+  <div class="pending-banner" (click)="setStatusFilter('PENDING')">
     <div class="pending-banner-left">
       <i class="feather-bell"></i>
       <div>
@@ -156,18 +156,19 @@
     <input
       type="text"
       placeholder="Search by plan or member email…"
+      [value]="searchTerm()"
       (input)="onSearch($event)">
   </div>
   <div class="filter-tabs">
-    <button [class.active]="statusFilter() === 'ALL'"     (click)="statusFilter.set('ALL')">All</button>
-    <button [class.active]="statusFilter() === 'ACTIVE'"  (click)="statusFilter.set('ACTIVE')">Active</button>
-    <button [class.active]="statusFilter() === 'PENDING'" (click)="statusFilter.set('PENDING')">
+    <button [class.active]="statusFilter() === 'ALL'"     (click)="setStatusFilter('ALL')">All</button>
+    <button [class.active]="statusFilter() === 'ACTIVE'"  (click)="setStatusFilter('ACTIVE')">Active</button>
+    <button [class.active]="statusFilter() === 'PENDING'" (click)="setStatusFilter('PENDING')">
       Pending
       @if (pendingCount() > 0) { <span class="tab-badge">{{ pendingCount() }}</span> }
     </button>
-    <button [class.active]="statusFilter() === 'PAUSED'"  (click)="statusFilter.set('PAUSED')">Paused</button>
-    <button [class.active]="statusFilter() === 'FROZEN'"  (click)="statusFilter.set('FROZEN')">Frozen</button>
-    <button [class.active]="statusFilter() === 'ISSUES'"  (click)="statusFilter.set('ISSUES')">Issues</button>
+    <button [class.active]="statusFilter() === 'PAUSED'"  (click)="setStatusFilter('PAUSED')">Paused</button>
+    <button [class.active]="statusFilter() === 'FROZEN'"  (click)="setStatusFilter('FROZEN')">Frozen</button>
+    <button [class.active]="statusFilter() === 'ISSUES'"  (click)="setStatusFilter('ISSUES')">Issues</button>
   </div>
 </div>
 
@@ -191,10 +192,10 @@
     </div>
   }
 
-  @else if (filtered().length === 0) {
+  @else if (subscriptions().length === 0) {
     <div class="table-state">
       <div class="state-icon state-icon--empty"><i class="feather-inbox"></i></div>
-      <p>{{ subscriptions().length === 0 ? 'No subscriptions yet.' : 'No subscriptions match your filter.' }}</p>
+      <p>No subscriptions match your current search or filter.</p>
     </div>
   }
 
@@ -212,7 +213,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (sub of filtered(); track sub.subscriptionId) {
+          @for (sub of subscriptions(); track sub.subscriptionId) {
             <tr [class.row--pending]="isPendingAction(sub.status)">
 
               <!-- Member -->
@@ -348,8 +349,19 @@
     </div>
 
     <div class="table-footer">
-      Showing {{ filtered().length }} of {{ totalCount() }} subscription{{ totalCount() === 1 ? '' : 's' }}
+      Showing {{ subscriptions().length }} of {{ totalCount() }} subscription{{ totalCount() === 1 ? '' : 's' }}
     </div>
+
+    @if (totalPages() > 1) {
+      <app-pagination-bar
+        [page]="currentPage()"
+        [pageSize]="pageSize"
+        [totalItems]="totalCount()"
+        [totalPages]="totalPages()"
+        label="subscriptions"
+        (pageChange)="goToPage($event)"
+      />
+    }
   }
 
 </div>

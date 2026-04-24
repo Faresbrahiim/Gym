@@ -3,6 +3,7 @@ package com.gym.membershipservice.api.controller;
 import com.gym.membershipservice.api.exception.BadRequestException;
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,19 +50,22 @@ class AdminSubscriptionControllerTest {
 
     @Test
     void getAll_returnsAllSubscriptions() {
-        when(subscriptionService.getAllSubscriptions()).thenReturn(List.of(responseDTO));
+        PagedResponseDTO<SubscriptionResponseDTO> page = PagedResponseDTO.of(List.of(responseDTO), 1, 10, 1);
+        when(subscriptionService.getAllSubscriptions(1, 10, "ALL", null)).thenReturn(page);
 
-        List<SubscriptionResponseDTO> result = controller.getAll();
+        PagedResponseDTO<SubscriptionResponseDTO> result = controller.getAll(1, 10, "ALL", null);
 
-        assertThat(result).hasSize(1);
-        verify(subscriptionService).getAllSubscriptions();
+        assertThat(result.items()).hasSize(1);
+        assertThat(result.page()).isEqualTo(1);
+        verify(subscriptionService).getAllSubscriptions(1, 10, "ALL", null);
     }
 
     @Test
     void getAll_returnsEmptyList_whenNoneExist() {
-        when(subscriptionService.getAllSubscriptions()).thenReturn(List.of());
+        PagedResponseDTO<SubscriptionResponseDTO> page = PagedResponseDTO.of(List.of(), 1, 10, 0);
+        when(subscriptionService.getAllSubscriptions(1, 10, "ALL", null)).thenReturn(page);
 
-        assertThat(controller.getAll()).isEmpty();
+        assertThat(controller.getAll(1, 10, "ALL", null).items()).isEmpty();
     }
 
     // ── getUserSubscriptions ────────────────────────
