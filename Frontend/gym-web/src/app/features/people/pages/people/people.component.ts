@@ -46,7 +46,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.currentUserId = this.tokenService.getUserId() ?? '';
+    this.currentUserId = this.tokenService.isAuthenticated()
+      ? (this.tokenService.getUserId() ?? '')
+      : '';
     this.bindSearch();
     this.bindRouteState();
   }

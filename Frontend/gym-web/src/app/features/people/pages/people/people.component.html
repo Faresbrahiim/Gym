@@ -178,7 +178,7 @@
 
               <div class="person-card__meta">
                 <span class="person-meta-pill">{{ getRoleAccent(person) }}</span>
-                @if (person.id === currentUserId) {
+                @if (canStartChat && person.id === currentUserId) {
                   <span class="person-meta-pill person-meta-pill--self">Your profile</span>
                 } @else {
                   <span class="person-meta-pill">Available to chat</span>
@@ -186,7 +186,7 @@
               </div>
 
               <div class="person-card__footer">
-                @if (person.id !== currentUserId) {
+                @if (!canStartChat || person.id !== currentUserId) {
                   @if (canStartChat) {
                     <button
                       class="btn-chat"
