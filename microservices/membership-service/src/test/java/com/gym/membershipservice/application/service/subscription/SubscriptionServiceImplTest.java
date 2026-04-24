@@ -252,6 +252,44 @@ class SubscriptionServiceImplTest {
                 () -> service.upgradeSubscription(subId, cheaper.getId()));
     }
 
+    @Test
+    void shouldFailUpgrade_whenSubscriptionNotActive() {
+        Plan expensive = new Plan();
+        expensive.setId(UUID.randomUUID());
+        expensive.setPrice(200.0);
+        expensive.setDurationInDays(30);
+        expensive.setStatus(PlanStatus.ACTIVE);
+
+        subscription.setStatus(SubscriptionStatus.PAUSED);
+
+        when(subscriptionRepository.findById(subId))
+                .thenReturn(Optional.of(subscription));
+        when(planRepository.findById(expensive.getId()))
+                .thenReturn(Optional.of(expensive));
+
+        assertThrows(BadRequestException.class,
+                () -> service.upgradeSubscription(subId, expensive.getId()));
+    }
+
+    @Test
+    void shouldFailDowngrade_whenSubscriptionPaymentFailed() {
+        Plan cheaper = new Plan();
+        cheaper.setId(UUID.randomUUID());
+        cheaper.setPrice(10.0);
+        cheaper.setDurationInDays(30);
+        cheaper.setStatus(PlanStatus.ACTIVE);
+
+        subscription.setStatus(SubscriptionStatus.PAYMENT_FAILED);
+
+        when(subscriptionRepository.findById(subId))
+                .thenReturn(Optional.of(subscription));
+        when(planRepository.findById(cheaper.getId()))
+                .thenReturn(Optional.of(cheaper));
+
+        assertThrows(BadRequestException.class,
+                () -> service.downgradeSubscription(subId, cheaper.getId()));
+    }
+
     // =========================
     // EXTEND
     // =========================

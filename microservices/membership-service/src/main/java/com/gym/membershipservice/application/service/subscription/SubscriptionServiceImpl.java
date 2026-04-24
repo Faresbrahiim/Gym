@@ -419,9 +419,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO changePlan(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
-        if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
-            throw new BadRequestException("Only ACTIVE subscriptions can change plan");
-        }
+        ensurePlanChangeAllowed(sub);
 
         Plan newPlan = planRepository.findById(newPlanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
@@ -469,6 +467,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO upgradeSubscription(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
+        ensurePlanChangeAllowed(sub);
         Plan newPlan = planRepository.findById(newPlanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
@@ -499,6 +498,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO downgradeSubscription(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
+        ensurePlanChangeAllowed(sub);
         Plan newPlan = planRepository.findById(newPlanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
 
@@ -617,6 +617,21 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (plan.getDurationInDays() != null && plan.getDurationInDays() < 0) {
             throw new BadRequestException("Invalid plan duration");
         }
+    }
+
+    private void ensurePlanChangeAllowed(Subscription subscription) {
+        SubscriptionStatus status = subscription.getStatus();
+        if (status == SubscriptionStatus.ACTIVE) {
+            return;
+        }
+
+        throw switch (status) {
+            case PENDING_PAYMENT -> new BadRequestException("Plan changes are unavailable while payment is pending");
+            case PAYMENT_FAILED -> new BadRequestException("Plan changes are unavailable until the payment issue is resolved");
+            case PAUSED -> new BadRequestException("Resume your membership before changing plans");
+            case FROZEN -> new BadRequestException("Plan changes are unavailable while the membership is frozen");
+            default -> new BadRequestException("Only ACTIVE subscriptions can change plan");
+        };
     }
 
     private Specification<Subscription> buildAdminSubscriptionSpecification(String statusFilter, String search) {

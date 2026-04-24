@@ -11,6 +11,7 @@ export class PlanCardComponent {
   @Input({ required: true }) plan!: Plan;
   @Input() highlighted = false;
   @Input() currentPlanId: string | null = null;
+  @Input() blockedReason: string | null = null;
   @Input() iconIndex = 0;
   @Output() select = new EventEmitter<string>();
 
@@ -28,6 +29,10 @@ export class PlanCardComponent {
     return this.currentPlanId === this.plan.id;
   }
 
+  get isSelectionBlocked(): boolean {
+    return !!this.blockedReason;
+  }
+
   get durationLabel(): string {
     if (!this.plan.durationInDays) return 'Lifetime';
     if (this.plan.durationInDays === 30) return 'Per Month';
@@ -40,7 +45,7 @@ export class PlanCardComponent {
   }
 
   onSelect(): void {
-    if (!this.isCurrentPlan) {
+    if (!this.isCurrentPlan && !this.isSelectionBlocked) {
       this.select.emit(this.plan.id);
     }
   }

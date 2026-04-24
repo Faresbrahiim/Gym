@@ -9,6 +9,7 @@ import { TokenService } from '../../../../core/auth/token.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { Plan } from '../../models/plan.model';
+import { SubscriptionStatus } from '../../models/subscription-status.enum';
 import { ACTIVE_STATUSES } from '../../models/subscription-status.enum';
 import { PlanCardComponent } from '../../components/plan-card/plan-card.component';
 
@@ -24,6 +25,7 @@ export class PlansCatalogComponent implements OnInit {
   isLoading    = signal(true);
   plans        = signal<Plan[]>([]);
   currentPlanId = signal<string | null>(null);
+  currentSubscriptionStatus = signal<SubscriptionStatus | null>(null);
   errorMessage = signal<string | null>(null);
 
   private readonly planService      = inject(PlanService);
@@ -63,6 +65,7 @@ export class PlansCatalogComponent implements OnInit {
         this.plans.set(plans.filter((p: Plan) => p.price !== null && p.price > 0));
         const activeSub = subs.find((s: any) => ACTIVE_STATUSES.includes(s.status)) ?? null;
         this.currentPlanId.set(activeSub?.planId ?? null);
+        this.currentSubscriptionStatus.set(activeSub?.status ?? null);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -75,12 +78,36 @@ export class PlansCatalogComponent implements OnInit {
   }
 
   onSelectPlan(planId: string): void {
+    if (this.planChangeBlockedReason) {
+      this.toastService.error(this.planChangeBlockedReason);
+      return;
+    }
+
     if (this.tokenService.isAuthenticated()) {
       this.router.navigate(['/membership/checkout', planId]);
     } else {
       this.router.navigate(['/login'], {
         queryParams: { returnUrl: `/membership/checkout/${planId}` }
       });
+    }
+  }
+
+  get planChangeBlockedReason(): string | null {
+    return this.getPlanChangeBlockedReason(this.currentSubscriptionStatus());
+  }
+
+  private getPlanChangeBlockedReason(status: SubscriptionStatus | null): string | null {
+    switch (status) {
+      case 'PENDING_PAYMENT':
+        return 'Plan changes are unavailable while your payment is still pending.';
+      case 'PAYMENT_FAILED':
+        return 'Resolve the payment issue before changing your plan.';
+      case 'PAUSED':
+        return 'Resume your membership before changing plans.';
+      case 'FROZEN':
+        return 'Plan changes are unavailable while your membership is frozen.';
+      default:
+        return null;
     }
   }
 }
