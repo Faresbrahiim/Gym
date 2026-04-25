@@ -147,14 +147,18 @@
                 </div>
               }
 
-              <div class="action-btn-group">
-                <app-loading-button
-                  [loading]="false"
-                  cssClass="btn btn-primary"
-                  (click)="onChangePlan()">
-                  <i class="feather-refresh-cw me-2"></i>Change Plan
-                </app-loading-button>
-                @if (!isFree()) {
+              @if (!isFree()) {
+                <div class="status-notice info mb-4">
+                  <i class="feather-lock"></i>
+                  <div>
+                    <p class="notice-title">Plan Changes Unavailable</p>
+                    <p class="notice-text">Your paid membership stays active, but switching between paid plans is not available right now.</p>
+                  </div>
+                </div>
+              }
+
+              @if (!isFree()) {
+                <div class="action-btn-group">
                   <app-loading-button
                     [loading]="isPausing()"
                     cssClass="btn btn-outline-secondary"
@@ -167,8 +171,8 @@
                     (click)="onCancel()">
                     <i class="feather-x-circle me-2"></i>Cancel
                   </app-loading-button>
-                }
-              </div>
+                </div>
+              }
             }
 
             @case ('PENDING_PAYMENT') {

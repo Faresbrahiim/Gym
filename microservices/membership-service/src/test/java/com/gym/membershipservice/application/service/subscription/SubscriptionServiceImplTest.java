@@ -198,7 +198,9 @@ class SubscriptionServiceImplTest {
     // =========================
 
     @Test
-    void shouldChangePlan() {
+    void shouldAllowChangePlanFromFreeToPaid() {
+        subscription.getPlan().setPrice(0.0);
+
         Plan newPlan = new Plan();
         newPlan.setId(UUID.randomUUID());
         newPlan.setName("Premium");
@@ -222,27 +224,23 @@ class SubscriptionServiceImplTest {
     }
 
     @Test
-    void shouldChangePlanImmediatelyWhenTargetPlanIsFree() {
-        Plan freePlan = new Plan();
-        freePlan.setId(UUID.randomUUID());
-        freePlan.setName("Free");
-        freePlan.setPrice(0.0);
-        freePlan.setDurationInDays(0);
-        freePlan.setStatus(PlanStatus.ACTIVE);
+    void shouldBlockChangePlanBetweenPaidPlans() {
+        Plan newPlan = new Plan();
+        newPlan.setId(UUID.randomUUID());
+        newPlan.setName("Premium");
+        newPlan.setPrice(100.0);
+        newPlan.setDurationInDays(30);
+        newPlan.setStatus(PlanStatus.ACTIVE);
 
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-        when(planRepository.findById(freePlan.getId()))
-                .thenReturn(Optional.of(freePlan));
-        when(subscriptionRepository.save(any()))
-                .thenAnswer(inv -> inv.getArgument(0));
 
-        SubscriptionResponseDTO result = service.changePlan(subId, freePlan.getId());
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> service.changePlan(subId, newPlan.getId()));
 
-        assertEquals(freePlan.getId(), result.getPlanId());
-        assertEquals("Free", result.getPlanName());
-        assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
-        assertNull(subscription.getPendingPlan());
+        assertEquals("Self-service plan changes between paid plans are not available right now", ex.getMessage());
+        verify(planRepository).findById(newPlan.getId());
+        verify(subscriptionRepository, never()).save(any());
     }
 
     // =========================
@@ -250,78 +248,38 @@ class SubscriptionServiceImplTest {
     // =========================
 
     @Test
-    void shouldUpgradePlan() {
+    void shouldAlwaysBlockSelfServiceUpgrade() {
         Plan expensive = new Plan();
         expensive.setId(UUID.randomUUID());
         expensive.setName("VIP");
         expensive.setPrice(200.0);
         expensive.setDurationInDays(30);
 
-        when(subscriptionRepository.findById(subId))
-                .thenReturn(Optional.of(subscription));
-        when(planRepository.findById(expensive.getId()))
-                .thenReturn(Optional.of(expensive));
-        when(subscriptionRepository.save(any()))
-                .thenAnswer(inv -> inv.getArgument(0));
-
-        SubscriptionResponseDTO result = service.upgradeSubscription(subId, expensive.getId());
-
-        assertEquals(expensive.getId(), result.getPlanId());
-        assertEquals("VIP", result.getPlanName());
-    }
-
-    @Test
-    void shouldFailUpgrade_whenNewPlanCheaper() {
-        Plan cheaper = new Plan();
-        cheaper.setId(UUID.randomUUID());
-        cheaper.setPrice(10.0);
-        cheaper.setDurationInDays(30);
-
-        when(subscriptionRepository.findById(subId))
-                .thenReturn(Optional.of(subscription));
-        when(planRepository.findById(cheaper.getId()))
-                .thenReturn(Optional.of(cheaper));
-
-        assertThrows(BadRequestException.class,
-                () -> service.upgradeSubscription(subId, cheaper.getId()));
-    }
-
-    @Test
-    void shouldFailUpgrade_whenSubscriptionNotActive() {
-        Plan expensive = new Plan();
-        expensive.setId(UUID.randomUUID());
-        expensive.setPrice(200.0);
-        expensive.setDurationInDays(30);
-        expensive.setStatus(PlanStatus.ACTIVE);
-
-        subscription.setStatus(SubscriptionStatus.PAUSED);
-
-        when(subscriptionRepository.findById(subId))
-                .thenReturn(Optional.of(subscription));
-        when(planRepository.findById(expensive.getId()))
-                .thenReturn(Optional.of(expensive));
-
-        assertThrows(BadRequestException.class,
+        BadRequestException ex = assertThrows(BadRequestException.class,
                 () -> service.upgradeSubscription(subId, expensive.getId()));
+
+        assertEquals("Self-service plan changes between paid plans are not available right now", ex.getMessage());
+        verify(planRepository, never()).findById(any());
+        verify(subscriptionRepository, never()).save(any());
     }
 
     @Test
-    void shouldFailDowngrade_whenSubscriptionPaymentFailed() {
+    void shouldAlwaysBlockSelfServiceDowngrade() {
         Plan cheaper = new Plan();
         cheaper.setId(UUID.randomUUID());
         cheaper.setPrice(10.0);
         cheaper.setDurationInDays(30);
         cheaper.setStatus(PlanStatus.ACTIVE);
 
-        subscription.setStatus(SubscriptionStatus.PAYMENT_FAILED);
-
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-        when(planRepository.findById(cheaper.getId()))
-                .thenReturn(Optional.of(cheaper));
 
-        assertThrows(BadRequestException.class,
+        BadRequestException ex = assertThrows(BadRequestException.class,
                 () -> service.downgradeSubscription(subId, cheaper.getId()));
+
+        assertEquals("Self-service plan changes between paid plans are not available right now", ex.getMessage());
+        verify(planRepository, never()).findById(any());
+        verify(subscriptionRepository, never()).save(any());
     }
 
     // =========================

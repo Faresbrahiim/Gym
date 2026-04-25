@@ -25,6 +25,7 @@ export class PlansCatalogComponent implements OnInit {
   isLoading    = signal(true);
   plans        = signal<Plan[]>([]);
   currentPlanId = signal<string | null>(null);
+  currentPlanPrice = signal<number | null>(null);
   currentSubscriptionStatus = signal<SubscriptionStatus | null>(null);
   errorMessage = signal<string | null>(null);
 
@@ -65,6 +66,7 @@ export class PlansCatalogComponent implements OnInit {
         this.plans.set(plans.filter((p: Plan) => p.price !== null && p.price > 0));
         const activeSub = subs.find((s: any) => ACTIVE_STATUSES.includes(s.status)) ?? null;
         this.currentPlanId.set(activeSub?.planId ?? null);
+        this.currentPlanPrice.set(activeSub?.planPrice ?? null);
         this.currentSubscriptionStatus.set(activeSub?.status ?? null);
         this.isLoading.set(false);
       },
@@ -78,8 +80,11 @@ export class PlansCatalogComponent implements OnInit {
   }
 
   onSelectPlan(planId: string): void {
-    if (this.planChangeBlockedReason) {
-      this.toastService.error(this.planChangeBlockedReason);
+    const selectedPlan = this.plans().find(plan => plan.id === planId);
+    const selectionBlockedReason = selectedPlan ? this.getSelectionBlockedReason(selectedPlan) : this.planChangeBlockedReason;
+
+    if (selectionBlockedReason) {
+      this.toastService.error(selectionBlockedReason);
       return;
     }
 
@@ -94,6 +99,29 @@ export class PlansCatalogComponent implements OnInit {
 
   get planChangeBlockedReason(): string | null {
     return this.getPlanChangeBlockedReason(this.currentSubscriptionStatus());
+  }
+
+  getSelectionBlockedReason(plan: Plan): string | null {
+    const stateBlock = this.planChangeBlockedReason;
+    if (stateBlock) {
+      return stateBlock;
+    }
+
+    const currentPrice = this.currentPlanPrice();
+    if (currentPrice !== null && currentPrice > 0 && plan.id !== this.currentPlanId()) {
+      return 'Self-service plan changes between paid plans are not available right now.';
+    }
+
+    return null;
+  }
+
+  get paidPlanSwitchBlockedReason(): string | null {
+    const currentPrice = this.currentPlanPrice();
+    if (currentPrice !== null && currentPrice > 0 && !this.planChangeBlockedReason) {
+      return 'You can keep your current paid membership, but switching between paid plans is not available right now.';
+    }
+
+    return null;
   }
 
   private getPlanChangeBlockedReason(status: SubscriptionStatus | null): string | null {

@@ -36,6 +36,9 @@
         (click)="onSelect()">
         {{ isCurrentPlan ? 'Current Plan' : (isSelectionBlocked ? 'Unavailable Right Now' : 'Choose Plan') }}
       </button>
+      @if (!isCurrentPlan && blockedReason) {
+        <p class="text-muted small mt-2 mb-0">{{ blockedReason }}</p>
+      }
     </div>
   </div>
 </div>

@@ -420,7 +420,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO changePlan(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
-        ensurePlanChangeAllowed(sub);
+        ensurePlanStatusAllowsChange(sub);
 
         Plan newPlan = planRepository.findById(newPlanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
@@ -428,6 +428,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (newPlan.getStatus() == PlanStatus.INACTIVE) {
             throw new BadRequestException("Cannot switch to inactive plan");
         }
+
+        ensureSelfServicePlanSwitchAllowed(sub);
 
         validatePlanDuration(newPlan);
 
@@ -476,25 +478,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional
     public SubscriptionResponseDTO upgradeSubscription(UUID subscriptionId, UUID newPlanId) {
-        Subscription sub = findAndAutoExpire(subscriptionId);
-        ensurePlanChangeAllowed(sub);
-        Plan newPlan = planRepository.findById(newPlanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
-
-        if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) <= 0) {
-            throw new BadRequestException("New plan must be more expensive");
-        }
-
-        boolean upgradeHasFixed = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
-        SubscriptionStatus previous = sub.getStatus();
-        sub.setPlan(newPlan);
-        sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(upgradeHasFixed ? LocalDateTime.now().plusDays(newPlan.getDurationInDays()) : null);
-
-        Subscription saved = subscriptionRepository.save(sub);
-        historyService.recordChange(saved, previous, previous, null, "Upgraded to " + newPlan.getName());
-
-        return SubscriptionMapper.toDTO(saved);
+        throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
     }
 
     @Override
@@ -507,25 +491,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional
     public SubscriptionResponseDTO downgradeSubscription(UUID subscriptionId, UUID newPlanId) {
-        Subscription sub = findAndAutoExpire(subscriptionId);
-        ensurePlanChangeAllowed(sub);
-        Plan newPlan = planRepository.findById(newPlanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
-
-        if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) >= 0) {
-            throw new BadRequestException("New plan must be cheaper");
-        }
-
-        boolean downgradeHasFixed = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
-        SubscriptionStatus previous = sub.getStatus();
-        sub.setPlan(newPlan);
-        sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(downgradeHasFixed ? LocalDateTime.now().plusDays(newPlan.getDurationInDays()) : null);
-
-        Subscription saved = subscriptionRepository.save(sub);
-        historyService.recordChange(saved, previous, previous, null, "Downgraded to " + newPlan.getName());
-
-        return SubscriptionMapper.toDTO(saved);
+        throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
     }
 
     // =========================
@@ -630,6 +596,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     private void ensurePlanChangeAllowed(Subscription subscription) {
+        throw new UnsupportedOperationException("Deprecated helper");
+    }
+
+    private void ensurePlanStatusAllowsChange(Subscription subscription) {
         SubscriptionStatus status = subscription.getStatus();
         if (status == SubscriptionStatus.ACTIVE) {
             return;
@@ -642,6 +612,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             case FROZEN -> new BadRequestException("Plan changes are unavailable while the membership is frozen");
             default -> new BadRequestException("Only ACTIVE subscriptions can change plan");
         };
+    }
+
+    private void ensureSelfServicePlanSwitchAllowed(Subscription subscription) {
+        Double currentPrice = subscription.getPlan().getPrice();
+        boolean currentPlanIsFree = currentPrice == null || currentPrice == 0;
+        if (currentPlanIsFree) {
+            return;
+        }
+
+        throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
     }
 
     private Specification<Subscription> buildAdminSubscriptionSpecification(String statusFilter, String search) {
