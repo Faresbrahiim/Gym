@@ -1,11 +1,13 @@
 <?php
-// src/Controller/OrderController.php
+
 namespace App\Controller;
 
-use App\Service\OrderServiceInterface;
 use App\Mapper\OrderMapper;
+use App\Security\JwtUserExtractor;
+use App\Service\OrderServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Uid\Uuid;
 
@@ -13,17 +15,17 @@ use Symfony\Component\Uid\Uuid;
 class OrderController extends AbstractController
 {
     public function __construct(
-        private OrderServiceInterface $orderService
+        private readonly OrderServiceInterface $orderService,
+        private readonly JwtUserExtractor $jwtUserExtractor,
     ) {}
 
     #[Route('', methods: ['POST'])]
-    public function checkout(): JsonResponse
+    public function checkout(Request $request): JsonResponse
     {
-        $userId = Uuid::fromString('550e8400-e29b-41d4-a716-446655440000'); // Mocked
-        
+        $userId = $this->jwtUserExtractor->extractUserId($request);
+
         try {
             $order = $this->orderService->createOrderFromCart($userId);
-            // Use Mapper here!
             return $this->json(OrderMapper::mapToResponseDto($order), 201);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 400);
@@ -31,12 +33,11 @@ class OrderController extends AbstractController
     }
 
     #[Route('', methods: ['GET'])]
-    public function list(): JsonResponse
+    public function list(Request $request): JsonResponse
     {
-        $userId = Uuid::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $userId = $this->jwtUserExtractor->extractUserId($request);
         $orders = $this->orderService->getUserOrders($userId);
-        
-        // Use Mapper for collection!
+
         return $this->json(OrderMapper::mapCollection($orders));
     }
 
@@ -44,9 +45,9 @@ class OrderController extends AbstractController
     public function show(string $orderId): JsonResponse
     {
         $order = $this->orderService->getOrder(Uuid::fromString($orderId));
-        
+
         if (!$order) {
-            return $this->json(['error' => 'Order hidden in cave'], 404);
+            return $this->json(['error' => 'Order not found'], 404);
         }
 
         return $this->json(OrderMapper::mapToResponseDto($order));
@@ -56,6 +57,6 @@ class OrderController extends AbstractController
     public function cancel(string $orderId): JsonResponse
     {
         $this->orderService->cancelOrder(Uuid::fromString($orderId));
-        return $this->json(['message' => 'Order dead now (cancelled)']);
+        return $this->json(['message' => 'Order cancelled']);
     }
 }

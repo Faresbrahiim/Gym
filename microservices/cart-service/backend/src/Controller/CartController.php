@@ -1,8 +1,9 @@
 <?php
-// src/Controller/CartController.php
+
 namespace App\Controller;
 
 use App\Mapper\CartMapper;
+use App\Security\JwtUserExtractor;
 use App\Service\CartServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -15,24 +16,24 @@ use Symfony\Component\Uid\Uuid;
 class CartController extends AbstractController
 {
     public function __construct(
-        private readonly CartServiceInterface $cartService, // Interface Injection
+        private readonly CartServiceInterface $cartService,
+        private readonly JwtUserExtractor $jwtUserExtractor,
     ) {}
 
     #[Route('', methods: ['GET'])]
-    public function getCart(): JsonResponse
+    public function getCart(Request $request): JsonResponse
     {
-        $userId = Uuid::fromString('550e8400-e29b-41d4-a716-446655440000');
-        $cart = $this->cartService->getOrCreateCart($userId);
+        $userId = $this->jwtUserExtractor->extractUserId($request);
+        $cart   = $this->cartService->getOrCreateCart($userId);
 
-        // Map Entity to DTO
         return $this->json(CartMapper::mapToResponseDto($cart));
     }
 
     #[Route('/items', methods: ['POST'])]
     public function addItem(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        $userId = Uuid::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $data   = json_decode($request->getContent(), true);
+        $userId = $this->jwtUserExtractor->extractUserId($request);
 
         try {
             $this->cartService->addProductToCart(
@@ -50,7 +51,7 @@ class CartController extends AbstractController
     public function updateItem(string $itemId, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        
+
         try {
             $this->cartService->updateItemQuantity(Uuid::fromString($itemId), $data['quantity']);
             return $this->json(['message' => 'Quantity updated']);
@@ -67,9 +68,9 @@ class CartController extends AbstractController
     }
 
     #[Route('', methods: ['DELETE'])]
-    public function clearCart(): JsonResponse
+    public function clearCart(Request $request): JsonResponse
     {
-        $userId = Uuid::fromString('550e8400-e29b-41d4-a716-446655440000');
+        $userId = $this->jwtUserExtractor->extractUserId($request);
         $this->cartService->clearUserCart($userId);
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
