@@ -31,6 +31,9 @@ stripe:
 membership-service:
   base-url: ${MEMBERSHIP_SERVICE_URL:http://membership-service:8080}
 
+cart-service:
+  base-url: ${CART_SERVICE_URL:http://cart-service:80}
+
 payment:
   pending-timeout-minutes: ${PAYMENT_PENDING_TIMEOUT_MINUTES:2}
 

@@ -3,6 +3,12 @@ package com.gym.payment.adapter.out.messaging;
 import com.gym.payment.adapter.out.messaging.dto.PaymentCompletedMessage;
 import com.gym.payment.adapter.out.messaging.dto.PaymentExpiredMessage;
 import com.gym.payment.adapter.out.messaging.dto.PaymentFailedMessage;
+import com.gym.payment.adapter.out.messaging.dto.OrderPaymentCompletedMessage;
+import com.gym.payment.adapter.out.messaging.dto.OrderPaymentExpiredMessage;
+import com.gym.payment.adapter.out.messaging.dto.OrderPaymentFailedMessage;
+import com.gym.payment.domain.event.OrderPaymentCompletedEvent;
+import com.gym.payment.domain.event.OrderPaymentExpiredEvent;
+import com.gym.payment.domain.event.OrderPaymentFailedEvent;
 import com.gym.payment.domain.event.PaymentCompletedEvent;
 import com.gym.payment.domain.event.PaymentExpiredEvent;
 import com.gym.payment.domain.event.PaymentFailedEvent;
@@ -31,6 +37,16 @@ public class KafkaEventPublisherAdapter implements EventPublisherPort {
                     e.completedAt().toString()
             );
             kafkaTemplate.send(topic, e.paymentId().toString(), message);
+        } else if (event instanceof OrderPaymentCompletedEvent e) {
+            OrderPaymentCompletedMessage message = new OrderPaymentCompletedMessage(
+                    e.paymentId().toString(),
+                    e.orderId().toString(),
+                    e.userId().toString(),
+                    e.amount().toPlainString(),
+                    e.currency(),
+                    e.completedAt().toString()
+            );
+            kafkaTemplate.send(topic, e.paymentId().toString(), message);
         } else if (event instanceof PaymentFailedEvent e) {
             PaymentFailedMessage message = new PaymentFailedMessage(
                     e.paymentId().toString(),
@@ -39,10 +55,26 @@ public class KafkaEventPublisherAdapter implements EventPublisherPort {
                     e.failureReason()
             );
             kafkaTemplate.send(topic, e.paymentId().toString(), message);
+        } else if (event instanceof OrderPaymentFailedEvent e) {
+            OrderPaymentFailedMessage message = new OrderPaymentFailedMessage(
+                    e.paymentId().toString(),
+                    e.orderId().toString(),
+                    e.userId().toString(),
+                    e.failureReason()
+            );
+            kafkaTemplate.send(topic, e.paymentId().toString(), message);
         } else if (event instanceof PaymentExpiredEvent e) {
             PaymentExpiredMessage message = new PaymentExpiredMessage(
                     e.paymentId().toString(),
                     e.subscriptionId().toString(),
+                    e.userId().toString(),
+                    e.reason()
+            );
+            kafkaTemplate.send(topic, e.paymentId().toString(), message);
+        } else if (event instanceof OrderPaymentExpiredEvent e) {
+            OrderPaymentExpiredMessage message = new OrderPaymentExpiredMessage(
+                    e.paymentId().toString(),
+                    e.orderId().toString(),
                     e.userId().toString(),
                     e.reason()
             );

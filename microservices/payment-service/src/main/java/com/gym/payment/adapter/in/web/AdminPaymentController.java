@@ -36,7 +36,7 @@ public class AdminPaymentController {
         List<PaymentResponse> responses = getAllPaymentsUseCase.execute(query)
                 .stream()
                 .map(r -> new PaymentResponse(
-                        r.id(), r.userId(), r.subscriptionId(), r.planId(),
+                        r.id(), r.userId(), r.targetType(), r.subscriptionId(), r.planId(), r.orderId(),
                         r.amount(), r.currency(), r.status(),
                         r.stripePaymentIntentId(), r.failureReason(),
                         r.createdAt(), r.completedAt()

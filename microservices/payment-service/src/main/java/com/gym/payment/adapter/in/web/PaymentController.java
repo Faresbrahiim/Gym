@@ -1,6 +1,7 @@
 package com.gym.payment.adapter.in.web;
 
 import com.gym.payment.adapter.in.web.dto.InitiatePaymentRequest;
+import com.gym.payment.adapter.in.web.dto.InitiateOrderPaymentRequest;
 import com.gym.payment.adapter.in.web.dto.InitiatePaymentResponse;
 import com.gym.payment.adapter.in.web.dto.PagedResponse;
 import com.gym.payment.adapter.in.web.dto.PaymentResponse;
@@ -20,13 +21,16 @@ import java.util.UUID;
 public class PaymentController {
 
     private final InitiatePaymentUseCase initiatePaymentUseCase;
+    private final InitiateOrderPaymentUseCase initiateOrderPaymentUseCase;
     private final GetMyPaymentHistoryUseCase getMyPaymentHistoryUseCase;
     private final GetMyPaymentByIdUseCase getMyPaymentByIdUseCase;
 
     public PaymentController(InitiatePaymentUseCase initiatePaymentUseCase,
+                             InitiateOrderPaymentUseCase initiateOrderPaymentUseCase,
                              GetMyPaymentHistoryUseCase getMyPaymentHistoryUseCase,
                              GetMyPaymentByIdUseCase getMyPaymentByIdUseCase) {
         this.initiatePaymentUseCase = initiatePaymentUseCase;
+        this.initiateOrderPaymentUseCase = initiateOrderPaymentUseCase;
         this.getMyPaymentHistoryUseCase = getMyPaymentHistoryUseCase;
         this.getMyPaymentByIdUseCase = getMyPaymentByIdUseCase;
     }
@@ -49,6 +53,24 @@ public class PaymentController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new InitiatePaymentResponse(result.paymentId(), result.clientSecret()));
+    }
+
+    @PostMapping("/initiate-order")
+    public ResponseEntity<InitiatePaymentResponse> initiateOrderPayment(
+            @Valid @RequestBody InitiateOrderPaymentRequest request,
+            JwtAuthenticationToken token) {
+
+        UUID userId = UUID.fromString(token.getToken().getSubject());
+
+        InitiatePaymentResponse result = toWebResponse(
+                initiateOrderPaymentUseCase.execute(new InitiateOrderPaymentCommand(
+                        userId,
+                        request.orderId(),
+                        request.paymentMethodToken()
+                ))
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @GetMapping("/me")
@@ -89,10 +111,14 @@ public class PaymentController {
 
     private PaymentResponse toDto(com.gym.payment.domain.port.in.PaymentResponse r) {
         return new PaymentResponse(
-                r.id(), r.userId(), r.subscriptionId(), r.planId(),
+                r.id(), r.userId(), r.targetType(), r.subscriptionId(), r.planId(), r.orderId(),
                 r.amount(), r.currency(), r.status(),
                 r.stripePaymentIntentId(), r.failureReason(),
                 r.createdAt(), r.completedAt()
         );
+    }
+
+    private InitiatePaymentResponse toWebResponse(com.gym.payment.domain.port.in.InitiatePaymentResponse response) {
+        return new InitiatePaymentResponse(response.paymentId(), response.clientSecret());
     }
 }

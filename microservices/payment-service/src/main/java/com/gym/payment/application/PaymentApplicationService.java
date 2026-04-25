@@ -2,13 +2,18 @@ package com.gym.payment.application;
 
 import com.gym.payment.domain.event.PaymentCompletedEvent;
 import com.gym.payment.domain.event.PaymentFailedEvent;
+import com.gym.payment.domain.event.OrderPaymentCompletedEvent;
+import com.gym.payment.domain.event.OrderPaymentFailedEvent;
 import com.gym.payment.domain.exception.PaymentNotFoundException;
 import com.gym.payment.domain.model.Money;
 import com.gym.payment.domain.model.Payment;
 import com.gym.payment.domain.model.PaymentStatus;
+import com.gym.payment.domain.model.PaymentTargetType;
 import com.gym.payment.domain.port.in.*;
 import com.gym.payment.domain.port.out.EventPublisherPort;
 import com.gym.payment.domain.port.out.GatewayResult;
+import com.gym.payment.domain.port.out.OrderGatewayPort;
+import com.gym.payment.domain.port.out.OrderPaymentDetails;
 import com.gym.payment.domain.port.out.PaymentGatewayPort;
 import com.gym.payment.domain.port.out.PaymentRepository;
 import com.gym.payment.domain.port.out.PlanGatewayPort;
@@ -25,6 +30,7 @@ import java.util.UUID;
 @Transactional
 public class PaymentApplicationService implements
         InitiatePaymentUseCase,
+        InitiateOrderPaymentUseCase,
         HandleWebhookUseCase,
         GetMyPaymentHistoryUseCase,
         GetMyPaymentByIdUseCase,
@@ -36,17 +42,20 @@ public class PaymentApplicationService implements
     private final EventPublisherPort eventPublisherPort;
     private final PlanGatewayPort planGatewayPort;
     private final SubscriptionGatewayPort subscriptionGatewayPort;
+    private final OrderGatewayPort orderGatewayPort;
 
     public PaymentApplicationService(PaymentRepository paymentRepository,
                                      PaymentGatewayPort paymentGatewayPort,
                                      EventPublisherPort eventPublisherPort,
                                      PlanGatewayPort planGatewayPort,
-                                     SubscriptionGatewayPort subscriptionGatewayPort) {
+                                     SubscriptionGatewayPort subscriptionGatewayPort,
+                                     OrderGatewayPort orderGatewayPort) {
         this.paymentRepository = paymentRepository;
         this.paymentGatewayPort = paymentGatewayPort;
         this.eventPublisherPort = eventPublisherPort;
         this.planGatewayPort = planGatewayPort;
         this.subscriptionGatewayPort = subscriptionGatewayPort;
+        this.orderGatewayPort = orderGatewayPort;
     }
 
     @Override
@@ -55,7 +64,18 @@ public class PaymentApplicationService implements
         PlanPricing pricing = planGatewayPort.getPlanPricing(command.planId());
         Money money = new Money(pricing.amount(), pricing.currency());
         GatewayResult result = paymentGatewayPort.createPaymentIntent(money, command.paymentMethodToken());
-        Payment payment = new Payment(command.userId(), command.subscriptionId(), command.planId(), money);
+        Payment payment = Payment.forMembership(command.userId(), command.subscriptionId(), command.planId(), money);
+        payment.assignStripePaymentIntentId(result.paymentIntentId());
+        paymentRepository.save(payment);
+        return new InitiatePaymentResponse(payment.getId(), result.clientSecret());
+    }
+
+    @Override
+    public InitiatePaymentResponse execute(InitiateOrderPaymentCommand command) {
+        OrderPaymentDetails order = orderGatewayPort.getOrderPaymentDetails(command.userId(), command.orderId());
+        Money money = new Money(order.amount(), order.currency());
+        GatewayResult result = paymentGatewayPort.createPaymentIntent(money, command.paymentMethodToken());
+        Payment payment = Payment.forOrder(command.userId(), order.orderId(), money);
         payment.assignStripePaymentIntentId(result.paymentIntentId());
         paymentRepository.save(payment);
         return new InitiatePaymentResponse(payment.getId(), result.clientSecret());
@@ -74,23 +94,43 @@ public class PaymentApplicationService implements
         if ("payment_intent.succeeded".equals(command.eventType())) {
             payment.markCompleted(command.stripePaymentIntentId());
             paymentRepository.save(payment);
-            eventPublisherPort.publish("payment.completed", new PaymentCompletedEvent(
-                    payment.getId(),
-                    payment.getSubscriptionId(),
-                    payment.getUserId(),
-                    payment.getAmount().amount(),
-                    payment.getAmount().currency(),
-                    payment.getCompletedAt()
-            ));
+            if (payment.getTargetType() == PaymentTargetType.ORDER) {
+                eventPublisherPort.publish("order-payment.completed", new OrderPaymentCompletedEvent(
+                        payment.getId(),
+                        payment.getOrderId(),
+                        payment.getUserId(),
+                        payment.getAmount().amount(),
+                        payment.getAmount().currency(),
+                        payment.getCompletedAt()
+                ));
+            } else {
+                eventPublisherPort.publish("payment.completed", new PaymentCompletedEvent(
+                        payment.getId(),
+                        payment.getSubscriptionId(),
+                        payment.getUserId(),
+                        payment.getAmount().amount(),
+                        payment.getAmount().currency(),
+                        payment.getCompletedAt()
+                ));
+            }
         } else if ("payment_intent.payment_failed".equals(command.eventType())) {
             payment.markFailed(command.failureReason());
             paymentRepository.save(payment);
-            eventPublisherPort.publish("payment.failed", new PaymentFailedEvent(
-                    payment.getId(),
-                    payment.getSubscriptionId(),
-                    payment.getUserId(),
-                    payment.getFailureReason()
-            ));
+            if (payment.getTargetType() == PaymentTargetType.ORDER) {
+                eventPublisherPort.publish("order-payment.failed", new OrderPaymentFailedEvent(
+                        payment.getId(),
+                        payment.getOrderId(),
+                        payment.getUserId(),
+                        payment.getFailureReason()
+                ));
+            } else {
+                eventPublisherPort.publish("payment.failed", new PaymentFailedEvent(
+                        payment.getId(),
+                        payment.getSubscriptionId(),
+                        payment.getUserId(),
+                        payment.getFailureReason()
+                ));
+            }
         }
     }
 
@@ -135,8 +175,10 @@ public class PaymentApplicationService implements
         return new PaymentResponse(
                 payment.getId(),
                 payment.getUserId(),
+                payment.getTargetType(),
                 payment.getSubscriptionId(),
                 payment.getPlanId(),
+                payment.getOrderId(),
                 payment.getAmount().amount(),
                 payment.getAmount().currency(),
                 payment.getStatus(),
