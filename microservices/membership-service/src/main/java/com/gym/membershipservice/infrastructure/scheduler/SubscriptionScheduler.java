@@ -17,11 +17,14 @@ public class SubscriptionScheduler {
 
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionHistoryService historyService;
+    private final long pendingPaymentTimeoutMinutes;
 
     public SubscriptionScheduler(SubscriptionRepository subscriptionRepository,
-                                 SubscriptionHistoryService historyService) {
+                                 SubscriptionHistoryService historyService,
+                                 @org.springframework.beans.factory.annotation.Value("${membership.pending-payment-timeout-minutes:10}") long pendingPaymentTimeoutMinutes) {
         this.subscriptionRepository = subscriptionRepository;
         this.historyService = historyService;
+        this.pendingPaymentTimeoutMinutes = pendingPaymentTimeoutMinutes;
     }
 
     // --- Expire subscriptions ---
@@ -72,6 +75,45 @@ public class SubscriptionScheduler {
 
         if (frozenSubs.isEmpty()) {
             System.out.println("No frozen subscriptions to reactivate at UTC: " + nowUtc);
+        }
+    }
+
+    @Scheduled(fixedRate = 60000)
+    @Transactional
+    public void expirePendingPayments() {
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(pendingPaymentTimeoutMinutes);
+        List<Subscription> pendingSubs = subscriptionRepository
+                .findByStatusAndPendingPaymentStartedAtBefore(SubscriptionStatus.PENDING_PAYMENT, cutoff);
+
+        for (Subscription sub : pendingSubs) {
+            SubscriptionStatus previous = sub.getStatus();
+
+            if (sub.getPendingPlan() != null) {
+                String pendingPlanName = sub.getPendingPlan().getName();
+                sub.setPendingPlan(null);
+                sub.setStatus(SubscriptionStatus.ACTIVE);
+                sub.setPendingPaymentStartedAt(null);
+                subscriptionRepository.saveAndFlush(sub);
+                historyService.recordChange(
+                        sub,
+                        previous,
+                        SubscriptionStatus.ACTIVE,
+                        null,
+                        "Pending payment expired for plan change to " + pendingPlanName + " - current plan kept active"
+                );
+                continue;
+            }
+
+            sub.setStatus(SubscriptionStatus.PAYMENT_FAILED);
+            sub.setPendingPaymentStartedAt(null);
+            subscriptionRepository.saveAndFlush(sub);
+            historyService.recordChange(
+                    sub,
+                    previous,
+                    SubscriptionStatus.PAYMENT_FAILED,
+                    null,
+                    "Pending payment expired after " + pendingPaymentTimeoutMinutes + " minutes"
+            );
         }
     }
 }

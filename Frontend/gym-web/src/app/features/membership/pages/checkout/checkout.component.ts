@@ -122,7 +122,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   get buttonLabel(): string {
-    if (this.isChangingPlan) return `Switch to ${this.plan()?.name}`;
+      if (this.isChangingPlan) return `Switch to ${this.plan()?.name}`;
     if (this.isFree) return 'Activate Free Plan';
     return `Subscribe — ${this.formattedPrice}`;
   }
@@ -186,10 +186,14 @@ export class CheckoutComponent implements OnInit {
       const { error: confirmError } = await this.stripeService.confirmCardPayment(res.clientSecret);
       if (confirmError) {
         this.toastService.error('Payment confirmation failed. Please try again.');
-        this.router.navigate(['/membership/status', sub.subscriptionId]);
+        this.router.navigate(['/membership/status', sub.subscriptionId], {
+          queryParams: { expectedPlanId: p.id }
+        });
       } else {
-        this.toastService.success('Payment successful! Your membership is being activated.');
-        this.router.navigate(['/membership/status', sub.subscriptionId]);
+        this.toastService.info('Payment received. We are finalizing your membership now.');
+        this.router.navigate(['/membership/status', sub.subscriptionId], {
+          queryParams: { expectedPlanId: p.id }
+        });
       }
     } catch (err) {
       this.paymentErrorMessage.set(this.errorService.extractMessage(err));

@@ -213,6 +213,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         boolean activateImmediately = !isPaid || paymentDevMode;
         sub.setStatus(activateImmediately ? SubscriptionStatus.ACTIVE : SubscriptionStatus.PENDING_PAYMENT);
+        sub.setPendingPaymentStartedAt(activateImmediately ? null : now);
         sub.setEndDate(hasFixedDuration ? now.plusDays(plan.getDurationInDays()) : null);
 
         Subscription saved = subscriptionRepository.save(sub);
@@ -445,9 +446,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             sub.setStartDate(now);
             sub.setEndDate(hasFixedDuration ? now.plusDays(newPlan.getDurationInDays()) : null);
             sub.setStatus(SubscriptionStatus.ACTIVE);
+            sub.setPendingPaymentStartedAt(null);
         } else {
             sub.setPendingPlan(newPlan);
             sub.setStatus(SubscriptionStatus.PENDING_PAYMENT);
+            sub.setPendingPaymentStartedAt(now);
         }
 
         Subscription saved = subscriptionRepository.save(sub);

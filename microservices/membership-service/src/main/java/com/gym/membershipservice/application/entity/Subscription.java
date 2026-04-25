@@ -36,6 +36,7 @@ public class Subscription {
     @Column(nullable = false)
     private SubscriptionStatus status;
 
+    private LocalDateTime pendingPaymentStartedAt;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private LocalDateTime pausedAt;
@@ -62,6 +63,9 @@ public class Subscription {
 
     public SubscriptionStatus getStatus() { return status; }
     public void setStatus(SubscriptionStatus status) { this.status = status; }
+
+    public LocalDateTime getPendingPaymentStartedAt() { return pendingPaymentStartedAt; }
+    public void setPendingPaymentStartedAt(LocalDateTime pendingPaymentStartedAt) { this.pendingPaymentStartedAt = pendingPaymentStartedAt; }
 
     public LocalDateTime getStartDate() { return startDate; }
     public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }

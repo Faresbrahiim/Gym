@@ -72,6 +72,7 @@ public class PaymentEventListenerImpl implements PaymentEventHandler {
             }
 
             sub.setStatus(SubscriptionStatus.ACTIVE);
+            sub.setPendingPaymentStartedAt(null);
             Subscription saved = subscriptionRepository.save(sub);
             historyService.recordChange(saved, previous, SubscriptionStatus.ACTIVE, null, note);
 
@@ -113,6 +114,7 @@ public class PaymentEventListenerImpl implements PaymentEventHandler {
                 sub.setPendingPlan(null);
             }
             sub.setStatus(SubscriptionStatus.PAYMENT_FAILED);
+            sub.setPendingPaymentStartedAt(null);
             Subscription saved = subscriptionRepository.save(sub);
             historyService.recordChange(saved, previous, SubscriptionStatus.PAYMENT_FAILED, null, note);
 

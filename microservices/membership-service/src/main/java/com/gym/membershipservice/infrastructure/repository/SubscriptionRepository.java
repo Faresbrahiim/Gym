@@ -27,6 +27,7 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
     List<Subscription> findByStatus(SubscriptionStatus status);
     long countByStatus(SubscriptionStatus status);
     long countByStatusIn(List<SubscriptionStatus> statuses);
+    List<Subscription> findByStatusAndPendingPaymentStartedAtBefore(SubscriptionStatus status, LocalDateTime dateTime);
 
     // --- Find frozen subscriptions whose freeze ended ---
     List<Subscription> findByStatusAndFreezeEndDateBefore(SubscriptionStatus status, LocalDateTime dateTime);
