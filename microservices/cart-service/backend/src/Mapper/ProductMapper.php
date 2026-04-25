@@ -16,7 +16,7 @@ class ProductMapper
             'price' => (float)$product->getPrice(),
             'status' => $product->getStatus(),
             'createdAt' => $product->getCreatedAt()->format('c'),
-            'imagePath' => $product->getImageData() ? "/api/store/products/{$product->getId()->toRfc4122()}/image" : null,
+            'imagePath' => $product->getImageData() ? "/store/products/{$product->getId()->toRfc4122()}/image" : null,
         ];
     }
 

@@ -135,9 +135,9 @@ public class PaymentApplicationService implements
     }
 
     @Override
-    public PagedResult<PaymentResponse> execute(UUID userId, PaymentStatus status, int page, int pageSize) {
+    public PagedResult<PaymentResponse> execute(UUID userId, PaymentStatus status, PaymentTargetType targetType, int page, int pageSize) {
         PagedResult<Payment> pagedPayments = paymentRepository.findPage(
-                new GetAllPaymentsQuery(userId, status, null, null),
+                new GetAllPaymentsQuery(userId, status, targetType, null, null),
                 page,
                 pageSize
         );

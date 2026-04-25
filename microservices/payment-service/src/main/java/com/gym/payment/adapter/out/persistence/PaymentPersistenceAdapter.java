@@ -2,6 +2,7 @@ package com.gym.payment.adapter.out.persistence;
 
 import com.gym.payment.domain.model.Payment;
 import com.gym.payment.domain.model.PaymentStatus;
+import com.gym.payment.domain.model.PaymentTargetType;
 import com.gym.payment.domain.port.in.GetAllPaymentsQuery;
 import com.gym.payment.domain.port.in.PagedResult;
 import com.gym.payment.domain.port.out.PaymentRepository;
@@ -112,6 +113,9 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
         }
         if (query.status() != null) {
             spec = spec.and((root, q, cb) -> cb.equal(root.get("status"), query.status()));
+        }
+        if (query.targetType() != null) {
+            spec = spec.and((root, q, cb) -> cb.equal(root.get("targetType"), query.targetType()));
         }
         if (query.from() != null) {
             spec = spec.and((root, q, cb) -> cb.greaterThanOrEqualTo(root.get("createdAt"), query.from().atStartOfDay()));

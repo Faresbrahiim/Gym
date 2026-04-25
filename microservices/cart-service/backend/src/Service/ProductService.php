@@ -69,8 +69,8 @@ class ProductService implements ProductServiceInterface
             };
             $product->setImageMimeType($mimeType);
             
-            // Set imagePath so the frontend knows this product has an image
-            $product->setImagePath('/api/store/admin/products/' . $product->getId() . '/image');
+            // Store the public product image route so both admin and shop UIs can reuse it.
+            $product->setImagePath('/store/products/' . $product->getId()?->toRfc4122() . '/image');
         }
         
         $this->productRepository->save($product, true);

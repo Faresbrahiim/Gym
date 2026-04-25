@@ -9,6 +9,7 @@ import { PaymentService } from '../../services/payment.service';
 import { PlanService } from '../../../membership/services/plan.service';
 import { PaymentResponse } from '../../models/payment.model';
 import { PaymentStatus } from '../../models/payment-status.enum';
+import { PaymentTargetType } from '../../models/payment-target-type.enum';
 import { PaymentStatusBadgeComponent } from '../../components/payment-status-badge/payment-status-badge.component';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
@@ -53,7 +54,8 @@ export class PaymentHistoryComponent implements OnInit {
       payments: this.paymentService.getMyPayments(
         this.currentPage(),
         this.pageSize,
-        selectedStatus
+        selectedStatus,
+        PaymentTargetType.MEMBERSHIP
       ).pipe(take(1)),
       plans: this.planService.getAllPlans().pipe(take(1))
     }).pipe(
@@ -71,7 +73,7 @@ export class PaymentHistoryComponent implements OnInit {
 
       const enriched = data.payments.items.map(payment => ({
         ...payment,
-        planName: planMap.get(payment.planId) || 'Unknown plan'
+        planName: payment.planId ? (planMap.get(payment.planId) || 'Unknown plan') : 'Unknown plan'
       }));
 
       this.payments.set(enriched);

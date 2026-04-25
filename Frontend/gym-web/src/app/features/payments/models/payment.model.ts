@@ -1,10 +1,13 @@
 import { PaymentStatus } from './payment-status.enum';
+import { PaymentTargetType } from './payment-target-type.enum';
 
 export interface PaymentResponse {
   id: string;
   userId: string;
-  subscriptionId: string;
-  planId: string;
+  targetType: PaymentTargetType;
+  subscriptionId: string | null;
+  planId: string | null;
+  orderId: string | null;
   amount: number;
   currency: string;
   status: PaymentStatus;

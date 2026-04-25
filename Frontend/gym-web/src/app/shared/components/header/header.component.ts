@@ -11,7 +11,7 @@ import { PeopleService } from '../../../features/people/services/people.service'
 import { UserSearchResult } from '../../../features/people/models/user-search-result.model';
 import { CartService } from '../../../features/cart/services/cart.service';
 
-const NOTIFICATION_COUNT_REFRESH_MS = 10000;
+const NOTIFICATION_COUNT_REFRESH_MS = 5000;
 
 @Component({
   standalone: true,
@@ -67,7 +67,7 @@ export class HeaderComponent {
     }
     this.subs.add(this.notificationCenter.load().subscribe());
     this.subs.add(
-      timer(NOTIFICATION_COUNT_REFRESH_MS, NOTIFICATION_COUNT_REFRESH_MS).pipe(
+      timer(3000, NOTIFICATION_COUNT_REFRESH_MS).pipe(
         switchMap(() => this.notificationCenter.refreshCount())
       ).subscribe({ error: () => undefined })
     );

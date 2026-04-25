@@ -104,7 +104,7 @@
         </div>
 
         <!-- Step 2: Payment -->
-        <div *ngIf="currentStep() === 2" class="checkout-card">
+        <div [hidden]="currentStep() !== 2" class="checkout-card">
           <h5 class="checkout-card-title">
             <i class="feather-credit-card"></i> Payment Method
           </h5>
@@ -115,25 +115,15 @@
                 <i class="feather-credit-card pay-icon"></i>
                 <div>
                   <strong>Credit / Debit Card</strong>
-                  <small>Visa, Mastercard, Amex</small>
+                  <small>Visa, Mastercard, Amex. Other payment methods will come later.</small>
                 </div>
               </label>
-              <label class="payment-option" [class.selected]="checkoutForm.get('paymentMethod')?.value === 'paypal'">
-                <input type="radio" value="paypal" formControlName="paymentMethod">
-                <i class="fab fa-paypal pay-icon"></i>
-                <div>
-                  <strong>PayPal</strong>
-                  <small>Pay with your PayPal account</small>
-                </div>
-              </label>
-              <label class="payment-option" [class.selected]="checkoutForm.get('paymentMethod')?.value === 'bank-transfer'">
-                <input type="radio" value="bank-transfer" formControlName="paymentMethod">
-                <i class="feather-briefcase pay-icon"></i>
-                <div>
-                  <strong>Bank Transfer</strong>
-                  <small>Direct bank payment</small>
-                </div>
-              </label>
+            </div>
+            <div class="mt-4">
+              <app-stripe-card (errorChange)="onCardErrorChange($event)"></app-stripe-card>
+            </div>
+            <div *ngIf="paymentErrorMessage()" class="alert alert-danger mt-3 mb-0">
+              <i class="feather-alert-circle me-2"></i>{{ paymentErrorMessage() }}
             </div>
             <div class="checkout-nav mt-4">
               <button type="button" class="btn-step-back" (click)="prevStep()">
@@ -181,9 +171,9 @@
             <button type="button" class="btn-step-back" (click)="prevStep()">
               <i class="feather-arrow-left"></i> Back
             </button>
-            <button type="button" class="btn-place-order" (click)="onPlaceOrder()" [disabled]="isLoading()">
-              <span *ngIf="!isLoading()"><i class="feather-check me-1"></i>Place Order</span>
-              <span *ngIf="isLoading()"><span class="spinner-border spinner-border-sm me-1"></span>Processing…</span>
+            <button type="button" class="btn-place-order" (click)="onPlaceOrder()" [disabled]="isLoading() || isSubmitting()">
+              <span *ngIf="!isLoading() && !isSubmitting()"><i class="feather-check me-1"></i>Place Order</span>
+              <span *ngIf="isLoading() || isSubmitting()"><span class="spinner-border spinner-border-sm me-1"></span>Processing...</span>
             </button>
           </div>
         </div>

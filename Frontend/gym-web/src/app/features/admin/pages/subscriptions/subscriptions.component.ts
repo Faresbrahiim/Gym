@@ -8,6 +8,7 @@ import { ErrorService } from '../../../../core/services/error.service';
 import { Subscription } from '../../../membership/models/subscription.model';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
 import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
+import { ContactCacheService } from '../../../chat/services/contact-cache.service';
 
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: 'Active',
@@ -88,6 +89,7 @@ export class SubscriptionsComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly errorService = inject(ErrorService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly contactCache = inject(ContactCacheService);
 
   ngOnInit(): void {
     this.load();
@@ -109,11 +111,25 @@ export class SubscriptionsComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: ({ page, summary }) => {
-        this.subscriptions.set(page.items);
-        this.summary.set(summary);
-        this.currentPage.set(page.page);
-        this.totalPages.set(page.totalPages);
-        this.isLoading.set(false);
+        const items = page.items;
+        this.contactCache.hydrate(items.map(item => item.userId)).pipe(
+          takeUntilDestroyed(this.destroyRef)
+        ).subscribe({
+          next: () => {
+            this.subscriptions.set(items);
+            this.summary.set(summary);
+            this.currentPage.set(page.page);
+            this.totalPages.set(page.totalPages);
+            this.isLoading.set(false);
+          },
+          error: () => {
+            this.subscriptions.set(items);
+            this.summary.set(summary);
+            this.currentPage.set(page.page);
+            this.totalPages.set(page.totalPages);
+            this.isLoading.set(false);
+          }
+        });
       },
       error: (err) => {
         const msg = this.errorService.extractMessage(err);
@@ -137,7 +153,17 @@ export class SubscriptionsComponent implements OnInit {
     if (sub.userEmail) {
       return sub.userEmail.slice(0, 2).toUpperCase();
     }
-    return sub.userId.slice(0, 2).toUpperCase();
+
+    const contact = this.contactCache.resolve(sub.userId);
+    return contact.initials || sub.userId.slice(0, 2).toUpperCase();
+  }
+
+  memberLabel(sub: Subscription): string {
+    if (sub.userEmail) {
+      return sub.userEmail;
+    }
+
+    return this.contactCache.resolve(sub.userId).displayName;
   }
 
   isPendingAction(status: string): boolean {

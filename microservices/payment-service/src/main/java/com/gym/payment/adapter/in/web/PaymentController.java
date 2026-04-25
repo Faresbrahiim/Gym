@@ -6,6 +6,7 @@ import com.gym.payment.adapter.in.web.dto.InitiatePaymentResponse;
 import com.gym.payment.adapter.in.web.dto.PagedResponse;
 import com.gym.payment.adapter.in.web.dto.PaymentResponse;
 import com.gym.payment.domain.model.PaymentStatus;
+import com.gym.payment.domain.model.PaymentTargetType;
 import com.gym.payment.domain.port.in.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -77,12 +78,13 @@ public class PaymentController {
     public ResponseEntity<PagedResponse<PaymentResponse>> getMyPayments(
             JwtAuthenticationToken token,
             @RequestParam(required = false) PaymentStatus status,
+            @RequestParam(required = false) PaymentTargetType targetType,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         UUID userId = UUID.fromString(token.getToken().getSubject());
 
         PagedResult<com.gym.payment.domain.port.in.PaymentResponse> result =
-                getMyPaymentHistoryUseCase.execute(userId, status, page, pageSize);
+                getMyPaymentHistoryUseCase.execute(userId, status, targetType, page, pageSize);
 
         List<PaymentResponse> responses = result.items()
                 .stream()

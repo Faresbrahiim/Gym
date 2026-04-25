@@ -119,6 +119,6 @@ export class ProductAdminService {
   }
 
   getImageUrl(productId: string): string {
-    return `${environment.apiUrl}/store/admin/products/${productId}/image`;
+    return `${environment.apiUrl}/store/products/${productId}/image`;
   }
 }

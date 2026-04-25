@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductAdminService, BackendProduct, CreateProductDto } from '../../services/product-admin.service';
@@ -23,11 +23,26 @@ export class AdminProductsListComponent implements OnInit {
   editingProduct: BackendProduct | null = null;
   selectedFile: File | null = null;
   updatingStatusId: string | null = null;
+  searchTerm = signal('');
 
   newProduct: CreateProductDto = { name: '', description: '', price: '', status: 'AVAILABLE' };
   editForm:   CreateProductDto = { name: '', description: '', price: '', status: 'AVAILABLE' };
 
   readonly DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"%3E%3Crect width="50" height="50" fill="%23f0f0f0"/%3E%3Ctext x="25" y="25" font-size="10" text-anchor="middle" dominant-baseline="middle" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
+  readonly filteredProducts = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    if (!term) return this.products();
+
+    return this.products().filter(product =>
+      product.name.toLowerCase().includes(term)
+      || (product.description ?? '').toLowerCase().includes(term)
+      || product.status.toLowerCase().includes(term)
+    );
+  });
+  readonly totalCount = computed(() => this.products().length);
+  readonly availableCount = computed(() => this.products().filter(product => product.status === 'AVAILABLE').length);
+  readonly outOfStockCount = computed(() => this.products().filter(product => product.status === 'OUT_OF_STOCK').length);
+  readonly archivedCount = computed(() => this.products().filter(product => product.status === 'ARCHIVED').length);
 
   ngOnInit(): void {
     this.productAdminService.getAllProducts().subscribe();
@@ -131,10 +146,17 @@ export class AdminProductsListComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
       this.selectedFile = input.files[0];
+      return;
     }
+
+    this.selectedFile = null;
   }
 
   trackByProductId(_: number, product: BackendProduct): string {
     return product.id;
+  }
+
+  onSearch(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 }

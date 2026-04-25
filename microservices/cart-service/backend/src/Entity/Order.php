@@ -97,4 +97,9 @@ class Order
     {
         return $this->createdAt;
     }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

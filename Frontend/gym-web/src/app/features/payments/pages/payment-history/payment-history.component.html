@@ -98,7 +98,9 @@
                             </div>
                             <div>
                               <div class="plan-name">{{ payment.planName }}</div>
-                              <div class="plan-sub">Sub: {{ payment.subscriptionId.substring(0, 8) }}</div>
+                              <div class="plan-sub">
+                                Sub: {{ payment.subscriptionId ? (payment.subscriptionId.substring(0, 8)) : '—' }}
+                              </div>
                             </div>
                           </div>
                         </td>

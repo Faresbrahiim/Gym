@@ -18,7 +18,7 @@
         </ul>
       </div>
       <span [ngClass]="'order-hero-badge ' + getStatusBadgeClass(order()!.status)">
-        {{ order()!.status | titlecase }}
+        {{ getStatusDisplayLabel(order()!.status) }}
       </span>
     </div>
   </div>
@@ -29,6 +29,18 @@
 
         <!-- Items + meta -->
         <div class="col-lg-8">
+
+          <div
+            *ngIf="paymentStateMessage"
+            class="alert mb-3"
+            [ngClass]="{
+              'alert-warning': order()!.status === 'PENDING_PAYMENT',
+              'alert-danger': order()!.status === 'PAYMENT_FAILED' || order()!.status === 'PAYMENT_EXPIRED',
+              'alert-success': order()!.status === 'PROCESSING'
+            }"
+          >
+            <i [class]="getStatusIcon(order()!.status) + ' me-2'"></i>{{ paymentStateMessage }}
+          </div>
 
           <!-- Items card -->
           <div class="od-card">
@@ -79,7 +91,7 @@
               </div>
               <div>
                 <p class="stat-label">Status</p>
-                <p class="stat-value">{{ order()!.status | titlecase }}</p>
+                <p class="stat-value">{{ getStatusDisplayLabel(order()!.status) }}</p>
               </div>
             </div>
           </div>
@@ -120,7 +132,7 @@
               <div class="od-info-row">
                 <span class="od-info-label">Status</span>
                 <span [ngClass]="'order-badge ' + getStatusBadgeClass(order()!.status)">
-                  {{ order()!.status | titlecase }}
+                  {{ getStatusDisplayLabel(order()!.status) }}
                 </span>
               </div>
             </div>
@@ -130,7 +142,7 @@
               <button
                 class="btn-cancel-order"
                 (click)="onCancelOrder()"
-                *ngIf="order()!.status !== 'CANCELLED' && order()!.status !== 'DELIVERED'">
+                *ngIf="order()!.status === 'PENDING_PAYMENT'">
                 <i class="feather-x-circle"></i> Cancel Order
               </button>
               <a routerLink="/orders" class="btn-back-orders">

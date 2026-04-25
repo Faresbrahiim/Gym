@@ -10,6 +10,7 @@ import { PlanService } from '../../../membership/services/plan.service';
 import { CurrentUserService } from '../../../../core/services/current-user.service';
 import { PaymentResponse } from '../../models/payment.model';
 import { PaymentStatus } from '../../models/payment-status.enum';
+import { PaymentTargetType } from '../../models/payment-target-type.enum';
 import { Plan } from '../../../membership/models/plan.model';
 import { UserMe } from '../../../profile/models/user-me.model';
 import { PaymentStatusBadgeComponent } from '../../components/payment-status-badge/payment-status-badge.component';
@@ -52,6 +53,15 @@ export class PaymentDetailComponent implements OnInit {
 
     this.paymentService.getPaymentById(paymentId).pipe(
       switchMap(payment => {
+        if (payment.targetType === PaymentTargetType.ORDER) {
+          this.router.navigate(payment.orderId ? ['/orders', payment.orderId] : ['/orders']);
+          return of(null);
+        }
+
+        if (!payment.planId) {
+          throw new Error('Membership payment is missing its plan reference');
+        }
+
         return forkJoin({
           payment: of(payment as PaymentResponse),
           plan: this.planService.getPlan(payment.planId),

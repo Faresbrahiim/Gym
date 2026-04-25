@@ -1,124 +1,253 @@
-<div class="admin-products-container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Manage Products</h2>
-    <button class="btn btn-primary" (click)="openCreateModal()">+ Add Product</button>
+@if (isLoading()) {
+  <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+    <div class="spinner-border" style="color:#177c82;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}
+
+@if (!isLoading() && error()) {
+  <div class="text-center py-5">
+    <p class="text-muted mb-3">{{ error() }}</p>
+    <button class="btn-primary-admin" (click)="ngOnInit()">Retry</button>
+  </div>
+}
+
+@if (!isLoading() && !error()) {
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Shop Products</h1>
+      <p class="page-subtitle">Manage product inventory, product visibility, and shop catalog content.</p>
+    </div>
+    <button class="btn-primary-admin" (click)="openCreateModal()">
+      <i class="feather-plus"></i> New Product
+    </button>
   </div>
 
-  <div *ngIf="isLoading()" class="text-center py-5">
-    <div class="spinner-border"></div>
-  </div>
-  <div *ngIf="error()" class="alert alert-danger">{{ error() }}</div>
-
-  <div class="table-responsive" *ngIf="!isLoading()">
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Image</th>
-          <th>Name</th>
-          <th>Price</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let product of products(); trackBy: trackByProductId">
-          <td class="align-middle">
-            <img
-              [src]="getImageUrl(product)"
-              width="50" height="50"
-              class="rounded"
-              (error)="handleImageError($event)"
-              [alt]="product.name">
-          </td>
-          <td class="align-middle">{{ product.name }}</td>
-          <td class="align-middle">${{ formatPrice(product.price) }}</td>
-          <td class="align-middle">
-            <select
-              [attr.data-product-id]="product.id"
-              class="form-select form-select-sm"
-              [value]="product.status"
-              (change)="updateProductStatus(product, $event)"
-              [disabled]="updatingStatusId === product.id">
-              <option value="AVAILABLE">Available</option>
-              <option value="OUT_OF_STOCK">Out of Stock</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-            <span *ngIf="updatingStatusId === product.id" class="ms-2 spinner-border spinner-border-sm"></span>
-          </td>
-          <td class="align-middle">
-            <button class="btn btn-sm btn-outline-primary me-1" (click)="startEdit(product)">Edit</button>
-            <button class="btn btn-sm btn-outline-danger" (click)="deleteProduct(product)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--products"><i class="feather-shopping-bag"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ totalCount() }}</span>
+        <span class="stat-label">Total Products</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--available"><i class="feather-check-circle"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ availableCount() }}</span>
+        <span class="stat-label">Available</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--stock"><i class="feather-alert-circle"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ outOfStockCount() }}</span>
+        <span class="stat-label">Out of Stock</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon--archived"><i class="feather-archive"></i></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ archivedCount() }}</span>
+        <span class="stat-label">Archived</span>
+      </div>
+    </div>
   </div>
 
-  <!-- CREATE MODAL -->
-  <div class="modal-overlay" *ngIf="showCreateModal">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5>Add New Product</h5>
-          <button type="button" class="btn-close" (click)="closeCreateModal()">×</button>
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="feather-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search products..."
+        [value]="searchTerm()"
+        (input)="onSearch($event)"
+      />
+    </div>
+  </div>
+
+  <div class="table-card">
+    @if (filteredProducts().length === 0) {
+      <div class="text-center py-5 text-muted">No products found.</div>
+    } @else {
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Updated</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of filteredProducts(); track product.id) {
+            <tr>
+              <td>
+                <div class="product-cell">
+                  <img
+                    [src]="getImageUrl(product)"
+                    width="56"
+                    height="56"
+                    class="product-thumb"
+                    (error)="handleImageError($event)"
+                    [alt]="product.name"
+                  />
+                  <div>
+                    <div class="product-name">{{ product.name }}</div>
+                    @if (product.description) {
+                      <div class="product-desc">{{ product.description }}</div>
+                    }
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="price-tag">${{ formatPrice(product.price) }}</span>
+              </td>
+              <td>
+                <div class="status-cell">
+                  <select
+                    [attr.data-product-id]="product.id"
+                    class="status-select"
+                    [value]="product.status"
+                    (change)="updateProductStatus(product, $event)"
+                    [disabled]="updatingStatusId === product.id"
+                  >
+                    <option value="AVAILABLE">Available</option>
+                    <option value="OUT_OF_STOCK">Out of Stock</option>
+                    <option value="ARCHIVED">Archived</option>
+                  </select>
+                  @if (updatingStatusId === product.id) {
+                    <span class="spinner-border spinner-border-sm"></span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="date-primary">{{ product.updatedAt | date:'MMM d, yyyy' }}</div>
+                <div class="date-secondary">{{ product.updatedAt | date:'h:mm a' }}</div>
+              </td>
+              <td class="text-end">
+                <div class="action-row">
+                  <button class="btn-icon btn-edit" title="Edit" (click)="startEdit(product)">
+                    <i class="feather-edit-2"></i>
+                  </button>
+                  <button class="btn-icon btn-delete" title="Delete" (click)="deleteProduct(product)">
+                    <i class="feather-trash-2"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+}
+
+@if (showCreateModal) {
+  <div class="modal-backdrop" (click)="closeCreateModal()"></div>
+  <div class="form-modal">
+    <div class="form-modal-header">
+      <h5 class="form-modal-title">New Product</h5>
+      <button class="close-btn" (click)="closeCreateModal()"><i class="feather-x"></i></button>
+    </div>
+
+    <div class="form-modal-body">
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-ctrl" placeholder="Product name" [(ngModel)]="newProduct.name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-ctrl" rows="3" placeholder="Short product description" [(ngModel)]="newProduct.description"></textarea>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Price</label>
+          <input type="number" step="0.01" class="form-ctrl" placeholder="0.00" [(ngModel)]="newProduct.price">
         </div>
-        <div class="modal-body">
-          <input type="text" class="form-control mb-2" placeholder="Name" [(ngModel)]="newProduct.name">
-          <textarea class="form-control mb-2" placeholder="Description" [(ngModel)]="newProduct.description"></textarea>
-          <input type="number" step="0.01" class="form-control mb-2" placeholder="Price" [(ngModel)]="newProduct.price">
-          <select class="form-control mb-2" [(ngModel)]="newProduct.status">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-ctrl" [(ngModel)]="newProduct.status">
             <option value="AVAILABLE">Available</option>
             <option value="OUT_OF_STOCK">Out of Stock</option>
             <option value="ARCHIVED">Archived</option>
           </select>
-          <hr>
-          <h6>Product Image (Optional)</h6>
-          <input type="file" (change)="onFileSelected($event)" class="form-control mb-2" accept="image/*">
-          <div *ngIf="selectedFile" class="alert alert-info mt-2">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Product Image</label>
+        <input type="file" (change)="onFileSelected($event)" class="form-ctrl" accept="image/*">
+        @if (selectedFile) {
+          <div class="upload-note">
             <strong>Selected:</strong> {{ selectedFile.name }} ({{ getFileSize(selectedFile.size) }})
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeCreateModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="createProduct()">Create</button>
-        </div>
+        }
       </div>
     </div>
-  </div>
 
-  <!-- EDIT MODAL -->
-  <div class="modal-overlay" *ngIf="editingProduct">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5>Edit {{ editingProduct.name }}</h5>
-          <button type="button" class="btn-close" (click)="cancelEdit()">×</button>
+    <div class="form-modal-footer">
+      <button class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
+      <button class="btn-primary-admin" (click)="createProduct()">Create Product</button>
+    </div>
+  </div>
+}
+
+@if (editingProduct) {
+  <div class="modal-backdrop" (click)="cancelEdit()"></div>
+  <div class="form-modal">
+    <div class="form-modal-header">
+      <h5 class="form-modal-title">Edit {{ editingProduct.name }}</h5>
+      <button class="close-btn" (click)="cancelEdit()"><i class="feather-x"></i></button>
+    </div>
+
+    <div class="form-modal-body">
+      <div class="product-preview">
+        <img
+          [src]="getImageUrl(editingProduct)"
+          width="96"
+          height="96"
+          class="product-thumb product-thumb--large"
+          (error)="handleImageError($event)"
+          [alt]="editingProduct.name"
+        />
+        <span class="form-hint">Current image</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-ctrl" placeholder="Product name" [(ngModel)]="editForm.name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-ctrl" rows="3" placeholder="Short product description" [(ngModel)]="editForm.description"></textarea>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Price</label>
+          <input type="number" step="0.01" class="form-ctrl" placeholder="0.00" [(ngModel)]="editForm.price">
         </div>
-        <div class="modal-body">
-          <div class="text-center mb-3">
-            <img
-              [src]="getImageUrl(editingProduct)"
-              width="100" height="100"
-              class="rounded mb-2"
-              (error)="handleImageError($event)"
-              [alt]="editingProduct.name">
-            <br>
-            <small class="text-muted">Current Image</small>
-          </div>
-          <input type="text" class="form-control mb-2" placeholder="Name" [(ngModel)]="editForm.name">
-          <textarea class="form-control mb-2" placeholder="Description" [(ngModel)]="editForm.description"></textarea>
-          <input type="number" step="0.01" class="form-control mb-2" placeholder="Price" [(ngModel)]="editForm.price">
-          <select class="form-control mb-2" [(ngModel)]="editForm.status">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-ctrl" [(ngModel)]="editForm.status">
             <option value="AVAILABLE">Available</option>
             <option value="OUT_OF_STOCK">Out of Stock</option>
             <option value="ARCHIVED">Archived</option>
           </select>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="cancelEdit()">Cancel</button>
-          <button class="btn btn-primary" (click)="saveEdit()">Save Changes</button>
-        </div>
       </div>
     </div>
+
+    <div class="form-modal-footer">
+      <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+      <button class="btn-primary-admin" (click)="saveEdit()">Save Changes</button>
+    </div>
   </div>
-</div>
+}

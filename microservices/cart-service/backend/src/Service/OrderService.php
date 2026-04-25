@@ -38,9 +38,8 @@ class OrderService implements OrderServiceInterface
             
             $orderItem = new OrderItem();
             $orderItem->setOrder($order);
-            $orderItem->setProductId($product->getId());
-            $orderItem->setProductName($product->getName());
-            $orderItem->setPrice($product->getPrice()); // Freeze price! Good!
+            $orderItem->setProduct($product);
+            $orderItem->setPrice($product->getPrice());
             $orderItem->setQuantity($cartItem->getQuantity());
 
             $order->addOrderItem($orderItem);
