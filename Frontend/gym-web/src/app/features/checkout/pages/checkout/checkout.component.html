@@ -1,0 +1,230 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container">
+    <h1 class="text-white">Checkout</h1>
+    <ul>
+      <li><a routerLink="/home">Home</a></li>
+      <li><a routerLink="/cart">My Cart</a></li>
+      <li>Checkout</li>
+    </ul>
+  </div>
+</div>
+
+<div class="content">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Form side -->
+      <div class="col-lg-8">
+
+        <!-- Step indicator -->
+        <div class="step-track mb-4">
+          <div class="step-item" [class.active]="currentStep() >= 1" [class.done]="currentStep() > 1">
+            <div class="step-circle">
+              <i *ngIf="currentStep() > 1" class="feather-check"></i>
+              <span *ngIf="currentStep() <= 1">1</span>
+            </div>
+            <span class="step-label">Shipping</span>
+          </div>
+          <div class="step-line" [class.active]="currentStep() > 1"></div>
+          <div class="step-item" [class.active]="currentStep() >= 2" [class.done]="currentStep() > 2">
+            <div class="step-circle">
+              <i *ngIf="currentStep() > 2" class="feather-check"></i>
+              <span *ngIf="currentStep() <= 2">2</span>
+            </div>
+            <span class="step-label">Payment</span>
+          </div>
+          <div class="step-line" [class.active]="currentStep() > 2"></div>
+          <div class="step-item" [class.active]="currentStep() >= 3">
+            <div class="step-circle">3</div>
+            <span class="step-label">Review</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Shipping -->
+        <div *ngIf="currentStep() === 1" class="checkout-card">
+          <h5 class="checkout-card-title">
+            <i class="feather-map-pin"></i> Shipping Address
+          </h5>
+          <form [formGroup]="checkoutForm">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label-custom">First Name *</label>
+                <input type="text" class="form-control-custom" formControlName="firstName"
+                  [class.invalid]="checkoutForm.get('firstName')?.invalid && checkoutForm.get('firstName')?.touched">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Last Name *</label>
+                <input type="text" class="form-control-custom" formControlName="lastName"
+                  [class.invalid]="checkoutForm.get('lastName')?.invalid && checkoutForm.get('lastName')?.touched">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Email *</label>
+                <input type="email" class="form-control-custom" formControlName="email"
+                  [class.invalid]="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-custom">Phone *</label>
+                <input type="tel" class="form-control-custom" formControlName="phone"
+                  [class.invalid]="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched">
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Street Address *</label>
+                <input type="text" class="form-control-custom" formControlName="address"
+                  [class.invalid]="checkoutForm.get('address')?.invalid && checkoutForm.get('address')?.touched">
+              </div>
+              <div class="col-md-5">
+                <label class="form-label-custom">City *</label>
+                <input type="text" class="form-control-custom" formControlName="city"
+                  [class.invalid]="checkoutForm.get('city')?.invalid && checkoutForm.get('city')?.touched">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label-custom">Postal Code *</label>
+                <input type="text" class="form-control-custom" formControlName="postalCode"
+                  [class.invalid]="checkoutForm.get('postalCode')?.invalid && checkoutForm.get('postalCode')?.touched">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label-custom">Country *</label>
+                <select class="form-control-custom" formControlName="country">
+                  <option value="">Select country</option>
+                  <option value="United States">United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Germany">Germany</option>
+                  <option value="France">France</option>
+                </select>
+              </div>
+            </div>
+            <div class="checkout-nav mt-4">
+              <button type="button" class="btn-step-next" (click)="nextStep()">
+                Continue <i class="feather-arrow-right"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 2: Payment -->
+        <div *ngIf="currentStep() === 2" class="checkout-card">
+          <h5 class="checkout-card-title">
+            <i class="feather-credit-card"></i> Payment Method
+          </h5>
+          <form [formGroup]="checkoutForm">
+            <div class="payment-options">
+              <label class="payment-option" [class.selected]="checkoutForm.get('paymentMethod')?.value === 'credit-card'">
+                <input type="radio" value="credit-card" formControlName="paymentMethod">
+                <i class="feather-credit-card pay-icon"></i>
+                <div>
+                  <strong>Credit / Debit Card</strong>
+                  <small>Visa, Mastercard, Amex</small>
+                </div>
+              </label>
+              <label class="payment-option" [class.selected]="checkoutForm.get('paymentMethod')?.value === 'paypal'">
+                <input type="radio" value="paypal" formControlName="paymentMethod">
+                <i class="fab fa-paypal pay-icon"></i>
+                <div>
+                  <strong>PayPal</strong>
+                  <small>Pay with your PayPal account</small>
+                </div>
+              </label>
+              <label class="payment-option" [class.selected]="checkoutForm.get('paymentMethod')?.value === 'bank-transfer'">
+                <input type="radio" value="bank-transfer" formControlName="paymentMethod">
+                <i class="feather-briefcase pay-icon"></i>
+                <div>
+                  <strong>Bank Transfer</strong>
+                  <small>Direct bank payment</small>
+                </div>
+              </label>
+            </div>
+            <div class="checkout-nav mt-4">
+              <button type="button" class="btn-step-back" (click)="prevStep()">
+                <i class="feather-arrow-left"></i> Back
+              </button>
+              <button type="button" class="btn-step-next" (click)="nextStep()">
+                Continue <i class="feather-arrow-right"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Step 3: Review -->
+        <div *ngIf="currentStep() === 3" class="checkout-card">
+          <h5 class="checkout-card-title">
+            <i class="feather-clipboard"></i> Review Order
+          </h5>
+
+          <div class="review-section">
+            <p class="review-section-label">Items</p>
+            <div *ngIf="cart()">
+              <div *ngFor="let item of cart()!.items" class="review-line">
+                <span>{{ getProductName(item) }} <span class="review-qty">×{{ item.quantity }}</span></span>
+                <span class="review-line-total">${{ (item.price * item.quantity).toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="review-section">
+            <p class="review-section-label">Shipping Address</p>
+            <p class="review-address">
+              {{ checkoutForm.get('firstName')?.value }} {{ checkoutForm.get('lastName')?.value }}<br>
+              {{ checkoutForm.get('address')?.value }}<br>
+              {{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('postalCode')?.value }}<br>
+              {{ checkoutForm.get('country')?.value }}
+            </p>
+          </div>
+
+          <div class="review-section">
+            <p class="review-section-label">Payment Method</p>
+            <p class="review-value">{{ checkoutForm.get('paymentMethod')?.value | titlecase }}</p>
+          </div>
+
+          <div class="checkout-nav mt-4">
+            <button type="button" class="btn-step-back" (click)="prevStep()">
+              <i class="feather-arrow-left"></i> Back
+            </button>
+            <button type="button" class="btn-place-order" (click)="onPlaceOrder()" [disabled]="isLoading()">
+              <span *ngIf="!isLoading()"><i class="feather-check me-1"></i>Place Order</span>
+              <span *ngIf="isLoading()"><span class="spinner-border spinner-border-sm me-1"></span>Processing…</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary sidebar -->
+      <div class="col-lg-4">
+        <div class="actions-card">
+          <h6>Order Summary</h6>
+
+          <div class="summary-items" *ngIf="cart()">
+            <div *ngFor="let item of cart()!.items" class="summary-item">
+              <span class="summary-item-name">{{ getProductName(item) }} <span class="text-muted">×{{ item.quantity }}</span></span>
+              <span class="summary-item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="summary-divider mt-2 mb-2"></div>
+
+          <div class="summary-row-list">
+            <div class="summary-row-item">
+              <span>Subtotal</span>
+              <span>${{ cart() ? cart()!.totalPrice.toFixed(2) : '0.00' }}</span>
+            </div>
+            <div class="summary-row-item">
+              <span>Shipping</span>
+              <span class="text-success fw-600">Free</span>
+            </div>
+            <div class="summary-row-item">
+              <span>Tax (10%)</span>
+              <span>${{ getTaxAmount().toFixed(2) }}</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row-item total">
+              <span>Total</span>
+              <span>${{ getTotalAmount().toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,164 @@
+<div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading…</span>
+  </div>
+</div>
+
+<ng-container *ngIf="!isLoading() && order()">
+
+  <div class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <div>
+        <h1 class="text-white">Order #{{ order()!.id | slice:0:8 | uppercase }}</h1>
+        <ul>
+          <li><a routerLink="/home">Home</a></li>
+          <li><a routerLink="/orders">My Orders</a></li>
+          <li>#{{ order()!.id | slice:0:8 | uppercase }}</li>
+        </ul>
+      </div>
+      <span [ngClass]="'order-hero-badge ' + getStatusBadgeClass(order()!.status)">
+        {{ order()!.status | titlecase }}
+      </span>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container">
+      <div class="row g-4 justify-content-center">
+
+        <!-- Items + meta -->
+        <div class="col-lg-8">
+
+          <!-- Items card -->
+          <div class="od-card">
+            <h5 class="od-card-title">
+              <i class="feather-shopping-bag"></i> Order Items
+            </h5>
+            <div class="table-responsive">
+              <table class="od-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of order()!.items">
+                    <td class="fw-600">{{ item.productName }}</td>
+                    <td class="text-muted">{{ item.quantity }}</td>
+                    <td class="text-muted">${{ item.price.toFixed(2) }}</td>
+                    <td class="text-end fw-700 text-teal">${{ (item.quantity * item.price).toFixed(2) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Date meta -->
+          <div class="od-meta-row mt-3">
+            <div class="stat-card">
+              <div class="stat-icon teal"><i class="feather-calendar"></i></div>
+              <div>
+                <p class="stat-label">Placed On</p>
+                <p class="stat-value">{{ order()!.createdAt | date:'mediumDate' }}</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon orange"><i class="feather-package"></i></div>
+              <div>
+                <p class="stat-label">Items</p>
+                <p class="stat-value">{{ order()!.items.length }}</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" [ngClass]="getStatusIconClass(order()!.status)">
+                <i [class]="getStatusIcon(order()!.status)"></i>
+              </div>
+              <div>
+                <p class="stat-label">Status</p>
+                <p class="stat-value">{{ order()!.status | titlecase }}</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Summary sidebar -->
+        <div class="col-lg-4">
+          <div class="actions-card">
+            <h6>Order Summary</h6>
+
+            <div class="summary-row-list">
+              <div class="summary-row-item">
+                <span>Subtotal</span>
+                <span>${{ order()!.totalPrice.toFixed(2) }}</span>
+              </div>
+              <div class="summary-row-item">
+                <span>Shipping</span>
+                <span class="text-success fw-600">Free</span>
+              </div>
+              <div class="summary-row-item">
+                <span>Tax (10%)</span>
+                <span>${{ (order()!.totalPrice * 0.1).toFixed(2) }}</span>
+              </div>
+              <div class="summary-divider"></div>
+              <div class="summary-row-item total">
+                <span>Total Paid</span>
+                <span>${{ (order()!.totalPrice * 1.1).toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <!-- Info rows -->
+            <div class="od-info-block mt-4">
+              <div class="od-info-row">
+                <span class="od-info-label">Order ID</span>
+                <span class="id-tag">{{ order()!.id | slice:0:8 | uppercase }}</span>
+              </div>
+              <div class="od-info-row">
+                <span class="od-info-label">Status</span>
+                <span [ngClass]="'order-badge ' + getStatusBadgeClass(order()!.status)">
+                  {{ order()!.status | titlecase }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="od-actions mt-4">
+              <button
+                class="btn-cancel-order"
+                (click)="onCancelOrder()"
+                *ngIf="order()!.status !== 'CANCELLED' && order()!.status !== 'DELIVERED'">
+                <i class="feather-x-circle"></i> Cancel Order
+              </button>
+              <a routerLink="/orders" class="btn-back-orders">
+                <i class="feather-arrow-left"></i> Back to Orders
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</ng-container>
+
+<div *ngIf="!isLoading() && !order()" class="content">
+  <div class="container">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <i class="feather-package"></i>
+      </div>
+      <h4 class="mb-2">Order not found</h4>
+      <p class="text-muted mb-4" style="max-width:340px;margin:0 auto 20px;">
+        This order doesn't exist or you don't have access to it.
+      </p>
+      <a routerLink="/orders" class="btn btn-primary px-4" style="border-radius:10px;font-weight:600;">
+        <i class="feather-arrow-left me-2"></i>Back to Orders
+      </a>
+    </div>
+  </div>
+</div>

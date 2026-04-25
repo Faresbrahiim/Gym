@@ -1,0 +1,109 @@
+<div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading…</span>
+  </div>
+</div>
+
+<ng-container *ngIf="!isLoading() && product()">
+
+  <div class="breadcrumb breadcrumb-list mb-0">
+    <span class="primary-right-round"></span>
+    <div class="container">
+      <h1 class="text-white">{{ product()!.name }}</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/store">Shop</a></li>
+        <li>{{ product()!.name }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container">
+      <div class="row g-4">
+
+        <!-- Image -->
+        <div class="col-lg-5">
+          <div class="pd-image-card">
+            <img
+              [src]="getImageUrl()"
+              [alt]="product()!.name"
+              (error)="handleImageError($event)">
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="col-lg-7">
+          <div class="pd-info-card">
+
+            <!-- Status badge -->
+            <div *ngIf="product()!.status !== 'AVAILABLE'" class="status-notice warning mb-4">
+              <i class="feather-alert-triangle"></i>
+              <div>
+                <p class="notice-title">{{ product()!.status === 'OUT_OF_STOCK' ? 'Out of Stock' : 'Unavailable' }}</p>
+                <p class="notice-text">This product is currently unavailable for purchase.</p>
+              </div>
+            </div>
+
+            <h2 class="pd-name">{{ product()!.name }}</h2>
+            <p class="pd-desc" *ngIf="product()!.description">{{ product()!.description }}</p>
+
+            <!-- Price stat -->
+            <div class="pd-price-row">
+              <div class="stat-icon teal"><i class="feather-tag"></i></div>
+              <span class="pd-price">${{ product()!.price.toFixed(2) }}</span>
+            </div>
+
+            <!-- Quantity -->
+            <div class="pd-qty-section">
+              <span class="pd-qty-label">Quantity</span>
+              <div class="pd-qty-selector">
+                <button class="pd-qty-btn" (click)="decrease()" [disabled]="quantity() === 1">
+                  <i class="feather-minus"></i>
+                </button>
+                <span class="pd-qty-val">{{ quantity() }}</span>
+                <button class="pd-qty-btn" (click)="increase()">
+                  <i class="feather-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pd-actions">
+              <button
+                class="btn-pd-cart"
+                [disabled]="product()!.status !== 'AVAILABLE'"
+                (click)="addToCart()">
+                <i class="feather-shopping-cart"></i>
+                Add to Cart
+              </button>
+              <a routerLink="/store" class="btn-pd-back">
+                <i class="feather-arrow-left"></i>
+                Back to Shop
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</ng-container>
+
+<div *ngIf="!isLoading() && !product()" class="content">
+  <div class="container">
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <i class="feather-package"></i>
+      </div>
+      <h4 class="mb-2">Product not found</h4>
+      <p class="text-muted mb-4" style="max-width:340px;margin:0 auto 20px;">
+        This product doesn't exist or may have been removed.
+      </p>
+      <a routerLink="/store" class="btn btn-primary px-4" style="border-radius:10px;font-weight:600;">
+        <i class="feather-arrow-left me-2"></i>Back to Shop
+      </a>
+    </div>
+  </div>
+</div>

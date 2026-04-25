@@ -44,6 +44,9 @@
           <li routerLinkActive="active">
             <a routerLink="/people">People</a>
           </li>
+          <li routerLinkActive="active">
+            <a routerLink="/store">Shop</a>
+          </li>
           @if (isAuthenticated) {
             <li routerLinkActive="active">
               <a routerLink="/chat" class="chat-nav-link">
@@ -179,6 +182,17 @@
       @if (isAuthenticated) {
         <ul class="nav header-navbar-rht logged-in">
 
+          <!-- Cart -->
+          <li class="nav-item">
+            <a routerLink="/cart" class="nav-link position-relative">
+              <i class="feather-shopping-cart"></i>
+              @if (cartItemCount()?.totalItems) {
+                <span class="notification-count">{{ cartItemCount()!.totalItems }}</span>
+              }
+            </a>
+          </li>
+          <!-- /Cart -->
+
           <!-- Notifications -->
           <li class="nav-item dropdown noti-nav">
             <a
@@ -273,6 +287,9 @@
               </div>
               <p><a class="dropdown-item" routerLink="/profile">My Profile</a></p>
               <p><a class="dropdown-item" routerLink="/chat">Open Full Chat</a></p>
+              <p><a class="dropdown-item" routerLink="/store">Shop</a></p>
+              <p><a class="dropdown-item" routerLink="/cart">My Cart</a></p>
+              <p><a class="dropdown-item" routerLink="/orders">My Orders</a></p>
               <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
               <p><a class="dropdown-item" routerLink="/payments">Payments</a></p>
               <p><a class="dropdown-item" href="javascript:void(0);" (click)="onLogout()">Logout</a></p>

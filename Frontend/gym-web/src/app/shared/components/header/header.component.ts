@@ -9,6 +9,7 @@ import { AppNotification } from '../../../core/models/app-notification.model';
 import { NotificationCenterService } from '../../../core/services/notification-center.service';
 import { PeopleService } from '../../../features/people/services/people.service';
 import { UserSearchResult } from '../../../features/people/models/user-search-result.model';
+import { CartService } from '../../../features/cart/services/cart.service';
 
 const NOTIFICATION_COUNT_REFRESH_MS = 10000;
 
@@ -27,8 +28,11 @@ export class HeaderComponent {
   protected readonly notificationCenter = inject(NotificationCenterService);
   private readonly router            = inject(Router);
   private readonly peopleService     = inject(PeopleService);
+  private readonly cartService       = inject(CartService);
   private readonly elementRef        = inject(ElementRef<HTMLElement>);
   private readonly subs              = new Subscription();
+
+  readonly cartItemCount = this.cartService.cart$;
 
   isMobileMenuOpen = signal(false);
   isScrolled       = signal(false);

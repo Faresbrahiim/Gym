@@ -1,0 +1,107 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">Shop</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>Shop</li>
+      </ul>
+    </div>
+    <a routerLink="/cart" class="cart-header-btn">
+      <i class="feather-shopping-cart"></i>
+      <span>My Cart</span>
+    </a>
+  </div>
+</div>
+
+<div class="content">
+  <div class="container">
+
+    <!-- Search -->
+    <div class="shop-search-card mb-4">
+      <i class="feather-search shop-search-icon"></i>
+      <input
+        type="search"
+        class="shop-search-input"
+        placeholder="Search products…"
+        [(ngModel)]="searchQuery">
+      <button *ngIf="searchQuery" class="shop-search-clear" (click)="clearSearch()">
+        <i class="feather-x"></i>
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:40vh;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error() && !isLoading()" class="status-notice danger mb-4">
+      <i class="feather-alert-circle"></i>
+      <div>
+        <p class="notice-title">Failed to load products</p>
+        <p class="notice-text">{{ error() }}</p>
+      </div>
+    </div>
+
+    <!-- Product grid -->
+    <div *ngIf="!isLoading() && filteredProducts.length > 0" class="row g-4">
+      <div
+        class="col-xl-3 col-lg-4 col-md-6"
+        *ngFor="let product of filteredProducts; trackBy: trackByProductId">
+        <div class="product-card">
+          <a [routerLink]="['/store', product.id]" class="product-img-wrap">
+            <img
+              [src]="getImageUrl(product)"
+              [alt]="product.name"
+              (error)="handleImageError($event)">
+            <span *ngIf="product.status === 'OUT_OF_STOCK'" class="product-badge out">Out of Stock</span>
+          </a>
+          <div class="product-card-body">
+            <a [routerLink]="['/store', product.id]" class="product-name">{{ product.name }}</a>
+            <p class="product-desc" *ngIf="product.description">{{ product.description }}</p>
+            <div class="product-footer">
+              <span class="product-price">${{ product.price.toFixed(2) }}</span>
+              <button
+                class="btn-add-cart"
+                [disabled]="product.status !== 'AVAILABLE'"
+                (click)="addToCart(product)">
+                <i class="feather-shopping-cart"></i>
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No search results -->
+    <div *ngIf="!isLoading() && filteredProducts.length === 0 && searchQuery" class="empty-state">
+      <div class="empty-state-icon">
+        <i class="feather-search"></i>
+      </div>
+      <h4 class="mb-2">No products found</h4>
+      <p class="text-muted mb-4" style="max-width:340px;margin:0 auto 20px;">
+        No products match "{{ searchQuery }}". Try a different term.
+      </p>
+      <button class="btn btn-outline-primary px-4" style="border-radius:10px;font-weight:600;" (click)="clearSearch()">
+        <i class="feather-x me-2"></i>Clear Search
+      </button>
+    </div>
+
+    <!-- Empty catalog -->
+    <div *ngIf="!isLoading() && !error() && products().length === 0" class="empty-state">
+      <div class="empty-state-icon">
+        <i class="feather-package"></i>
+      </div>
+      <h4 class="mb-2">No products available</h4>
+      <p class="text-muted mb-0" style="max-width:340px;margin:0 auto;">
+        Check back soon — new products are on their way.
+      </p>
+    </div>
+
+  </div>
+</div>
