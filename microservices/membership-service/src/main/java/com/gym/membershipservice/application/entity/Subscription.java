@@ -28,6 +28,10 @@ public class Subscription {
     @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan;
 
+    @ManyToOne
+    @JoinColumn(name = "pending_plan_id")
+    private Plan pendingPlan;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SubscriptionStatus status;
@@ -52,6 +56,9 @@ public class Subscription {
 
     public Plan getPlan() { return plan; }
     public void setPlan(Plan plan) { this.plan = plan; }
+
+    public Plan getPendingPlan() { return pendingPlan; }
+    public void setPendingPlan(Plan pendingPlan) { this.pendingPlan = pendingPlan; }
 
     public SubscriptionStatus getStatus() { return status; }
     public void setStatus(SubscriptionStatus status) { this.status = status; }

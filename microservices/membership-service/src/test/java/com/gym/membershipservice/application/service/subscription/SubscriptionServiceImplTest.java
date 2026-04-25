@@ -9,6 +9,8 @@ import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
+import com.gym.membershipservice.infrastructure.repository.UserMembershipRepository;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,12 @@ class SubscriptionServiceImplTest {
 
     @Mock
     private PlanServiceImpl planService;
+
+    @Mock
+    private KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Mock
+    private UserMembershipRepository userMembershipRepository;
 
     @InjectMocks
     private SubscriptionServiceImpl service;
@@ -207,8 +215,34 @@ class SubscriptionServiceImplTest {
 
         SubscriptionResponseDTO result = service.changePlan(subId, newPlan.getId());
 
-        assertEquals(newPlan.getId(), result.getPlanId());
-        assertEquals("Premium", result.getPlanName());
+        assertEquals(plan.getId(), result.getPlanId());
+        assertEquals("Basic", result.getPlanName());
+        assertEquals(SubscriptionStatus.PENDING_PAYMENT, result.getStatus());
+        assertEquals(newPlan, subscription.getPendingPlan());
+    }
+
+    @Test
+    void shouldChangePlanImmediatelyWhenTargetPlanIsFree() {
+        Plan freePlan = new Plan();
+        freePlan.setId(UUID.randomUUID());
+        freePlan.setName("Free");
+        freePlan.setPrice(0.0);
+        freePlan.setDurationInDays(0);
+        freePlan.setStatus(PlanStatus.ACTIVE);
+
+        when(subscriptionRepository.findById(subId))
+                .thenReturn(Optional.of(subscription));
+        when(planRepository.findById(freePlan.getId()))
+                .thenReturn(Optional.of(freePlan));
+        when(subscriptionRepository.save(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        SubscriptionResponseDTO result = service.changePlan(subId, freePlan.getId());
+
+        assertEquals(freePlan.getId(), result.getPlanId());
+        assertEquals("Free", result.getPlanName());
+        assertEquals(SubscriptionStatus.ACTIVE, result.getStatus());
+        assertNull(subscription.getPendingPlan());
     }
 
     // =========================

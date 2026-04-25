@@ -437,17 +437,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         boolean hasFixedDuration = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
         boolean isPaid = newPlan.getPrice() != null && newPlan.getPrice() > 0;
 
-        sub.setPlan(newPlan);
-        sub.setStartDate(now);
-        sub.setEndDate(hasFixedDuration ? now.plusDays(newPlan.getDurationInDays()) : null);
-
         // If switching to a paid plan and dev mode is off, require payment
         boolean activateImmediately = !isPaid || paymentDevMode;
-        sub.setStatus(activateImmediately ? SubscriptionStatus.ACTIVE : SubscriptionStatus.PENDING_PAYMENT);
+        if (activateImmediately) {
+            sub.setPlan(newPlan);
+            sub.setPendingPlan(null);
+            sub.setStartDate(now);
+            sub.setEndDate(hasFixedDuration ? now.plusDays(newPlan.getDurationInDays()) : null);
+            sub.setStatus(SubscriptionStatus.ACTIVE);
+        } else {
+            sub.setPendingPlan(newPlan);
+            sub.setStatus(SubscriptionStatus.PENDING_PAYMENT);
+        }
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, previous, saved.getStatus(), null,
-                "Plan changed from " + oldPlanName + " to " + newPlan.getName());
+                activateImmediately
+                        ? "Plan changed from " + oldPlanName + " to " + newPlan.getName()
+                        : "Plan change requested from " + oldPlanName + " to " + newPlan.getName() + " - awaiting payment");
 
         return SubscriptionMapper.toDTO(saved);
     }
