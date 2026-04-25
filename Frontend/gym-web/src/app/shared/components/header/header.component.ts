@@ -178,6 +178,27 @@ export class HeaderComponent {
     navigate();
   }
 
+  isChatNotification(notification: AppNotification): boolean {
+    return notification.type === 'CHAT_MESSAGE_RECEIVED';
+  }
+
+  isPaymentNotification(notification: AppNotification): boolean {
+    return notification.type === 'PAYMENT_FAILED' || notification.type === 'PAYMENT_EXPIRED';
+  }
+
+  notificationIcon(notification: AppNotification): string {
+    switch (notification.type) {
+      case 'CHAT_MESSAGE_RECEIVED':
+        return 'feather-message-circle';
+      case 'PAYMENT_FAILED':
+        return 'feather-alert-circle';
+      case 'PAYMENT_EXPIRED':
+        return 'feather-clock';
+      default:
+        return 'feather-bell';
+    }
+  }
+
   relativeNotificationTime(isoDate: string): string {
     const diff = Date.now() - new Date(isoDate).getTime();
     const mins = Math.floor(diff / 60_000);

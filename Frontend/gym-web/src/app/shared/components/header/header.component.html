@@ -224,9 +224,13 @@
                     @for (notification of notificationCenter.notifications().slice(0, 8); track notification.id) {
                       <li class="notification-message" [class.notification-message--unread]="notification.status === 'UNREAD'">
                         <a href="javascript:void(0);" (click)="onNotificationSelected(notification, $event)">
-                          <div class="media d-flex">
-                            <span class="notification-bullet" [class.notification-bullet--chat]="notification.type === 'CHAT_MESSAGE_RECEIVED'">
-                              <i class="feather-bell"></i>
+                            <div class="media d-flex">
+                            <span
+                              class="notification-bullet"
+                              [class.notification-bullet--chat]="isChatNotification(notification)"
+                              [class.notification-bullet--payment]="isPaymentNotification(notification)"
+                            >
+                              <i [class]="notificationIcon(notification)"></i>
                             </span>
                             <div class="media-body">
                               <div class="notification-meta-row">

@@ -1,7 +1,9 @@
 package com.gym.payment.infrastructure.scheduler;
 
+import com.gym.payment.domain.event.PaymentExpiredEvent;
 import com.gym.payment.domain.model.Payment;
 import com.gym.payment.domain.model.PaymentStatus;
+import com.gym.payment.domain.port.out.EventPublisherPort;
 import com.gym.payment.domain.port.out.PaymentRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -14,13 +16,16 @@ import java.util.List;
 public class PaymentScheduler {
 
     private final PaymentRepository paymentRepository;
+    private final EventPublisherPort eventPublisherPort;
     private final long pendingPaymentTimeoutMinutes;
 
     public PaymentScheduler(
             PaymentRepository paymentRepository,
+            EventPublisherPort eventPublisherPort,
             @org.springframework.beans.factory.annotation.Value("${payment.pending-timeout-minutes:2}") long pendingPaymentTimeoutMinutes
     ) {
         this.paymentRepository = paymentRepository;
+        this.eventPublisherPort = eventPublisherPort;
         this.pendingPaymentTimeoutMinutes = pendingPaymentTimeoutMinutes;
     }
 
@@ -31,8 +36,15 @@ public class PaymentScheduler {
         List<Payment> stalePayments = paymentRepository.findByStatusAndCreatedAtBefore(PaymentStatus.PENDING, cutoff);
 
         for (Payment payment : stalePayments) {
-            payment.markFailed("Payment attempt expired after " + pendingPaymentTimeoutMinutes + " minutes");
+            String reason = "Payment attempt expired after " + pendingPaymentTimeoutMinutes + " minutes";
+            payment.markFailed(reason);
             paymentRepository.save(payment);
+            eventPublisherPort.publish("payment.expired", new PaymentExpiredEvent(
+                    payment.getId(),
+                    payment.getSubscriptionId(),
+                    payment.getUserId(),
+                    reason
+            ));
         }
     }
 }
