@@ -71,6 +71,48 @@ app-root {
   min-height: 100vh;
 }
 
+img {
+  display: block;
+  max-width: 100%;
+}
+
+img[width],
+img[height] {
+  height: auto;
+}
+
+[class^="feather-"],
+[class*=" feather-"],
+.fa,
+.fa-brands,
+.fa-classic,
+.fa-regular,
+.fa-solid,
+.fab,
+.far,
+.fas {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;
+  min-width: 1em;
+  height: 1em;
+  line-height: 1;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+}
+
+a .img-fluid,
+button .img-fluid,
+.navbar-brand img,
+.menu-logo img,
+.user-img img,
+.avatar-img,
+.rounded-circle,
+.header-people-search__avatar img {
+  display: block;
+}
+
 .lang-select select {
   -webkit-appearance: none;
   appearance: none;

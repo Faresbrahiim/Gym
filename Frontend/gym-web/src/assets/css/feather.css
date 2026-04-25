@@ -1,11 +1,12 @@
 @font-face {
 	font-family: 'Feather';
 	src:
-	url('../fonts/Feather144f.ttf?sdxovp') format('truetype'),
 	url('../fonts/Feather144f.woff?sdxovp') format('woff'),
+	url('../fonts/Feather144f.ttf?sdxovp') format('truetype'),
 	url('../fonts/Feather144f.svg?sdxovp#Feather') format('svg');
 	font-weight: normal;
 	font-style: normal;
+	font-display: swap;
 }
 [class^="feather-"], [class*=" feather-"] {
 	font-family: 'feather' !important;
