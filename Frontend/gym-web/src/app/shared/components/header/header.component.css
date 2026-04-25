@@ -52,6 +52,11 @@
   color: #d64c4c;
 }
 
+.notification-bullet--payment-success {
+  background: rgba(39, 153, 94, 0.14);
+  color: #27995e;
+}
+
 .notification-meta-row {
   display: flex;
   align-items: center;

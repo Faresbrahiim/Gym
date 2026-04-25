@@ -229,6 +229,7 @@
                               class="notification-bullet"
                               [class.notification-bullet--chat]="isChatNotification(notification)"
                               [class.notification-bullet--payment]="isPaymentNotification(notification)"
+                              [class.notification-bullet--payment-success]="isPaymentSuccessNotification(notification)"
                             >
                               <i [class]="notificationIcon(notification)"></i>
                             </span>

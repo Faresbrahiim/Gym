@@ -20,10 +20,12 @@ import java.util.UUID;
 public class NotificationService {
 
     private static final String CHAT_NOTIFICATION_TYPE = "CHAT_MESSAGE_RECEIVED";
+    private static final String PAYMENT_COMPLETED_NOTIFICATION_TYPE = "PAYMENT_COMPLETED";
     private static final String PAYMENT_FAILED_NOTIFICATION_TYPE = "PAYMENT_FAILED";
     private static final String PAYMENT_EXPIRED_NOTIFICATION_TYPE = "PAYMENT_EXPIRED";
     private static final Set<String> SUPPORTED_NOTIFICATION_TYPES = Set.of(
             CHAT_NOTIFICATION_TYPE,
+            PAYMENT_COMPLETED_NOTIFICATION_TYPE,
             PAYMENT_FAILED_NOTIFICATION_TYPE,
             PAYMENT_EXPIRED_NOTIFICATION_TYPE
     );

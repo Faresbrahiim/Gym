@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, of, Subscription, switchMap, tap, catchError } from 'rxjs';
+import { debounceTime, distinctUntilChanged, of, Subscription, switchMap, tap, catchError, timer } from 'rxjs';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
@@ -9,6 +9,8 @@ import { AppNotification } from '../../../core/models/app-notification.model';
 import { NotificationCenterService } from '../../../core/services/notification-center.service';
 import { PeopleService } from '../../../features/people/services/people.service';
 import { UserSearchResult } from '../../../features/people/models/user-search-result.model';
+
+const NOTIFICATION_COUNT_REFRESH_MS = 10000;
 
 @Component({
   standalone: true,
@@ -60,6 +62,11 @@ export class HeaderComponent {
       this.notificationCenter.connectRealtime(accessToken);
     }
     this.subs.add(this.notificationCenter.load().subscribe());
+    this.subs.add(
+      timer(NOTIFICATION_COUNT_REFRESH_MS, NOTIFICATION_COUNT_REFRESH_MS).pipe(
+        switchMap(() => this.notificationCenter.refreshCount())
+      ).subscribe({ error: () => undefined })
+    );
   }
 
   ngOnDestroy(): void {
@@ -183,13 +190,21 @@ export class HeaderComponent {
   }
 
   isPaymentNotification(notification: AppNotification): boolean {
-    return notification.type === 'PAYMENT_FAILED' || notification.type === 'PAYMENT_EXPIRED';
+    return notification.type === 'PAYMENT_COMPLETED'
+      || notification.type === 'PAYMENT_FAILED'
+      || notification.type === 'PAYMENT_EXPIRED';
+  }
+
+  isPaymentSuccessNotification(notification: AppNotification): boolean {
+    return notification.type === 'PAYMENT_COMPLETED';
   }
 
   notificationIcon(notification: AppNotification): string {
     switch (notification.type) {
       case 'CHAT_MESSAGE_RECEIVED':
         return 'feather-message-circle';
+      case 'PAYMENT_COMPLETED':
+        return 'feather-check-circle';
       case 'PAYMENT_FAILED':
         return 'feather-alert-circle';
       case 'PAYMENT_EXPIRED':
