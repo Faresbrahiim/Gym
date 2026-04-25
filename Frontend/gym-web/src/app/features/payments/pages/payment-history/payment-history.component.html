@@ -25,7 +25,7 @@
               <i class="feather-credit-card"></i> Payment History
             </h4>
             <div class="custom-select-wrapper">
-              <select class="form-select" (change)="setFilter($any($event.target).value)">
+              <select class="form-select" [value]="filterStatus()" (change)="setFilter($any($event.target).value)">
                 <option value="ALL">All Transactions</option>
                 <option value="COMPLETED">Completed</option>
                 <option value="PENDING">Pending</option>

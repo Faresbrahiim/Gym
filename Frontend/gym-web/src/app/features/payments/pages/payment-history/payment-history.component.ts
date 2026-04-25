@@ -37,7 +37,7 @@ export class PaymentHistoryComponent implements OnInit {
   totalPages = signal(0);
   pageSize = 10;
 
-  filterStatus = signal<PaymentStatus | 'ALL'>('ALL');
+  filterStatus = signal<PaymentStatus | 'ALL'>(PaymentStatus.COMPLETED);
 
   ngOnInit(): void {
     this.loadData();

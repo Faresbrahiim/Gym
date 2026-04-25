@@ -1,6 +1,7 @@
 package com.gym.payment.adapter.out.persistence;
 
 import com.gym.payment.domain.model.Payment;
+import com.gym.payment.domain.model.PaymentStatus;
 import com.gym.payment.domain.port.in.GetAllPaymentsQuery;
 import com.gym.payment.domain.port.in.PagedResult;
 import com.gym.payment.domain.port.out.PaymentRepository;
@@ -13,6 +14,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -92,6 +94,14 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
     @Override
     public Optional<Payment> findLatestBySubscriptionId(UUID subscriptionId) {
         return repository.findTopBySubscriptionIdOrderByCreatedAtDesc(subscriptionId).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Payment> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime cutoff) {
+        return repository.findByStatusAndCreatedAtBefore(status, cutoff)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     private Specification<PaymentJpaEntity> buildSpecification(GetAllPaymentsQuery query) {

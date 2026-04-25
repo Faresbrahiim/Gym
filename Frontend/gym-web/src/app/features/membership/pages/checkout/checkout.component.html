@@ -142,12 +142,12 @@
               @if (isChangingPlan) {
                 <div class="checkout-notice info">
                   <i class="feather-refresh-cw"></i>
-                  <p>Your current plan is replaced with <strong>{{ plan()!.name }}</strong> right away.</p>
+                  <p>Your free access stays active while we process the payment for <strong>{{ plan()!.name }}</strong>. The new membership is finalized only after confirmation is received.</p>
                 </div>
               } @else {
                 <div class="checkout-notice info">
                   <i class="feather-zap"></i>
-                  <p>You'll be subscribed to <strong>{{ plan()!.name }}</strong> immediately after confirmation.</p>
+                  <p>After you submit payment, we verify it and finalize <strong>{{ plan()!.name }}</strong> as soon as confirmation is received.</p>
                 </div>
               }
             }

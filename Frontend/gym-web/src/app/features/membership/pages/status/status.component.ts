@@ -10,8 +10,9 @@ import { Subscription } from '../../models/subscription.model';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { StatusBadgeComponent } from '../../components/status-badge/status-badge.component';
 
-const POLL_INTERVAL_MS  = 3000;
-const MAX_POLL_ATTEMPTS = 10;
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_DURATION_MS = 150000;
+const MAX_POLL_ATTEMPTS = Math.ceil(MAX_POLL_DURATION_MS / POLL_INTERVAL_MS);
 
 @Component({
   standalone: true,
