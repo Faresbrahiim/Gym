@@ -47,9 +47,10 @@ class CheckoutController extends AbstractController
     }
 
     #[Route('/{checkoutId}', methods: ['GET'])]
-    public function getCheckoutStatus(string $checkoutId): JsonResponse
+    public function getCheckoutStatus(Request $request, string $checkoutId): JsonResponse
     {
-        $order = $this->orderService->getOrder(Uuid::fromString($checkoutId));
+        $userId = $this->jwtUserExtractor->extractUserId($request);
+        $order = $this->orderService->getUserOrder($userId, Uuid::fromString($checkoutId));
 
         if (!$order) {
             return $this->json(['error' => 'Checkout session not found'], 404);

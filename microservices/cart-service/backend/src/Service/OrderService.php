@@ -9,6 +9,12 @@ use Symfony\Component\Uid\Uuid;
 
 class OrderService implements OrderServiceInterface
 {
+    private const STATUS_PENDING_PAYMENT = 'PENDING_PAYMENT';
+    private const STATUS_PROCESSING = 'PROCESSING';
+    private const STATUS_PAYMENT_FAILED = 'PAYMENT_FAILED';
+    private const STATUS_PAYMENT_EXPIRED = 'PAYMENT_EXPIRED';
+    private const STATUS_CANCELLED = 'CANCELLED';
+
     public function __construct(
         private readonly OrderRepository $orderRepository,
         private readonly CartServiceInterface $cartService
@@ -24,7 +30,7 @@ class OrderService implements OrderServiceInterface
 
         $order = new Order();
         $order->setUserId($userId);
-        $order->setStatus('PENDING');
+        $order->setStatus(self::STATUS_PENDING_PAYMENT);
         $total = 0;
 
         foreach ($cart->getItems() as $cartItem) {
@@ -60,13 +66,62 @@ class OrderService implements OrderServiceInterface
         return $this->orderRepository->find($orderId);
     }
 
+    public function getUserOrder(Uuid $userId, Uuid $orderId): ?Order
+    {
+        return $this->orderRepository->findOneByIdAndUserId($orderId, $userId);
+    }
+
     public function cancelOrder(Uuid $orderId): void
     {
         $order = $this->getOrder($orderId);
-        if ($order && $order->getStatus() === 'PENDING') {
-            $order->setStatus('CANCELLED');
+        if ($order && $order->getStatus() === self::STATUS_PENDING_PAYMENT) {
+            $order->setStatus(self::STATUS_CANCELLED);
             $this->orderRepository->save($order, true);
         }
+    }
+
+    public function cancelUserOrder(Uuid $userId, Uuid $orderId): void
+    {
+        $order = $this->getUserOrder($userId, $orderId);
+        if ($order && $order->getStatus() === self::STATUS_PENDING_PAYMENT) {
+            $order->setStatus(self::STATUS_CANCELLED);
+            $this->orderRepository->save($order, true);
+        }
+    }
+
+    public function getPaymentDetails(Uuid $userId, Uuid $orderId): array
+    {
+        $order = $this->getUserOrder($userId, $orderId);
+
+        if (!$order) {
+            throw new \RuntimeException('Order not found');
+        }
+
+        if ($order->getStatus() !== self::STATUS_PENDING_PAYMENT) {
+            throw new \RuntimeException('Order is not awaiting payment');
+        }
+
+        return [
+            'orderId' => $order->getId()?->toRfc4122(),
+            'userId' => $order->getUserId()?->toRfc4122(),
+            'totalAmount' => $order->getTotalPrice(),
+            'currency' => 'USD',
+        ];
+    }
+
+    public function markPaymentCompleted(Uuid $orderId): ?Order
+    {
+        return $this->transitionPaymentState($orderId, self::STATUS_PENDING_PAYMENT, self::STATUS_PROCESSING);
+    }
+
+    public function markPaymentFailed(Uuid $orderId): ?Order
+    {
+        return $this->transitionPaymentState($orderId, self::STATUS_PENDING_PAYMENT, self::STATUS_PAYMENT_FAILED);
+    }
+
+    public function markPaymentExpired(Uuid $orderId): ?Order
+    {
+        return $this->transitionPaymentState($orderId, self::STATUS_PENDING_PAYMENT, self::STATUS_PAYMENT_EXPIRED);
     }
 
     public function getAllOrders(): array
@@ -80,6 +135,24 @@ class OrderService implements OrderServiceInterface
         if (!$order) throw new \Exception("Order lost in woods.");
 
         $order->setStatus(strtoupper($newStatus));
+        $this->orderRepository->save($order, true);
+
+        return $order;
+    }
+
+    private function transitionPaymentState(Uuid $orderId, string $fromStatus, string $toStatus): ?Order
+    {
+        $order = $this->getOrder($orderId);
+
+        if (!$order) {
+            return null;
+        }
+
+        if ($order->getStatus() !== $fromStatus) {
+            return $order;
+        }
+
+        $order->setStatus($toStatus);
         $this->orderRepository->save($order, true);
 
         return $order;

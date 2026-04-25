@@ -42,9 +42,10 @@ class OrderController extends AbstractController
     }
 
     #[Route('/{orderId}', methods: ['GET'])]
-    public function show(string $orderId): JsonResponse
+    public function show(Request $request, string $orderId): JsonResponse
     {
-        $order = $this->orderService->getOrder(Uuid::fromString($orderId));
+        $userId = $this->jwtUserExtractor->extractUserId($request);
+        $order = $this->orderService->getUserOrder($userId, Uuid::fromString($orderId));
 
         if (!$order) {
             return $this->json(['error' => 'Order not found'], 404);
@@ -54,9 +55,10 @@ class OrderController extends AbstractController
     }
 
     #[Route('/{orderId}/cancel', methods: ['POST'])]
-    public function cancel(string $orderId): JsonResponse
+    public function cancel(Request $request, string $orderId): JsonResponse
     {
-        $this->orderService->cancelOrder(Uuid::fromString($orderId));
+        $userId = $this->jwtUserExtractor->extractUserId($request);
+        $this->orderService->cancelUserOrder($userId, Uuid::fromString($orderId));
         return $this->json(['message' => 'Order cancelled']);
     }
 }

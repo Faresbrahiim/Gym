@@ -14,8 +14,12 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libpq-dev \
+    librdkafka-dev \
+    pkg-config \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd intl pdo pdo_pgsql zip opcache
+    && docker-php-ext-install gd intl pdo pdo_pgsql zip opcache \
+    && pecl install rdkafka \
+    && docker-php-ext-enable rdkafka
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

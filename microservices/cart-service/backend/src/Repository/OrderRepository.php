@@ -34,4 +34,12 @@ class OrderRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function findOneByIdAndUserId(Uuid $orderId, Uuid $userId): ?Order
+    {
+        return $this->findOneBy([
+            'id' => $orderId,
+            'userId' => $userId,
+        ]);
+    }
 }
