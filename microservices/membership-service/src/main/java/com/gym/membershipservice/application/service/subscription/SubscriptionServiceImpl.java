@@ -260,7 +260,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         LocalDateTime now = LocalDateTime.now();
         if (sub.getStartDate() != null && sub.getStartDate().plusDays(2).isBefore(now)) {
-            throw new BadRequestException("Cannot cancel before 2 days");
+            throw new BadRequestException("Cannot cancel after 2 days have passed");
         }
 
         SubscriptionStatus previous = sub.getStatus();

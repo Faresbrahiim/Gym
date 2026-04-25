@@ -108,6 +108,49 @@ services:
       - gym-network
 
   # ==============================
+  # Symfony Cart/Shop Service + Postgres
+  # ==============================
+  cart-db:
+    image: postgres:15
+    container_name: cart-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: cart_db
+      POSTGRES_USER: cart_user
+      POSTGRES_PASSWORD: ${CART_DB_PASSWORD}
+    ports:
+      - "5437:5432"
+    volumes:
+      - cart-db-data:/var/lib/postgresql/data
+    networks:
+      - gym-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cart_user -d cart_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  cart-service:
+    build:
+      context: ../microservices/cart-service/backend
+      dockerfile: Dockerfile
+    container_name: cart-service
+    env_file:
+      - .env
+    environment:
+      APP_ENV: dev
+      APP_SECRET: ${CART_APP_SECRET}
+      DATABASE_URL: postgresql://cart_user:${CART_DB_PASSWORD}@cart-db:5432/cart_db?serverVersion=15&charset=utf8
+      CORS_ALLOW_ORIGIN: ^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$
+    command: sh -c "php bin/console doctrine:migrations:migrate --no-interaction && php -S 0.0.0.0:80 -t public"
+    depends_on:
+      cart-db:
+        condition: service_healthy
+    networks:
+      - gym-network
+
+  # ==============================
   # Spring Boot Payment Service + Postgres
   # ==============================
   payment-db:
@@ -345,6 +388,7 @@ networks:
 volumes:
   gym-user-db-data:
   membership-db-data:
+  cart-db-data:
   payment-db-data:
   notification-db-data:
   kafka-data:

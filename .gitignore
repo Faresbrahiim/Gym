@@ -35,6 +35,17 @@ microservices/user-service/uploads/
 .env.*
 
 # -------------------------
+# Symfony / cart-service
+# -------------------------
+microservices/cart-service/backend/vendor/
+microservices/cart-service/backend/var/
+microservices/cart-service/backend/public/bundles/
+microservices/cart-service/backend/public/uploads/
+microservices/cart-service/backend/config/jwt/*.pem
+microservices/cart-service/backend/.env.local
+microservices/cart-service/backend/.env.*.local
+
+# -------------------------
 # Node / Angular
 # -------------------------
 node_modules/
