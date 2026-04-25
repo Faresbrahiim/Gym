@@ -28,7 +28,49 @@
         <div class="col-lg-5 col-md-7">
 
           <!-- ── ACTIVE ─────────────────────────────────────────── -->
-          @if (subscription()?.status === 'ACTIVE') {
+          @if (attemptExpiredKeepingCurrentPlan()) {
+
+            <div class="result-card">
+              <div class="result-band warning"></div>
+              <div class="result-body">
+
+                <div class="result-icon-ring warning">
+                  <i class="feather-alert-triangle"></i>
+                </div>
+
+                <h3 class="result-title">Payment Attempt Expired</h3>
+                <p class="result-subtitle">
+                  Your payment was not confirmed in time, so the plan change was cancelled. Your current membership remains active.
+                </p>
+
+                <div class="result-plan-strip">
+                  <div class="rps-item">
+                    <span class="rps-label">Current Plan</span>
+                    <span class="rps-val">{{ subscription()!.planName }}</span>
+                  </div>
+                  <div class="rps-divider"></div>
+                  <div class="rps-item">
+                    <span class="rps-label">Status</span>
+                    <app-status-badge [status]="subscription()!.status" />
+                  </div>
+                </div>
+
+                <div class="result-action-row mt-4">
+                  <a routerLink="/membership" class="btn btn-result-primary">
+                    <i class="feather-award me-2"></i>Back to My Membership
+                  </a>
+                  <a routerLink="/membership/plans" class="btn btn-result-outline">
+                    <i class="feather-refresh-cw me-2"></i>Try Again
+                  </a>
+                </div>
+
+              </div>
+            </div>
+
+          }
+
+          <!-- —— ACTIVE ——————————————————————————————————— -->
+          @else if (subscription()?.status === 'ACTIVE') {
 
             <div class="result-card">
               <div class="result-band success"></div>
@@ -119,12 +161,12 @@
 
                 <h3 class="result-title">Still processing…</h3>
                 <p class="result-subtitle">
-                  Your payment is taking longer than usual. Don't worry — your subscription will activate automatically once confirmed.
+                  Your payment is taking longer than usual. If it is not confirmed within the timeout window, this attempt will expire automatically and you can retry safely.
                 </p>
 
                 <div class="result-help-strip warning">
                   <i class="feather-alert-triangle"></i>
-                  <p>Check your membership page in a minute. If the issue persists, contact our support team.</p>
+                  <p>Check your membership page again shortly. If it eventually expires, you can start a new payment attempt.</p>
                 </div>
 
                 <a routerLink="/membership" class="btn btn-result-primary w-100 mt-4">

@@ -1,0 +1,110 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">Orders</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>Orders</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-dashboard-menu></app-dashboard-menu>
+
+<div class="content py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-11">
+
+        <div class="premium-card">
+          <div class="premium-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h4 class="premium-card-title mb-0">
+              <i class="feather-package"></i> Order History
+            </h4>
+          </div>
+
+          <div class="card-body p-0">
+            @if (isLoading()) {
+              <div class="spinner-wrap">
+                <div class="spinner-border premium-spinner" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            } @else if (errorMessage()) {
+              <div class="p-4">
+                <div class="status-notice danger">
+                  <i class="feather-alert-circle"></i>
+                  <div>
+                    <p class="notice-title">Failed to load orders</p>
+                    <p class="notice-text">{{ errorMessage() }}</p>
+                  </div>
+                  <button class="btn btn-primary mt-3" (click)="ngOnInit()">Retry</button>
+                </div>
+              </div>
+            } @else if (orders().length === 0) {
+              <div class="premium-empty">
+                <div class="empty-icon-wrap">
+                  <i class="feather-package"></i>
+                </div>
+                <h5 class="empty-title">No orders yet</h5>
+                <p class="empty-desc">When you place a shop order, it will appear here with its payment and fulfillment status.</p>
+                <a routerLink="/store" class="btn-premium">
+                  <i class="feather-shopping-bag"></i> Start Shopping
+                </a>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="premium-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width: 120px;">Reference</th>
+                      <th style="min-width: 160px;">Date</th>
+                      <th style="min-width: 120px;">Items</th>
+                      <th style="min-width: 140px;">Total</th>
+                      <th style="min-width: 150px;">Status</th>
+                      <th class="text-end" style="min-width: 110px;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (order of orders(); track order.id) {
+                      <tr>
+                        <td>
+                          <a [routerLink]="['/orders', order.id]" class="id-tag">
+                            #{{ order.id.substring(0, 8) | uppercase }}
+                          </a>
+                        </td>
+                        <td>
+                          <div class="date-primary">{{ order.createdAt | date:'MMM d, yyyy' }}</div>
+                          <div class="date-secondary">{{ order.createdAt | date:'h:mm a' }}</div>
+                        </td>
+                        <td>
+                          <span class="text-muted">{{ order.items.length }} item{{ order.items.length !== 1 ? 's' : '' }}</span>
+                        </td>
+                        <td>
+                          <span class="amount-text">${{ order.totalPrice.toFixed(2) }}</span>
+                        </td>
+                        <td>
+                          <span [ngClass]="'order-badge ' + getStatusBadgeClass(order.status)">
+                            {{ getStatusDisplayLabel(order.status) }}
+                          </span>
+                        </td>
+                        <td class="text-end">
+                          <a [routerLink]="['/orders', order.id]" class="btn-view">
+                            View <i class="feather-chevron-right"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

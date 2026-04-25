@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, of, Subscription, switchMap, tap, catchError } from 'rxjs';
+import { debounceTime, distinctUntilChanged, of, Subscription, switchMap, tap, catchError, timer } from 'rxjs';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
@@ -9,6 +9,9 @@ import { AppNotification } from '../../../core/models/app-notification.model';
 import { NotificationCenterService } from '../../../core/services/notification-center.service';
 import { PeopleService } from '../../../features/people/services/people.service';
 import { UserSearchResult } from '../../../features/people/models/user-search-result.model';
+import { CartService } from '../../../features/cart/services/cart.service';
+
+const NOTIFICATION_COUNT_REFRESH_MS = 5000;
 
 @Component({
   standalone: true,
@@ -25,8 +28,11 @@ export class HeaderComponent {
   protected readonly notificationCenter = inject(NotificationCenterService);
   private readonly router            = inject(Router);
   private readonly peopleService     = inject(PeopleService);
+  private readonly cartService       = inject(CartService);
   private readonly elementRef        = inject(ElementRef<HTMLElement>);
   private readonly subs              = new Subscription();
+
+  readonly cartItemCount = this.cartService.cart$;
 
   isMobileMenuOpen = signal(false);
   isScrolled       = signal(false);
@@ -60,6 +66,11 @@ export class HeaderComponent {
       this.notificationCenter.connectRealtime(accessToken);
     }
     this.subs.add(this.notificationCenter.load().subscribe());
+    this.subs.add(
+      timer(3000, NOTIFICATION_COUNT_REFRESH_MS).pipe(
+        switchMap(() => this.notificationCenter.refreshCount())
+      ).subscribe({ error: () => undefined })
+    );
   }
 
   ngOnDestroy(): void {
@@ -178,6 +189,35 @@ export class HeaderComponent {
     navigate();
   }
 
+  isChatNotification(notification: AppNotification): boolean {
+    return notification.type === 'CHAT_MESSAGE_RECEIVED';
+  }
+
+  isPaymentNotification(notification: AppNotification): boolean {
+    return notification.type === 'PAYMENT_COMPLETED'
+      || notification.type === 'PAYMENT_FAILED'
+      || notification.type === 'PAYMENT_EXPIRED';
+  }
+
+  isPaymentSuccessNotification(notification: AppNotification): boolean {
+    return notification.type === 'PAYMENT_COMPLETED';
+  }
+
+  notificationIcon(notification: AppNotification): string {
+    switch (notification.type) {
+      case 'CHAT_MESSAGE_RECEIVED':
+        return 'feather-message-circle';
+      case 'PAYMENT_COMPLETED':
+        return 'feather-check-circle';
+      case 'PAYMENT_FAILED':
+        return 'feather-alert-circle';
+      case 'PAYMENT_EXPIRED':
+        return 'feather-clock';
+      default:
+        return 'feather-bell';
+    }
+  }
+
   relativeNotificationTime(isoDate: string): string {
     const diff = Date.now() - new Date(isoDate).getTime();
     const mins = Math.floor(diff / 60_000);
@@ -223,6 +263,9 @@ export class HeaderComponent {
           this.peopleSearchOpen.set(true);
 
           return this.peopleService.search(query).pipe(
+            tap(response => {
+              this.peopleSearchResults.set(response.items);
+            }),
             catchError(() => {
               this.peopleSearchError.set(true);
               return of([] as UserSearchResult[]);
@@ -232,7 +275,11 @@ export class HeaderComponent {
       ).subscribe(results => {
         if (results === null) return;
         this.peopleSearchLoading.set(false);
-        this.peopleSearchResults.set(results);
+        if (Array.isArray(results)) {
+          this.peopleSearchResults.set(results);
+        } else {
+          this.peopleSearchResults.set(results.items);
+        }
         this.peopleSearchOpen.set(true);
       })
     );

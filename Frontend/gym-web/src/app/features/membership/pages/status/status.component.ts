@@ -10,8 +10,9 @@ import { Subscription } from '../../models/subscription.model';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { StatusBadgeComponent } from '../../components/status-badge/status-badge.component';
 
-const POLL_INTERVAL_MS  = 3000;
-const MAX_POLL_ATTEMPTS = 10;
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_DURATION_MS = 150000;
+const MAX_POLL_ATTEMPTS = Math.ceil(MAX_POLL_DURATION_MS / POLL_INTERVAL_MS);
 
 @Component({
   standalone: true,
@@ -25,8 +26,10 @@ export class StatusComponent implements OnInit {
   isLoading    = signal(true);
   subscription = signal<Subscription | null>(null);
   timedOut     = signal(false);
+  attemptExpiredKeepingCurrentPlan = signal(false);
 
   private subscriptionId = '';
+  private expectedPlanId: string | null = null;
   private attempts       = 0;
   private readonly stop$ = new Subject<void>();
 
@@ -38,6 +41,7 @@ export class StatusComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscriptionId = this.route.snapshot.paramMap.get('subscriptionId') ?? '';
+    this.expectedPlanId = this.route.snapshot.queryParamMap.get('expectedPlanId');
     if (!this.subscriptionId) {
       this.router.navigate(['/membership']);
       return;
@@ -58,6 +62,13 @@ export class StatusComponent implements OnInit {
         this.isLoading.set(false);
 
         if (sub?.status === 'ACTIVE') {
+          if (this.expectedPlanId && sub.planId !== this.expectedPlanId) {
+            this.attemptExpiredKeepingCurrentPlan.set(true);
+            this.toastService.error('The payment attempt expired. Your current membership was kept unchanged.');
+            this.stop$.next();
+            return;
+          }
+
           this.toastService.success('Your membership is now active!');
           this.stop$.next();
           return;
@@ -83,6 +94,11 @@ export class StatusComponent implements OnInit {
 
   get planId(): string {
     return this.subscription()?.planId ?? '';
+  }
+
+  get expectedPlanNameMismatch(): boolean {
+    const sub = this.subscription();
+    return !!(sub && this.expectedPlanId && sub.planId !== this.expectedPlanId);
   }
 
   formatDate(iso: string | null): string {

@@ -44,6 +44,9 @@
           <li routerLinkActive="active">
             <a routerLink="/people">People</a>
           </li>
+          <li routerLinkActive="active">
+            <a routerLink="/store">Shop</a>
+          </li>
           @if (isAuthenticated) {
             <li routerLinkActive="active">
               <a routerLink="/chat" class="chat-nav-link">
@@ -179,6 +182,17 @@
       @if (isAuthenticated) {
         <ul class="nav header-navbar-rht logged-in">
 
+          <!-- Cart -->
+          <li class="nav-item">
+            <a routerLink="/cart" class="nav-link position-relative">
+              <i class="feather-shopping-cart"></i>
+              @if (cartItemCount()?.totalItems) {
+                <span class="notification-count">{{ cartItemCount()!.totalItems }}</span>
+              }
+            </a>
+          </li>
+          <!-- /Cart -->
+
           <!-- Notifications -->
           <li class="nav-item dropdown noti-nav">
             <a
@@ -224,9 +238,14 @@
                     @for (notification of notificationCenter.notifications().slice(0, 8); track notification.id) {
                       <li class="notification-message" [class.notification-message--unread]="notification.status === 'UNREAD'">
                         <a href="javascript:void(0);" (click)="onNotificationSelected(notification, $event)">
-                          <div class="media d-flex">
-                            <span class="notification-bullet" [class.notification-bullet--chat]="notification.type === 'CHAT_MESSAGE_RECEIVED'">
-                              <i class="feather-bell"></i>
+                            <div class="media d-flex">
+                            <span
+                              class="notification-bullet"
+                              [class.notification-bullet--chat]="isChatNotification(notification)"
+                              [class.notification-bullet--payment]="isPaymentNotification(notification)"
+                              [class.notification-bullet--payment-success]="isPaymentSuccessNotification(notification)"
+                            >
+                              <i [class]="notificationIcon(notification)"></i>
                             </span>
                             <div class="media-body">
                               <div class="notification-meta-row">
@@ -268,7 +287,10 @@
               </div>
               <p><a class="dropdown-item" routerLink="/profile">My Profile</a></p>
               <p><a class="dropdown-item" routerLink="/chat">Open Full Chat</a></p>
+              <p><a class="dropdown-item" routerLink="/store">Shop</a></p>
+              <p><a class="dropdown-item" routerLink="/cart">My Cart</a></p>
               <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
+              <p><a class="dropdown-item" routerLink="/orders">My Orders</a></p>
               <p><a class="dropdown-item" routerLink="/payments">Payments</a></p>
               <p><a class="dropdown-item" href="javascript:void(0);" (click)="onLogout()">Logout</a></p>
             </div>

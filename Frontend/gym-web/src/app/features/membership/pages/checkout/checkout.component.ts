@@ -25,25 +25,24 @@ export class CheckoutComponent implements OnInit {
 
   @ViewChild(StripeCardComponent) stripeCard?: StripeCardComponent;
 
-  isLoading    = signal(true);
+  isLoading = signal(true);
   isSubmitting = signal(false);
-  plan         = signal<Plan | null>(null);
+  plan = signal<Plan | null>(null);
   errorMessage = signal<string | null>(null);
   paymentErrorMessage = signal<string | null>(null);
 
-  // Only set when the user has an ACTIVE *paid* subscription to switch from
-  private activePayingSub: Subscription | null = null;
+  private currentActiveSub: Subscription | null = null;
   private planId = '';
 
-  private readonly route             = inject(ActivatedRoute);
-  private readonly router            = inject(Router);
-  private readonly planService       = inject(PlanService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly planService = inject(PlanService);
   private readonly membershipService = inject(MembershipService);
-  private readonly paymentService    = inject(PaymentService);
-  private readonly stripeService     = inject(StripeService);
-  private readonly toastService      = inject(ToastService);
-  private readonly errorService      = inject(ErrorService);
-  private readonly destroyRef        = inject(DestroyRef);
+  private readonly paymentService = inject(PaymentService);
+  private readonly stripeService = inject(StripeService);
+  private readonly toastService = inject(ToastService);
+  private readonly errorService = inject(ErrorService);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     this.planId = this.route.snapshot.paramMap.get('planId') ?? '';
@@ -61,7 +60,6 @@ export class CheckoutComponent implements OnInit {
       next: ({ plan, subs }) => {
         this.plan.set(plan);
 
-        // Redirect if already on this exact plan and it's active
         const alreadyActive = subs.find(s => s.status === 'ACTIVE' && s.planId === this.planId);
         if (alreadyActive) {
           this.toastService.success("You're already on this plan.");
@@ -69,21 +67,13 @@ export class CheckoutComponent implements OnInit {
           return;
         }
 
-        // changePlan is ONLY valid when upgrading from an ACTIVE *paid* plan.
-        // Free plan subs and PENDING_PAYMENT subs must go through create() instead.
-        const activePaidSub = subs.find(s => {
-          if (s.status !== 'ACTIVE') return false;
-          if (s.planId === this.planId) return false;
-          // A plan is "paid" if its price is > 0. We check the plan we're coming FROM.
-          // We only know the planId, so we use a heuristic: the free plan ID is known
-          // to have price 0. Any sub not on the free plan is treated as paid.
-          // The backend will enforce correctness.
-          return true; // We'll refine inside onConfirm
-        }) ?? null;
+        this.currentActiveSub = subs.find(s => s.status === 'ACTIVE' && s.planId !== this.planId) ?? null;
 
-        // Narrow further: only use changePlan if coming from a non-free plan
-        // We'll rely on the plan price loaded separately, but for now track the active ACTIVE sub
-        this.activePayingSub = subs.find(s => s.status === 'ACTIVE' && s.planId !== this.planId) ?? null;
+        if (this.currentActiveSub && (this.currentActiveSub.planPrice ?? 0) > 0) {
+          this.toastService.error('Self-service plan changes between paid plans are not available right now.');
+          this.router.navigate(['/membership']);
+          return;
+        }
 
         this.isLoading.set(false);
       },
@@ -96,9 +86,8 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  // True only when switching from an existing ACTIVE subscription
   get isChangingPlan(): boolean {
-    return this.activePayingSub !== null;
+    return this.currentActiveSub !== null;
   }
 
   get isFree(): boolean {
@@ -122,9 +111,9 @@ export class CheckoutComponent implements OnInit {
   }
 
   get buttonLabel(): string {
-    if (this.isChangingPlan) return `Switch to ${this.plan()?.name}`;
+    if (this.isChangingPlan) return `Upgrade to ${this.plan()?.name}`;
     if (this.isFree) return 'Activate Free Plan';
-    return `Subscribe — ${this.formattedPrice}`;
+    return `Subscribe - ${this.formattedPrice}`;
   }
 
   async onConfirm(): Promise<void> {
@@ -134,11 +123,10 @@ export class CheckoutComponent implements OnInit {
     this.isSubmitting.set(true);
     this.paymentErrorMessage.set(null);
 
-    // --- FREE PLAN PATH ---
     if (this.isFree) {
       try {
         const action$ = this.isChangingPlan
-          ? this.membershipService.changePlan(this.activePayingSub!.subscriptionId, p.id)
+          ? this.membershipService.changePlan(this.currentActiveSub!.subscriptionId, p.id)
           : this.membershipService.create(p.id);
         const sub = await firstValueFrom(action$);
         this.toastService.success('Membership activated!');
@@ -150,14 +138,12 @@ export class CheckoutComponent implements OnInit {
       return;
     }
 
-    // --- PAID PLAN PATH ---
     if (!this.stripeCard) {
       this.toastService.error('Payment form not loaded. Please refresh.');
       this.isSubmitting.set(false);
       return;
     }
 
-    // 1. Collect Payment Method
     const { paymentMethod, error: pmError } = await this.stripeCard.createPaymentMethod();
     if (pmError || !paymentMethod) {
       this.paymentErrorMessage.set(pmError?.message || 'Invalid card details.');
@@ -166,30 +152,28 @@ export class CheckoutComponent implements OnInit {
     }
 
     try {
-      // 2. Create or change Subscription
-      // changePlan: only when we have an existing ACTIVE sub to switch from
-      // create: new user or upgrading from free plan (free plan treated as no prior paid sub)
-      const isUpgradeFromPaidPlan = this.isChangingPlan && this.activePayingSub !== null;
-      const subAction$ = isUpgradeFromPaidPlan
-        ? this.membershipService.changePlan(this.activePayingSub!.subscriptionId, p.id)
+      const subAction$ = this.isChangingPlan
+        ? this.membershipService.changePlan(this.currentActiveSub!.subscriptionId, p.id)
         : this.membershipService.create(p.id);
       const sub = await firstValueFrom(subAction$);
 
-      // 3. Initiate Payment
       const res = await firstValueFrom(this.paymentService.initiatePayment({
         subscriptionId: sub.subscriptionId,
         planId: p.id,
         paymentMethodToken: paymentMethod.id
       }));
 
-      // 4. Confirm with Stripe
       const { error: confirmError } = await this.stripeService.confirmCardPayment(res.clientSecret);
       if (confirmError) {
         this.toastService.error('Payment confirmation failed. Please try again.');
-        this.router.navigate(['/membership/status', sub.subscriptionId]);
+        this.router.navigate(['/membership/status', sub.subscriptionId], {
+          queryParams: { expectedPlanId: p.id }
+        });
       } else {
-        this.toastService.success('Payment successful! Your membership is being activated.');
-        this.router.navigate(['/membership/status', sub.subscriptionId]);
+        this.toastService.info('Payment received. We are finalizing your membership now.');
+        this.router.navigate(['/membership/status', sub.subscriptionId], {
+          queryParams: { expectedPlanId: p.id }
+        });
       }
     } catch (err) {
       this.paymentErrorMessage.set(this.errorService.extractMessage(err));

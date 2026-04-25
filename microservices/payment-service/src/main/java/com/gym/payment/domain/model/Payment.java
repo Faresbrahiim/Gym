@@ -9,8 +9,10 @@ public class Payment {
 
     private final UUID id;
     private final UUID userId;
+    private final PaymentTargetType targetType;
     private final UUID subscriptionId;
     private final UUID planId;
+    private final UUID orderId;
     private final Money amount;
     private PaymentStatus status;
     private String stripePaymentIntentId;
@@ -18,23 +20,35 @@ public class Payment {
     private final LocalDateTime createdAt;
     private LocalDateTime completedAt;
 
-    public Payment(UUID userId, UUID subscriptionId, UUID planId, Money amount) {
+    private Payment(UUID userId, PaymentTargetType targetType, UUID subscriptionId, UUID planId, UUID orderId, Money amount) {
         this.id = UUID.randomUUID();
         this.userId = userId;
+        this.targetType = targetType;
         this.subscriptionId = subscriptionId;
         this.planId = planId;
+        this.orderId = orderId;
         this.amount = amount;
         this.status = PaymentStatus.PENDING;
         this.createdAt = LocalDateTime.now();
     }
 
-    public Payment(UUID id, UUID userId, UUID subscriptionId, UUID planId, Money amount,
+    public static Payment forMembership(UUID userId, UUID subscriptionId, UUID planId, Money amount) {
+        return new Payment(userId, PaymentTargetType.MEMBERSHIP, subscriptionId, planId, null, amount);
+    }
+
+    public static Payment forOrder(UUID userId, UUID orderId, Money amount) {
+        return new Payment(userId, PaymentTargetType.ORDER, null, null, orderId, amount);
+    }
+
+    public Payment(UUID id, UUID userId, PaymentTargetType targetType, UUID subscriptionId, UUID planId, UUID orderId, Money amount,
                    PaymentStatus status, String stripePaymentIntentId, String failureReason,
                    LocalDateTime createdAt, LocalDateTime completedAt) {
         this.id = id;
         this.userId = userId;
+        this.targetType = targetType;
         this.subscriptionId = subscriptionId;
         this.planId = planId;
+        this.orderId = orderId;
         this.amount = amount;
         this.status = status;
         this.stripePaymentIntentId = stripePaymentIntentId;
@@ -66,8 +80,10 @@ public class Payment {
 
     public UUID getId() { return id; }
     public UUID getUserId() { return userId; }
+    public PaymentTargetType getTargetType() { return targetType; }
     public UUID getSubscriptionId() { return subscriptionId; }
     public UUID getPlanId() { return planId; }
+    public UUID getOrderId() { return orderId; }
     public Money getAmount() { return amount; }
     public PaymentStatus getStatus() { return status; }
     public String getStripePaymentIntentId() { return stripePaymentIntentId; }

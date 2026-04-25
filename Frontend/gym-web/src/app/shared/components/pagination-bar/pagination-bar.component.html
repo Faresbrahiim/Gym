@@ -1,0 +1,38 @@
+@if (totalPages > 1) {
+  <div class="pagination-bar">
+    <div class="pagination-bar__summary">
+      Showing {{ firstItemIndex }}-{{ lastItemIndex }} of {{ totalItems }} {{ label }}
+    </div>
+
+    <div class="pagination-bar__controls">
+      <button
+        type="button"
+        class="pagination-bar__button pagination-bar__button--ghost"
+        (click)="selectPage(page - 1)"
+        [disabled]="page <= 1"
+      >
+        Previous
+      </button>
+
+      @for (pageNumber of visiblePages; track pageNumber) {
+        <button
+          type="button"
+          class="pagination-bar__button"
+          [class.pagination-bar__button--active]="pageNumber === page"
+          (click)="selectPage(pageNumber)"
+        >
+          {{ pageNumber }}
+        </button>
+      }
+
+      <button
+        type="button"
+        class="pagination-bar__button pagination-bar__button--ghost"
+        (click)="selectPage(page + 1)"
+        [disabled]="page >= totalPages"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+}

@@ -2,7 +2,8 @@ import { Component, OnInit, ViewChild, signal, inject, DestroyRef } from '@angul
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { switchMap } from 'rxjs/operators';
+import { Subject, timer } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { MembershipService } from '../../services/membership.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -12,6 +13,8 @@ import { DashboardMenuComponent } from '../../../../shared/components/dashboard-
 import { StatusBadgeComponent } from '../../components/status-badge/status-badge.component';
 import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+
+const PENDING_POLL_INTERVAL_MS = 3000;
 
 @Component({
   standalone: true,
@@ -24,54 +27,70 @@ export class MyMembershipComponent implements OnInit {
 
   @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
 
-  isLoading    = signal(true);
+  isLoading = signal(true);
   subscription = signal<Subscription | null>(null);
   errorMessage = signal<string | null>(null);
 
   isCancelling = signal(false);
-  isPausing    = signal(false);
-  isResuming   = signal(false);
-  isRenewing   = signal(false);
+  isPausing = signal(false);
+  isResuming = signal(false);
+  isRenewing = signal(false);
 
-  modalTitle        = '';
-  modalMessage      = '';
+  modalTitle = '';
+  modalMessage = '';
   modalConfirmLabel = 'Confirm';
   modalConfirmClass = 'btn-danger';
   private pendingAction: (() => void) | null = null;
+  private readonly pendingPollingStop$ = new Subject<void>();
+  private pendingPollingActive = false;
 
   private readonly membershipService = inject(MembershipService);
-  private readonly tokenService      = inject(TokenService);
-  private readonly toastService      = inject(ToastService);
-  private readonly errorService      = inject(ErrorService);
-  private readonly router            = inject(Router);
-  private readonly destroyRef        = inject(DestroyRef);
+  private readonly tokenService = inject(TokenService);
+  private readonly toastService = inject(ToastService);
+  private readonly errorService = inject(ErrorService);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     const role = this.tokenService.getRole();
-    if (role === 'ADMIN') { this.router.navigate(['/admin/dashboard']); return; }
-    if (role === 'COACH')  { this.router.navigate(['/home']); return; }
+    if (role === 'ADMIN') {
+      this.router.navigate(['/admin/dashboard']);
+      return;
+    }
+    if (role === 'COACH') {
+      this.router.navigate(['/home']);
+      return;
+    }
     this.loadSubscription();
   }
 
-  loadSubscription(): void {
-    this.isLoading.set(true);
-    this.errorMessage.set(null);
+  loadSubscription(showLoader = true): void {
+    if (showLoader) {
+      this.isLoading.set(true);
+      this.errorMessage.set(null);
+    }
 
     this.membershipService.getCurrentSubscription().pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (sub) => {
         this.subscription.set(sub);
-        this.isLoading.set(false);
+        this.syncPendingPolling(sub);
+        if (showLoader) {
+          this.isLoading.set(false);
+        }
       },
       error: (err) => {
+        this.stopPendingPolling();
         const isServerError = err instanceof HttpErrorResponse && err.status >= 500;
         const msg = isServerError
           ? 'Unable to load your membership. Please try again.'
           : this.errorService.extractMessage(err);
         this.errorMessage.set(msg);
         this.toastService.error(msg);
-        this.isLoading.set(false);
+        if (showLoader) {
+          this.isLoading.set(false);
+        }
       }
     });
   }
@@ -82,18 +101,61 @@ export class MyMembershipComponent implements OnInit {
   }
 
   formatDate(iso: string | null): string {
-    if (!iso) return '—';
+    if (!iso) return '-';
     try {
       return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    } catch { return iso; }
+    } catch {
+      return iso;
+    }
+  }
+
+  private syncPendingPolling(sub: Subscription | null): void {
+    if (sub?.status === 'PENDING_PAYMENT') {
+      this.startPendingPolling();
+      return;
+    }
+
+    this.stopPendingPolling();
+  }
+
+  private startPendingPolling(): void {
+    if (this.pendingPollingActive) {
+      return;
+    }
+
+    this.pendingPollingActive = true;
+    timer(PENDING_POLL_INTERVAL_MS, PENDING_POLL_INTERVAL_MS).pipe(
+      switchMap(() => this.membershipService.getCurrentSubscription()),
+      takeUntil(this.pendingPollingStop$),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (sub) => {
+        this.subscription.set(sub);
+        if (sub?.status !== 'PENDING_PAYMENT') {
+          this.stopPendingPolling();
+        }
+      },
+      error: () => {
+        this.stopPendingPolling();
+      }
+    });
+  }
+
+  private stopPendingPolling(): void {
+    if (!this.pendingPollingActive) {
+      return;
+    }
+
+    this.pendingPollingActive = false;
+    this.pendingPollingStop$.next();
   }
 
   private openModal(title: string, message: string, confirmLabel: string, confirmClass: string, action: () => void): void {
-    this.modalTitle        = title;
-    this.modalMessage      = message;
+    this.modalTitle = title;
+    this.modalMessage = message;
     this.modalConfirmLabel = confirmLabel;
     this.modalConfirmClass = confirmClass;
-    this.pendingAction     = action;
+    this.pendingAction = action;
     this.confirmModal.open();
   }
 

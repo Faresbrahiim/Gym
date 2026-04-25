@@ -39,7 +39,7 @@
       <div class="history-header">
         <div>
           <h4 class="history-title">Membership Activity</h4>
-          <p class="history-subtitle">{{ entries().length }} event{{ entries().length !== 1 ? 's' : '' }} found</p>
+          <p class="history-subtitle">{{ totalItems() }} event{{ totalItems() !== 1 ? 's' : '' }} found</p>
         </div>
         <a routerLink="/membership" class="btn-back">
           <i class="feather-arrow-left"></i> Back to Membership
@@ -82,6 +82,15 @@
             </div>
           }
         </div>
+
+        <app-pagination-bar
+          [page]="currentPage()"
+          [pageSize]="pageSize"
+          [totalItems]="totalItems()"
+          [totalPages]="totalPages()"
+          label="history events"
+          (pageChange)="goToPage($event)"
+        />
       }
 
     </div>

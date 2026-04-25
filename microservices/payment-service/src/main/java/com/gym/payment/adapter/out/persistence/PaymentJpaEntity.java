@@ -1,6 +1,7 @@
 package com.gym.payment.adapter.out.persistence;
 
 import com.gym.payment.domain.model.PaymentStatus;
+import com.gym.payment.domain.model.PaymentTargetType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -30,11 +31,18 @@ public class PaymentJpaEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "subscription_id", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "target_type", nullable = false, length = 20)
+    private PaymentTargetType targetType;
+
+    @Column(name = "subscription_id")
     private UUID subscriptionId;
 
-    @Column(name = "plan_id", nullable = false)
+    @Column(name = "plan_id")
     private UUID planId;
+
+    @Column(name = "order_id")
+    private UUID orderId;
 
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;

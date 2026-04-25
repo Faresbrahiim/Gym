@@ -12,6 +12,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -52,10 +53,28 @@ public class PaymentEventListenerImpl implements PaymentEventHandler {
             }
 
             SubscriptionStatus previous = sub.getStatus();
+            String note = "Payment completed - membership activated";
+
+            if (sub.getPendingPlan() != null) {
+                var pendingPlan = sub.getPendingPlan();
+                sub.setPlan(pendingPlan);
+                sub.setPendingPlan(null);
+
+                LocalDateTime now = LocalDateTime.now();
+                sub.setStartDate(now);
+                if (pendingPlan.getDurationInDays() != null && pendingPlan.getDurationInDays() > 0) {
+                    sub.setEndDate(now.plusDays(pendingPlan.getDurationInDays()));
+                } else {
+                    sub.setEndDate(null);
+                }
+
+                note = "Payment completed - plan change activated to " + pendingPlan.getName();
+            }
+
             sub.setStatus(SubscriptionStatus.ACTIVE);
+            sub.setPendingPaymentStartedAt(null);
             Subscription saved = subscriptionRepository.save(sub);
-            historyService.recordChange(saved, previous, SubscriptionStatus.ACTIVE, null,
-                    "Payment completed - membership activated");
+            historyService.recordChange(saved, previous, SubscriptionStatus.ACTIVE, null, note);
 
             log.info("Subscription {} activated after successful payment", subscriptionId);
 
@@ -89,10 +108,15 @@ public class PaymentEventListenerImpl implements PaymentEventHandler {
             }
 
             SubscriptionStatus previous = sub.getStatus();
+            String note = "Payment failed";
+            if (sub.getPendingPlan() != null) {
+                note = "Payment failed for pending plan change to " + sub.getPendingPlan().getName();
+                sub.setPendingPlan(null);
+            }
             sub.setStatus(SubscriptionStatus.PAYMENT_FAILED);
+            sub.setPendingPaymentStartedAt(null);
             Subscription saved = subscriptionRepository.save(sub);
-            historyService.recordChange(saved, previous, SubscriptionStatus.PAYMENT_FAILED, null,
-                    "Payment failed");
+            historyService.recordChange(saved, previous, SubscriptionStatus.PAYMENT_FAILED, null, note);
 
             log.info("Subscription {} marked as PAYMENT_FAILED. Reason: {}", subscriptionId, message.getFailureReason());
 

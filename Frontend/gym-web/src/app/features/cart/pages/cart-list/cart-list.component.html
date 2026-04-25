@@ -1,0 +1,158 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">My Cart</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/store">Shop</a></li>
+        <li>My Cart</li>
+      </ul>
+    </div>
+    <a routerLink="/store" class="cart-header-btn">
+      <i class="feather-arrow-left"></i>
+      <span>Continue Shopping</span>
+    </a>
+  </div>
+</div>
+
+<div class="content">
+  <div class="container">
+
+    <!-- Loading -->
+    <div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:40vh;">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading…</span>
+      </div>
+    </div>
+
+    <!-- Cart with items -->
+    <div *ngIf="!isLoading() && cart() && cart()!.items.length > 0" class="row g-4">
+
+      <!-- Items table -->
+      <div class="col-lg-8">
+        <div class="premium-card">
+          <div class="premium-card-header d-flex align-items-center justify-content-between">
+            <h5 class="premium-card-title">
+              <i class="feather-shopping-cart"></i>
+              Cart Items
+            </h5>
+            <button class="btn-danger-soft" (click)="onClearCart()">
+              <i class="feather-trash-2"></i> Clear Cart
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="premium-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Price</th>
+                  <th>Quantity</th>
+                  <th>Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of cart()!.items; trackBy: trackByItemId">
+                  <td>
+                    <div class="d-flex align-items-center gap-3">
+                      <div class="cart-img-wrap">
+                        <img
+                          [src]="getItemImageUrl(item)"
+                          [alt]="item.productName"
+                          (error)="handleImageError($event)">
+                      </div>
+                      <div>
+                        <a [routerLink]="['/store', item.productId]" class="cart-item-name">
+                          {{ item.productName }}
+                        </a>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="cart-unit-price">${{ formatPrice(item.price) }}</span>
+                  </td>
+                  <td>
+                    <div class="cart-qty-selector">
+                      <button
+                        class="cart-qty-btn"
+                        (click)="onQuantityChange(item, item.quantity - 1)"
+                        [disabled]="updatingItemId === item.id || item.quantity === 1">
+                        <i class="feather-minus"></i>
+                      </button>
+                      <span class="cart-qty-val">{{ item.quantity }}</span>
+                      <button
+                        class="cart-qty-btn"
+                        (click)="onQuantityChange(item, item.quantity + 1)"
+                        [disabled]="updatingItemId === item.id">
+                        <i class="feather-plus"></i>
+                      </button>
+                    </div>
+                    <span *ngIf="updatingItemId === item.id" class="spinner-border spinner-border-sm ms-2 text-primary"></span>
+                  </td>
+                  <td>
+                    <span class="cart-line-total">${{ formatPrice(item.price * item.quantity) }}</span>
+                  </td>
+                  <td>
+                    <button class="btn-remove-item" (click)="onRemoveItem(item)" title="Remove">
+                      <i class="feather-x"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="col-lg-4">
+        <div class="actions-card">
+          <h6>Order Summary</h6>
+
+          <div class="summary-row-list">
+            <div class="summary-row-item">
+              <span>Subtotal</span>
+              <span>${{ formatPrice(cart()!.totalPrice) }}</span>
+            </div>
+            <div class="summary-row-item">
+              <span>Shipping</span>
+              <span class="text-success fw-600">Free</span>
+            </div>
+            <div class="summary-row-item">
+              <span>Tax (10%)</span>
+              <span>${{ formatPrice(cart()!.totalPrice * 0.1) }}</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row-item total">
+              <span>Total</span>
+              <span>${{ formatPrice(cart()!.totalPrice * 1.1) }}</span>
+            </div>
+          </div>
+
+          <a routerLink="/checkout" class="btn-proceed">
+            <i class="feather-credit-card"></i>
+            Proceed to Checkout
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Empty cart -->
+    <div *ngIf="!isLoading() && (!cart() || cart()!.items.length === 0)" class="empty-state">
+      <div class="empty-state-icon">
+        <i class="feather-shopping-cart"></i>
+      </div>
+      <h4 class="mb-2">Your cart is empty</h4>
+      <p class="text-muted mb-4" style="max-width:340px;margin:0 auto 20px;">
+        Looks like you haven't added anything yet. Browse our shop to get started.
+      </p>
+      <a routerLink="/store" class="btn btn-primary px-4" style="border-radius:10px;font-weight:600;">
+        <i class="feather-shopping-bag me-2"></i>Start Shopping
+      </a>
+    </div>
+
+  </div>
+</div>

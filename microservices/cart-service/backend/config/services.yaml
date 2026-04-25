@@ -1,0 +1,15 @@
+# config/services.yaml
+parameters:
+    product_images_directory: '%kernel.project_dir%/public/uploads/products'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'

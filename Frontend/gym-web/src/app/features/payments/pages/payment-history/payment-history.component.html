@@ -25,7 +25,7 @@
               <i class="feather-credit-card"></i> Payment History
             </h4>
             <div class="custom-select-wrapper">
-              <select class="form-select" (change)="setFilter($any($event.target).value)">
+              <select class="form-select" [value]="filterStatus()" (change)="setFilter($any($event.target).value)">
                 <option value="ALL">All Transactions</option>
                 <option value="COMPLETED">Completed</option>
                 <option value="PENDING">Pending</option>
@@ -81,7 +81,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (payment of filteredPayments(); track payment.id) {
+                    @for (payment of payments(); track payment.id) {
                       <tr>
                         <!-- Ref ID -->
                         <td>
@@ -98,7 +98,9 @@
                             </div>
                             <div>
                               <div class="plan-name">{{ payment.planName }}</div>
-                              <div class="plan-sub">Sub: {{ payment.subscriptionId.substring(0, 8) }}</div>
+                              <div class="plan-sub">
+                                Sub: {{ payment.subscriptionId ? (payment.subscriptionId.substring(0, 8)) : '—' }}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -140,6 +142,17 @@
                     }
                   </tbody>
                 </table>
+              </div>
+
+              <div class="p-4 pt-0">
+                <app-pagination-bar
+                  [page]="currentPage()"
+                  [pageSize]="pageSize"
+                  [totalItems]="totalItems()"
+                  [totalPages]="totalPages()"
+                  label="payments"
+                  (pageChange)="goToPage($event)"
+                />
               </div>
             }
           </div>

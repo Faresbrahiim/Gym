@@ -13,4 +13,5 @@ import java.util.UUID;
 public interface UserMembershipRepository extends JpaRepository<UserMembership, UUID> {
     Optional<UserMembership> findByUserId(UUID userId);
     List<UserMembership> findByUserIdIn(Collection<UUID> userIds);
+    List<UserMembership> findByEmailContainingIgnoreCase(String email);
 }

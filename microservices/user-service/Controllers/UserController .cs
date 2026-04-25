@@ -33,14 +33,16 @@ namespace user_service.Controllers
 
         [AllowAnonymous]
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<UserSearchResultDto>>> SearchUsers(
+        public async Task<ActionResult<PagedResponseDto<UserSearchResultDto>>> SearchUsers(
             [FromQuery] string q,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 12)
         {
             if (string.IsNullOrWhiteSpace(q))
-                return Ok(Array.Empty<UserSearchResultDto>());
+                return Ok(PagedResponseDto<UserSearchResultDto>.Create(Array.Empty<UserSearchResultDto>(), 1, pageSize, 0));
 
-            var results = await _usersService.SearchUsersAsync(q, cancellationToken);
+            var results = await _usersService.SearchUsersAsync(q, page, pageSize, cancellationToken);
             return Ok(results);
         }
 

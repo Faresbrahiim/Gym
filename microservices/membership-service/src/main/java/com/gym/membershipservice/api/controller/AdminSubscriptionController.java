@@ -1,6 +1,8 @@
 package com.gym.membershipservice.api.controller;
 
+import com.gym.membershipservice.application.dto.Subscription.AdminSubscriptionSummaryDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,8 +25,18 @@ public class AdminSubscriptionController {
     }
 
     @GetMapping
-    public List<SubscriptionResponseDTO> getAll() {
-        return subscriptionService.getAllSubscriptions();
+    public PagedResponseDTO<SubscriptionResponseDTO> getAll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "ALL") String status,
+            @RequestParam(required = false) String search
+    ) {
+        return subscriptionService.getAllSubscriptions(page, pageSize, status, search);
+    }
+
+    @GetMapping("/summary")
+    public AdminSubscriptionSummaryDTO getSummary() {
+        return subscriptionService.getAdminSubscriptionSummary();
     }
 
     @GetMapping("/users/{userId}")

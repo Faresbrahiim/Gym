@@ -1,0 +1,8 @@
+vendor/
+var/
+.env
+.env.local
+.env.*.local
+public/bundles/
+public/uploads/
+.git/

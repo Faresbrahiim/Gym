@@ -4,8 +4,10 @@ import com.gym.membershipservice.api.exception.BadRequestException;
 import com.gym.membershipservice.api.exception.ConflictException;
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.api.mapper.SubscriptionMapper;
+import com.gym.membershipservice.application.dto.Subscription.AdminSubscriptionSummaryDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.dto.kafka.SubscriptionCreatedEvent;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
@@ -19,6 +21,10 @@ import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import com.gym.membershipservice.infrastructure.repository.UserMembershipRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,8 +75,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId) {
-        return historyService.getHistoryForUser(userId);
+    public SubscriptionResponseDTO getUserSubscriptionById(UUID userId, UUID subscriptionId) {
+        return SubscriptionMapper.toDTO(findOwnedAndAutoExpire(userId, subscriptionId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponseDTO<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId, int page, int pageSize) {
+        return historyService.getHistoryForUser(userId, page, pageSize);
     }
 
     @Override
@@ -89,6 +101,43 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public PagedResponseDTO<SubscriptionResponseDTO> getAllSubscriptions(int page, int pageSize, String statusFilter, String search) {
+        int safePage = Math.max(page, 1);
+        int safePageSize = Math.max(pageSize, 1);
+        Pageable pageable = PageRequest.of(safePage - 1, safePageSize);
+
+        Specification<Subscription> specification = buildAdminSubscriptionSpecification(statusFilter, search);
+        Page<Subscription> subsPage = subscriptionRepository.findAll(specification, pageable);
+
+        Set<UUID> userIds = subsPage.getContent().stream()
+                .map(Subscription::getUserId)
+                .collect(Collectors.toSet());
+
+        Map<UUID, String> emailMap = userIds.isEmpty()
+                ? Map.of()
+                : userMembershipRepository.findByUserIdIn(userIds).stream()
+                .collect(Collectors.toMap(UserMembership::getUserId, um -> um.getEmail() != null ? um.getEmail() : ""));
+
+        List<SubscriptionResponseDTO> items = subsPage.getContent().stream()
+                .map(s -> SubscriptionMapper.toDTO(s, emailMap.getOrDefault(s.getUserId(), null)))
+                .toList();
+
+        return PagedResponseDTO.of(items, safePage, safePageSize, subsPage.getTotalElements());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AdminSubscriptionSummaryDTO getAdminSubscriptionSummary() {
+        return new AdminSubscriptionSummaryDTO(
+                subscriptionRepository.count(),
+                subscriptionRepository.countByStatus(SubscriptionStatus.ACTIVE),
+                subscriptionRepository.countByStatusIn(List.of(SubscriptionStatus.PAUSE_REQUESTED, SubscriptionStatus.CANCEL_REQUESTED)),
+                subscriptionRepository.countByStatusIn(List.of(SubscriptionStatus.PAYMENT_FAILED, SubscriptionStatus.EXPIRED))
+        );
+    }
+
+    @Override
     public SubscriptionResponseDTO getSubscriptionById(UUID subscriptionId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
         return SubscriptionMapper.toDTO(sub);
@@ -97,6 +146,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // internal helper — returns entity (used within this service only)
     private Subscription findAndAutoExpire(UUID subscriptionId) {
         Subscription sub = subscriptionRepository.findById(subscriptionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+
+        if (sub.getEndDate() != null &&
+                sub.getEndDate().isBefore(LocalDateTime.now()) &&
+                sub.getStatus() == SubscriptionStatus.ACTIVE) {
+            sub.setStatus(SubscriptionStatus.EXPIRED);
+            subscriptionRepository.save(sub);
+        }
+        return sub;
+    }
+
+    private Subscription findOwnedAndAutoExpire(UUID userId, UUID subscriptionId) {
+        Subscription sub = subscriptionRepository.findByIdAndUserId(subscriptionId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
 
         if (sub.getEndDate() != null &&
@@ -151,6 +213,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         boolean activateImmediately = !isPaid || paymentDevMode;
         sub.setStatus(activateImmediately ? SubscriptionStatus.ACTIVE : SubscriptionStatus.PENDING_PAYMENT);
+        sub.setPendingPaymentStartedAt(activateImmediately ? null : now);
         sub.setEndDate(hasFixedDuration ? now.plusDays(plan.getDurationInDays()) : null);
 
         Subscription saved = subscriptionRepository.save(sub);
@@ -178,6 +241,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional
+    public SubscriptionResponseDTO cancelSubscription(UUID userId, UUID subscriptionId) {
+        findOwnedAndAutoExpire(userId, subscriptionId);
+        return cancelSubscription(subscriptionId);
+    }
+
+    @Override
+    @Transactional
     public SubscriptionResponseDTO cancelSubscription(UUID subscriptionId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
 
@@ -190,7 +260,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         LocalDateTime now = LocalDateTime.now();
         if (sub.getStartDate() != null && sub.getStartDate().plusDays(2).isBefore(now)) {
-            throw new BadRequestException("Cannot cancel before 2 days");
+            throw new BadRequestException("Cannot cancel after 2 days have passed");
         }
 
         SubscriptionStatus previous = sub.getStatus();
@@ -206,6 +276,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // =========================
     // PAUSE / APPROVE / REJECT
     // =========================
+
+    @Override
+    @Transactional
+    public SubscriptionResponseDTO pauseSubscription(UUID userId, UUID subscriptionId) {
+        findOwnedAndAutoExpire(userId, subscriptionId);
+        return pauseSubscription(subscriptionId);
+    }
 
     @Override
     @Transactional
@@ -266,6 +343,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional
+    public SubscriptionResponseDTO resumeSubscription(UUID userId, UUID subscriptionId) {
+        findOwnedAndAutoExpire(userId, subscriptionId);
+        return resumeSubscription(subscriptionId);
+    }
+
+    @Override
+    @Transactional
     public SubscriptionResponseDTO resumeSubscription(UUID subscriptionId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.PAUSED) {
@@ -285,6 +369,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     // =========================
     // RENEW / CHANGE PLAN
     // =========================
+
+    @Override
+    @Transactional
+    public SubscriptionResponseDTO renewSubscription(UUID userId, UUID subscriptionId) {
+        findOwnedAndAutoExpire(userId, subscriptionId);
+        return renewSubscription(subscriptionId);
+    }
 
     @Override
     @Transactional
@@ -320,11 +411,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional
+    public SubscriptionResponseDTO changePlan(UUID userId, UUID subscriptionId, UUID newPlanId) {
+        findOwnedAndAutoExpire(userId, subscriptionId);
+        return changePlan(subscriptionId, newPlanId);
+    }
+
+    @Override
+    @Transactional
     public SubscriptionResponseDTO changePlan(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
-        if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
-            throw new BadRequestException("Only ACTIVE subscriptions can change plan");
-        }
+        ensurePlanStatusAllowsChange(sub);
 
         Plan newPlan = planRepository.findById(newPlanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
@@ -332,6 +428,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (newPlan.getStatus() == PlanStatus.INACTIVE) {
             throw new BadRequestException("Cannot switch to inactive plan");
         }
+
+        ensureSelfServicePlanSwitchAllowed(sub);
 
         validatePlanDuration(newPlan);
 
@@ -342,17 +440,26 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         boolean hasFixedDuration = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
         boolean isPaid = newPlan.getPrice() != null && newPlan.getPrice() > 0;
 
-        sub.setPlan(newPlan);
-        sub.setStartDate(now);
-        sub.setEndDate(hasFixedDuration ? now.plusDays(newPlan.getDurationInDays()) : null);
-
         // If switching to a paid plan and dev mode is off, require payment
         boolean activateImmediately = !isPaid || paymentDevMode;
-        sub.setStatus(activateImmediately ? SubscriptionStatus.ACTIVE : SubscriptionStatus.PENDING_PAYMENT);
+        if (activateImmediately) {
+            sub.setPlan(newPlan);
+            sub.setPendingPlan(null);
+            sub.setStartDate(now);
+            sub.setEndDate(hasFixedDuration ? now.plusDays(newPlan.getDurationInDays()) : null);
+            sub.setStatus(SubscriptionStatus.ACTIVE);
+            sub.setPendingPaymentStartedAt(null);
+        } else {
+            sub.setPendingPlan(newPlan);
+            sub.setStatus(SubscriptionStatus.PENDING_PAYMENT);
+            sub.setPendingPaymentStartedAt(now);
+        }
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, previous, saved.getStatus(), null,
-                "Plan changed from " + oldPlanName + " to " + newPlan.getName());
+                activateImmediately
+                        ? "Plan changed from " + oldPlanName + " to " + newPlan.getName()
+                        : "Plan change requested from " + oldPlanName + " to " + newPlan.getName() + " - awaiting payment");
 
         return SubscriptionMapper.toDTO(saved);
     }
@@ -363,48 +470,28 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     @Transactional
+    public SubscriptionResponseDTO upgradeSubscription(UUID userId, UUID subscriptionId, UUID newPlanId) {
+        findOwnedAndAutoExpire(userId, subscriptionId);
+        return upgradeSubscription(subscriptionId, newPlanId);
+    }
+
+    @Override
+    @Transactional
     public SubscriptionResponseDTO upgradeSubscription(UUID subscriptionId, UUID newPlanId) {
-        Subscription sub = findAndAutoExpire(subscriptionId);
-        Plan newPlan = planRepository.findById(newPlanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
+        throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
+    }
 
-        if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) <= 0) {
-            throw new BadRequestException("New plan must be more expensive");
-        }
-
-        boolean upgradeHasFixed = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
-        SubscriptionStatus previous = sub.getStatus();
-        sub.setPlan(newPlan);
-        sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(upgradeHasFixed ? LocalDateTime.now().plusDays(newPlan.getDurationInDays()) : null);
-
-        Subscription saved = subscriptionRepository.save(sub);
-        historyService.recordChange(saved, previous, previous, null, "Upgraded to " + newPlan.getName());
-
-        return SubscriptionMapper.toDTO(saved);
+    @Override
+    @Transactional
+    public SubscriptionResponseDTO downgradeSubscription(UUID userId, UUID subscriptionId, UUID newPlanId) {
+        findOwnedAndAutoExpire(userId, subscriptionId);
+        return downgradeSubscription(subscriptionId, newPlanId);
     }
 
     @Override
     @Transactional
     public SubscriptionResponseDTO downgradeSubscription(UUID subscriptionId, UUID newPlanId) {
-        Subscription sub = findAndAutoExpire(subscriptionId);
-        Plan newPlan = planRepository.findById(newPlanId)
-                .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
-
-        if (newPlan.getPrice().compareTo(sub.getPlan().getPrice()) >= 0) {
-            throw new BadRequestException("New plan must be cheaper");
-        }
-
-        boolean downgradeHasFixed = newPlan.getDurationInDays() != null && newPlan.getDurationInDays() > 0;
-        SubscriptionStatus previous = sub.getStatus();
-        sub.setPlan(newPlan);
-        sub.setStartDate(LocalDateTime.now());
-        sub.setEndDate(downgradeHasFixed ? LocalDateTime.now().plusDays(newPlan.getDurationInDays()) : null);
-
-        Subscription saved = subscriptionRepository.save(sub);
-        historyService.recordChange(saved, previous, previous, null, "Downgraded to " + newPlan.getName());
-
-        return SubscriptionMapper.toDTO(saved);
+        throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
     }
 
     // =========================
@@ -506,5 +593,78 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if (plan.getDurationInDays() != null && plan.getDurationInDays() < 0) {
             throw new BadRequestException("Invalid plan duration");
         }
+    }
+
+    private void ensurePlanChangeAllowed(Subscription subscription) {
+        throw new UnsupportedOperationException("Deprecated helper");
+    }
+
+    private void ensurePlanStatusAllowsChange(Subscription subscription) {
+        SubscriptionStatus status = subscription.getStatus();
+        if (status == SubscriptionStatus.ACTIVE) {
+            return;
+        }
+
+        throw switch (status) {
+            case PENDING_PAYMENT -> new BadRequestException("Plan changes are unavailable while payment is pending");
+            case PAYMENT_FAILED -> new BadRequestException("Plan changes are unavailable until the payment issue is resolved");
+            case PAUSED -> new BadRequestException("Resume your membership before changing plans");
+            case FROZEN -> new BadRequestException("Plan changes are unavailable while the membership is frozen");
+            default -> new BadRequestException("Only ACTIVE subscriptions can change plan");
+        };
+    }
+
+    private void ensureSelfServicePlanSwitchAllowed(Subscription subscription) {
+        Double currentPrice = subscription.getPlan().getPrice();
+        boolean currentPlanIsFree = currentPrice == null || currentPrice == 0;
+        if (currentPlanIsFree) {
+            return;
+        }
+
+        throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
+    }
+
+    private Specification<Subscription> buildAdminSubscriptionSpecification(String statusFilter, String search) {
+        Specification<Subscription> specification = (root, query, cb) -> cb.conjunction();
+
+        List<SubscriptionStatus> statuses = resolveAdminStatuses(statusFilter);
+        if (!statuses.isEmpty()) {
+            specification = specification.and((root, query, cb) -> root.get("status").in(statuses));
+        }
+
+        String normalizedSearch = search != null ? search.trim().toLowerCase() : "";
+        if (!normalizedSearch.isBlank()) {
+            List<UUID> matchedUserIds = userMembershipRepository.findByEmailContainingIgnoreCase(normalizedSearch).stream()
+                    .map(UserMembership::getUserId)
+                    .toList();
+
+            specification = specification.and((root, query, cb) -> {
+                var planNameMatch = cb.like(cb.lower(root.get("plan").get("name")), "%" + normalizedSearch + "%");
+                if (matchedUserIds.isEmpty()) {
+                    return planNameMatch;
+                }
+                return cb.or(planNameMatch, root.get("userId").in(matchedUserIds));
+            });
+        }
+
+        return specification;
+    }
+
+    private List<SubscriptionStatus> resolveAdminStatuses(String statusFilter) {
+        if (statusFilter == null || statusFilter.isBlank() || "ALL".equalsIgnoreCase(statusFilter)) {
+            return List.of();
+        }
+
+        return switch (statusFilter.toUpperCase()) {
+            case "PENDING" -> List.of(SubscriptionStatus.PAUSE_REQUESTED, SubscriptionStatus.CANCEL_REQUESTED);
+            case "ISSUES" -> List.of(SubscriptionStatus.PAYMENT_FAILED, SubscriptionStatus.EXPIRED);
+            default -> {
+                try {
+                    yield List.of(SubscriptionStatus.valueOf(statusFilter.toUpperCase()));
+                } catch (IllegalArgumentException ex) {
+                    throw new BadRequestException("Unknown subscription status filter");
+                }
+            }
+        };
     }
 }

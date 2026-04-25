@@ -11,8 +11,10 @@ class PaymentEntityMapper {
         PaymentJpaEntity entity = new PaymentJpaEntity();
         entity.setId(payment.getId());
         entity.setUserId(payment.getUserId());
+        entity.setTargetType(payment.getTargetType());
         entity.setSubscriptionId(payment.getSubscriptionId());
         entity.setPlanId(payment.getPlanId());
+        entity.setOrderId(payment.getOrderId());
         entity.setAmount(payment.getAmount().amount());
         entity.setCurrency(payment.getAmount().currency());
         entity.setStatus(payment.getStatus());
@@ -27,8 +29,10 @@ class PaymentEntityMapper {
         return new Payment(
                 entity.getId(),
                 entity.getUserId(),
+                entity.getTargetType(),
                 entity.getSubscriptionId(),
                 entity.getPlanId(),
+                entity.getOrderId(),
                 new Money(entity.getAmount(), entity.getCurrency()),
                 entity.getStatus(),
                 entity.getStripePaymentIntentId(),

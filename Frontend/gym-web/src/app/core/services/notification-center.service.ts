@@ -101,6 +101,7 @@ export class NotificationCenterService {
 
       this.upsert(notification);
       this.syncUnreadCount();
+      this.refreshCount().subscribe({ error: () => undefined });
     });
   }
 

@@ -1,0 +1,68 @@
+.pagination-bar {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination-bar__summary {
+  color: #6f838f;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pagination-bar__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pagination-bar__button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid #dfe9ec;
+  background: #fff;
+  color: #17313a;
+  font-size: 14px;
+  font-weight: 700;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.pagination-bar__button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #d0e2e7;
+  box-shadow: 0 12px 24px rgba(17, 38, 47, 0.08);
+}
+
+.pagination-bar__button--ghost {
+  background: #f6fafb;
+}
+
+.pagination-bar__button--active {
+  border-color: #177c82;
+  background: linear-gradient(135deg, #177c82 0%, #0f646a 100%);
+  color: #fff;
+  box-shadow: 0 14px 24px rgba(23, 124, 130, 0.18);
+}
+
+.pagination-bar__button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 767.98px) {
+  .pagination-bar,
+  .pagination-bar__controls {
+    width: 100%;
+  }
+
+  .pagination-bar__controls {
+    justify-content: flex-start;
+  }
+}

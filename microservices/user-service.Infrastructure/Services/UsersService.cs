@@ -5,7 +5,7 @@ using user_service.Application.Mappers;
 
 public class UsersService : IUsersService
 {
-    private const int SearchMaxResults  = 20;
+    private const int SearchMaxPageSize = 24;
     private const int SearchMinQueryLen = 2;
 
     private readonly IUserRepository _userRepository;
@@ -38,19 +38,31 @@ public class UsersService : IUsersService
             .ToList();
     }
 
-    public async Task<IEnumerable<UserSearchResultDto>> SearchUsersAsync(
+    public async Task<PagedResponseDto<UserSearchResultDto>> SearchUsersAsync(
         string query,
+        int page,
+        int pageSize,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(query) || query.Trim().Length < SearchMinQueryLen)
-            return [];
+            return PagedResponseDto<UserSearchResultDto>.Create([], 1, pageSize, 0);
 
-        var users = await _userRepository.SearchAsync(
+        var safePage = Math.Max(page, 1);
+        var safePageSize = Math.Clamp(pageSize, 1, SearchMaxPageSize);
+        var skip = (safePage - 1) * safePageSize;
+
+        var (users, totalCount) = await _userRepository.SearchAsync(
             query.Trim(),
-            SearchMaxResults,
+            skip,
+            safePageSize,
             cancellationToken);
 
-        return users.Select(UserMapper.ToSearchResultDto).ToList();
+        return PagedResponseDto<UserSearchResultDto>.Create(
+            users.Select(UserMapper.ToSearchResultDto),
+            safePage,
+            safePageSize,
+            totalCount
+        );
     }
 
     public async Task<IEnumerable<UserContactDto>> GetContactsByIdsAsync(

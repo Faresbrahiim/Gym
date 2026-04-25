@@ -23,11 +23,11 @@
   <div class="breadcrumb breadcrumb-list mb-0">
     <span class="primary-right-round"></span>
     <div class="container">
-      <h1 class="text-white">{{ isChangingPlan ? 'Change Plan' : 'Checkout' }}</h1>
+      <h1 class="text-white">{{ isChangingPlan ? 'Upgrade Membership' : 'Checkout' }}</h1>
       <ul>
         <li><a routerLink="/home">Home</a></li>
         <li><a routerLink="/membership/plans">Plans</a></li>
-        <li>{{ isChangingPlan ? 'Change Plan' : 'Checkout' }}</li>
+        <li>{{ isChangingPlan ? 'Upgrade Membership' : 'Checkout' }}</li>
       </ul>
     </div>
   </div>
@@ -95,7 +95,7 @@
 
             <div class="order-header">
               <i class="feather-shopping-cart me-2"></i>
-              <span>{{ isChangingPlan ? 'Switch Summary' : 'Order Summary' }}</span>
+              <span>{{ isChangingPlan ? 'Upgrade Summary' : 'Order Summary' }}</span>
             </div>
 
             <!-- Line items -->
@@ -142,12 +142,12 @@
               @if (isChangingPlan) {
                 <div class="checkout-notice info">
                   <i class="feather-refresh-cw"></i>
-                  <p>Your current plan is replaced with <strong>{{ plan()!.name }}</strong> right away.</p>
+                  <p>Your free access stays active while we process the payment for <strong>{{ plan()!.name }}</strong>. The new membership is finalized only after confirmation is received.</p>
                 </div>
               } @else {
                 <div class="checkout-notice info">
                   <i class="feather-zap"></i>
-                  <p>You'll be subscribed to <strong>{{ plan()!.name }}</strong> immediately after confirmation.</p>
+                  <p>After you submit payment, we verify it and finalize <strong>{{ plan()!.name }}</strong> as soon as confirmation is received.</p>
                 </div>
               }
             }

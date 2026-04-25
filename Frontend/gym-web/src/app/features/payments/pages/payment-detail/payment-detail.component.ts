@@ -10,6 +10,7 @@ import { PlanService } from '../../../membership/services/plan.service';
 import { CurrentUserService } from '../../../../core/services/current-user.service';
 import { PaymentResponse } from '../../models/payment.model';
 import { PaymentStatus } from '../../models/payment-status.enum';
+import { PaymentTargetType } from '../../models/payment-target-type.enum';
 import { Plan } from '../../../membership/models/plan.model';
 import { UserMe } from '../../../profile/models/user-me.model';
 import { PaymentStatusBadgeComponent } from '../../components/payment-status-badge/payment-status-badge.component';
@@ -52,18 +53,24 @@ export class PaymentDetailComponent implements OnInit {
 
     this.paymentService.getPaymentById(paymentId).pipe(
       switchMap(payment => {
-        if (!payment) {
-          throw new Error('Payment not found');
+        if (payment.targetType === PaymentTargetType.ORDER) {
+          this.router.navigate(payment.orderId ? ['/orders', payment.orderId] : ['/orders']);
+          return of(null);
         }
+
+        if (!payment.planId) {
+          throw new Error('Membership payment is missing its plan reference');
+        }
+
         return forkJoin({
-          payment: of(payment),
+          payment: of(payment as PaymentResponse),
           plan: this.planService.getPlan(payment.planId),
           user: this.currentUserService.getMe()
         });
       }),
       takeUntilDestroyed(this.destroyRef),
       catchError(err => {
-        if (err.message === 'Payment not found') {
+        if (err?.status === 404 || err?.message === 'Payment not found') {
           this.router.navigate(['/payments']);
         } else {
           this.errorMessage.set('Failed to load payment details. Please try again later.');
@@ -123,4 +130,3 @@ export class PaymentDetailComponent implements OnInit {
     setTimeout(() => { win.print(); win.close(); }, 800);
   }
 }
-

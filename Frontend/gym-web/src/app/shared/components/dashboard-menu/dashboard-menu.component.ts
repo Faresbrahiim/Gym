@@ -24,6 +24,7 @@ export class DashboardMenuComponent {
     { label: 'Security', route: '/profile/security', icon: 'assets/img/icons/sessions.svg' },
     { label: 'Membership', route: '/membership', icon: 'assets/img/icons/wallet-icon.svg', exact: true },
     { label: 'History', route: '/membership/history', icon: 'assets/img/icons/booking-icon.svg', exact: true },
+    { label: 'Orders', route: '/orders', icon: 'assets/img/icons/booking-icon.svg', exact: false },
     { label: 'Payments', route: '/payments', icon: 'assets/img/icons/invoice-icon.svg', exact: false }
   ];
 

@@ -1,8 +1,10 @@
 package com.gym.payment.adapter.out.persistence;
 
+import com.gym.payment.domain.model.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,4 +17,6 @@ interface SpringDataPaymentRepository extends JpaRepository<PaymentJpaEntity, UU
     List<PaymentJpaEntity> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     Optional<PaymentJpaEntity> findTopBySubscriptionIdOrderByCreatedAtDesc(UUID subscriptionId);
+
+    List<PaymentJpaEntity> findByStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime cutoff);
 }

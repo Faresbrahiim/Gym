@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -19,6 +20,15 @@ import java.util.UUID;
 public class NotificationService {
 
     private static final String CHAT_NOTIFICATION_TYPE = "CHAT_MESSAGE_RECEIVED";
+    private static final String PAYMENT_COMPLETED_NOTIFICATION_TYPE = "PAYMENT_COMPLETED";
+    private static final String PAYMENT_FAILED_NOTIFICATION_TYPE = "PAYMENT_FAILED";
+    private static final String PAYMENT_EXPIRED_NOTIFICATION_TYPE = "PAYMENT_EXPIRED";
+    private static final Set<String> SUPPORTED_NOTIFICATION_TYPES = Set.of(
+            CHAT_NOTIFICATION_TYPE,
+            PAYMENT_COMPLETED_NOTIFICATION_TYPE,
+            PAYMENT_FAILED_NOTIFICATION_TYPE,
+            PAYMENT_EXPIRED_NOTIFICATION_TYPE
+    );
 
     private final NotificationRepository notificationRepository;
     private final WebSocketPublisher webSocketPublisher;
@@ -63,7 +73,7 @@ public class NotificationService {
     public List<NotificationResponse> getMyNotifications(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
-                .filter(this::isChatNotification)
+                .filter(this::isSupportedNotification)
                 .map(this::toResponse)
                 .toList();
     }
@@ -72,7 +82,7 @@ public class NotificationService {
     public long getUnreadCount(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
-                .filter(this::isChatNotification)
+                .filter(this::isSupportedNotification)
                 .filter(n -> n.getStatus() == NotificationStatus.UNREAD)
                 .count();
     }
@@ -91,7 +101,7 @@ public class NotificationService {
     public void markAllAsRead(UUID userId) {
         List<Notification> unread = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
-                .filter(this::isChatNotification)
+                .filter(this::isSupportedNotification)
                 .filter(n -> n.getStatus() == NotificationStatus.UNREAD)
                 .toList();
 
@@ -141,7 +151,7 @@ public class NotificationService {
         );
     }
 
-    private boolean isChatNotification(Notification notification) {
-        return CHAT_NOTIFICATION_TYPE.equals(notification.getType());
+    private boolean isSupportedNotification(Notification notification) {
+        return SUPPORTED_NOTIFICATION_TYPES.contains(notification.getType());
     }
 }

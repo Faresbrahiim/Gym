@@ -9,6 +9,8 @@ import com.gym.membershipservice.application.port.SubscriptionHistoryService;
 import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
+import com.gym.membershipservice.infrastructure.repository.UserMembershipRepository;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,12 @@ class SubscriptionServiceImplTest {
 
     @Mock
     private PlanServiceImpl planService;
+
+    @Mock
+    private KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Mock
+    private UserMembershipRepository userMembershipRepository;
 
     @InjectMocks
     private SubscriptionServiceImpl service;
@@ -190,7 +198,9 @@ class SubscriptionServiceImplTest {
     // =========================
 
     @Test
-    void shouldChangePlan() {
+    void shouldAllowChangePlanFromFreeToPaid() {
+        subscription.getPlan().setPrice(0.0);
+
         Plan newPlan = new Plan();
         newPlan.setId(UUID.randomUUID());
         newPlan.setName("Premium");
@@ -207,8 +217,30 @@ class SubscriptionServiceImplTest {
 
         SubscriptionResponseDTO result = service.changePlan(subId, newPlan.getId());
 
-        assertEquals(newPlan.getId(), result.getPlanId());
-        assertEquals("Premium", result.getPlanName());
+        assertEquals(plan.getId(), result.getPlanId());
+        assertEquals("Basic", result.getPlanName());
+        assertEquals(SubscriptionStatus.PENDING_PAYMENT, result.getStatus());
+        assertEquals(newPlan, subscription.getPendingPlan());
+    }
+
+    @Test
+    void shouldBlockChangePlanBetweenPaidPlans() {
+        Plan newPlan = new Plan();
+        newPlan.setId(UUID.randomUUID());
+        newPlan.setName("Premium");
+        newPlan.setPrice(100.0);
+        newPlan.setDurationInDays(30);
+        newPlan.setStatus(PlanStatus.ACTIVE);
+
+        when(subscriptionRepository.findById(subId))
+                .thenReturn(Optional.of(subscription));
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> service.changePlan(subId, newPlan.getId()));
+
+        assertEquals("Self-service plan changes between paid plans are not available right now", ex.getMessage());
+        verify(planRepository).findById(newPlan.getId());
+        verify(subscriptionRepository, never()).save(any());
     }
 
     // =========================
@@ -216,40 +248,38 @@ class SubscriptionServiceImplTest {
     // =========================
 
     @Test
-    void shouldUpgradePlan() {
+    void shouldAlwaysBlockSelfServiceUpgrade() {
         Plan expensive = new Plan();
         expensive.setId(UUID.randomUUID());
         expensive.setName("VIP");
         expensive.setPrice(200.0);
         expensive.setDurationInDays(30);
 
-        when(subscriptionRepository.findById(subId))
-                .thenReturn(Optional.of(subscription));
-        when(planRepository.findById(expensive.getId()))
-                .thenReturn(Optional.of(expensive));
-        when(subscriptionRepository.save(any()))
-                .thenAnswer(inv -> inv.getArgument(0));
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> service.upgradeSubscription(subId, expensive.getId()));
 
-        SubscriptionResponseDTO result = service.upgradeSubscription(subId, expensive.getId());
-
-        assertEquals(expensive.getId(), result.getPlanId());
-        assertEquals("VIP", result.getPlanName());
+        assertEquals("Self-service plan changes between paid plans are not available right now", ex.getMessage());
+        verify(planRepository, never()).findById(any());
+        verify(subscriptionRepository, never()).save(any());
     }
 
     @Test
-    void shouldFailUpgrade_whenNewPlanCheaper() {
+    void shouldAlwaysBlockSelfServiceDowngrade() {
         Plan cheaper = new Plan();
         cheaper.setId(UUID.randomUUID());
         cheaper.setPrice(10.0);
         cheaper.setDurationInDays(30);
+        cheaper.setStatus(PlanStatus.ACTIVE);
 
         when(subscriptionRepository.findById(subId))
                 .thenReturn(Optional.of(subscription));
-        when(planRepository.findById(cheaper.getId()))
-                .thenReturn(Optional.of(cheaper));
 
-        assertThrows(BadRequestException.class,
-                () -> service.upgradeSubscription(subId, cheaper.getId()));
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> service.downgradeSubscription(subId, cheaper.getId()));
+
+        assertEquals("Self-service plan changes between paid plans are not available right now", ex.getMessage());
+        verify(planRepository, never()).findById(any());
+        verify(subscriptionRepository, never()).save(any());
     }
 
     // =========================

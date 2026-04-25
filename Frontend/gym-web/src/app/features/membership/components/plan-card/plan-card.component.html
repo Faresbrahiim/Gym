@@ -32,10 +32,13 @@
       <button
         type="button"
         class="btn viewdetails-btn"
-        [disabled]="isCurrentPlan"
+        [disabled]="isCurrentPlan || isSelectionBlocked"
         (click)="onSelect()">
-        {{ isCurrentPlan ? 'Current Plan' : 'Choose Plan' }}
+        {{ isCurrentPlan ? 'Current Plan' : (isSelectionBlocked ? 'Unavailable Right Now' : 'Choose Plan') }}
       </button>
+      @if (!isCurrentPlan && blockedReason) {
+        <p class="text-muted small mt-2 mb-0">{{ blockedReason }}</p>
+      }
     </div>
   </div>
 </div>

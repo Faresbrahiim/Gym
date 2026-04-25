@@ -21,7 +21,7 @@ public class InternalPaymentController {
     public ResponseEntity<PaymentResponse> getLatestPayment(@PathVariable UUID subscriptionId) {
         return getLatestSubscriptionPaymentUseCase.executeForSubscription(subscriptionId)
                 .map(r -> ResponseEntity.ok(new PaymentResponse(
-                        r.id(), r.userId(), r.subscriptionId(), r.planId(),
+                        r.id(), r.userId(), r.targetType(), r.subscriptionId(), r.planId(), r.orderId(),
                         r.amount(), r.currency(), r.status(),
                         r.stripePaymentIntentId(), r.failureReason(),
                         r.createdAt(), r.completedAt()

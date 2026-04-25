@@ -147,14 +147,18 @@
                 </div>
               }
 
-              <div class="action-btn-group">
-                <app-loading-button
-                  [loading]="false"
-                  cssClass="btn btn-primary"
-                  (click)="onChangePlan()">
-                  <i class="feather-refresh-cw me-2"></i>Change Plan
-                </app-loading-button>
-                @if (!isFree()) {
+              @if (!isFree()) {
+                <div class="status-notice info mb-4">
+                  <i class="feather-lock"></i>
+                  <div>
+                    <p class="notice-title">Plan Changes Unavailable</p>
+                    <p class="notice-text">Your paid membership stays active, but switching between paid plans is not available right now.</p>
+                  </div>
+                </div>
+              }
+
+              @if (!isFree()) {
+                <div class="action-btn-group">
                   <app-loading-button
                     [loading]="isPausing()"
                     cssClass="btn btn-outline-secondary"
@@ -167,8 +171,8 @@
                     (click)="onCancel()">
                     <i class="feather-x-circle me-2"></i>Cancel
                   </app-loading-button>
-                }
-              </div>
+                </div>
+              }
             }
 
             @case ('PENDING_PAYMENT') {
@@ -176,7 +180,7 @@
                 <i class="feather-loader"></i>
                 <div>
                   <p class="notice-title">Payment Processing</p>
-                  <p class="notice-text">Your payment is being processed. This usually takes just a moment.</p>
+                  <p class="notice-text">Your payment is being processed. Your membership will only switch after the payment is confirmed.</p>
                 </div>
               </div>
               <a [routerLink]="['/membership/status', subscription()!.subscriptionId]"
@@ -190,12 +194,9 @@
                 <i class="feather-alert-circle"></i>
                 <div>
                   <p class="notice-title">Payment Failed</p>
-                  <p class="notice-text">We couldn't process your payment. Please try a different plan or contact support.</p>
+                  <p class="notice-text">We couldn't process your payment. Plan changes are unavailable until the payment issue is resolved.</p>
                 </div>
               </div>
-              <a routerLink="/membership/plans" class="btn btn-primary" style="border-radius:10px;font-weight:600;">
-                <i class="feather-refresh-cw me-2"></i>Pick a Plan
-              </a>
             }
 
             @case ('PAUSED') {
