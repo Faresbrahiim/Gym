@@ -3,19 +3,19 @@ package com.gym.notificationservice.adapter.in.kafka;
 import com.gym.notificationservice.adapter.in.kafka.dto.PaymentExpiredMessage;
 import com.gym.notificationservice.adapter.in.kafka.dto.PaymentFailedMessage;
 import com.gym.notificationservice.application.NotificationService;
-import lombok.extern.slf4j.Slf4j;
+import com.gym.notificationservice.domain.NotificationResourceType;
+import com.gym.notificationservice.domain.NotificationType;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-@Slf4j
 @Component
 public class PaymentFailureEventListener {
 
-    private static final String PAYMENT_FAILED_TYPE = "PAYMENT_FAILED";
-    private static final String PAYMENT_EXPIRED_TYPE = "PAYMENT_EXPIRED";
-    private static final String PAYMENT_RESOURCE_TYPE = "SUBSCRIPTION";
+    private static final Logger log = LoggerFactory.getLogger(PaymentFailureEventListener.class);
 
     private final NotificationService notificationService;
 
@@ -37,8 +37,8 @@ public class PaymentFailureEventListener {
                     userId,
                     "Payment Failed",
                     "We couldn't confirm your membership payment. Please review your membership and try again.",
-                    PAYMENT_FAILED_TYPE,
-                    PAYMENT_RESOURCE_TYPE,
+                    NotificationType.PAYMENT_FAILED,
+                    NotificationResourceType.SUBSCRIPTION,
                     subscriptionId,
                     "/membership"
             );
@@ -61,8 +61,8 @@ public class PaymentFailureEventListener {
                     userId,
                     "Payment Expired",
                     "Your membership payment was not confirmed in time. Your current access was kept unchanged.",
-                    PAYMENT_EXPIRED_TYPE,
-                    PAYMENT_RESOURCE_TYPE,
+                    NotificationType.PAYMENT_EXPIRED,
+                    NotificationResourceType.SUBSCRIPTION,
                     subscriptionId,
                     "/membership"
             );

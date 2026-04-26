@@ -1,54 +1,41 @@
 package com.gym.notificationservice.application;
 
-import com.gym.notificationservice.adapter.in.web.dto.NotificationResponse;
-import com.gym.notificationservice.adapter.out.persistence.NotificationRepository;
-import com.gym.notificationservice.adapter.out.websocket.WebSocketPublisher;
+import com.gym.notificationservice.application.port.out.NotificationRealtimePublisher;
+import com.gym.notificationservice.application.port.out.NotificationStore;
 import com.gym.notificationservice.domain.Notification;
+import com.gym.notificationservice.domain.NotificationResourceType;
 import com.gym.notificationservice.domain.NotificationStatus;
-import org.springframework.http.HttpStatus;
+import com.gym.notificationservice.domain.NotificationType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
 @Transactional
 public class NotificationService {
 
-    private static final String CHAT_NOTIFICATION_TYPE = "CHAT_MESSAGE_RECEIVED";
-    private static final String PAYMENT_COMPLETED_NOTIFICATION_TYPE = "PAYMENT_COMPLETED";
-    private static final String PAYMENT_FAILED_NOTIFICATION_TYPE = "PAYMENT_FAILED";
-    private static final String PAYMENT_EXPIRED_NOTIFICATION_TYPE = "PAYMENT_EXPIRED";
-    private static final Set<String> SUPPORTED_NOTIFICATION_TYPES = Set.of(
-            CHAT_NOTIFICATION_TYPE,
-            PAYMENT_COMPLETED_NOTIFICATION_TYPE,
-            PAYMENT_FAILED_NOTIFICATION_TYPE,
-            PAYMENT_EXPIRED_NOTIFICATION_TYPE
-    );
+    private final NotificationStore notificationStore;
+    private final NotificationRealtimePublisher notificationRealtimePublisher;
 
-    private final NotificationRepository notificationRepository;
-    private final WebSocketPublisher webSocketPublisher;
-
-    public NotificationService(NotificationRepository notificationRepository,
-                               WebSocketPublisher webSocketPublisher) {
-        this.notificationRepository = notificationRepository;
-        this.webSocketPublisher = webSocketPublisher;
+    public NotificationService(NotificationStore notificationStore,
+                               NotificationRealtimePublisher notificationRealtimePublisher) {
+        this.notificationStore = notificationStore;
+        this.notificationRealtimePublisher = notificationRealtimePublisher;
     }
 
-    public NotificationResponse createNotification(UUID userId, String title, String message, String type) {
+    public Notification createNotification(UUID userId, String title, String message, NotificationType type) {
         return createNotification(userId, title, message, type, null, null, null);
     }
 
-    public NotificationResponse createNotification(
+    public Notification createNotification(
             UUID userId,
             String title,
             String message,
-            String type,
-            String resourceType,
+            NotificationType type,
+            NotificationResourceType resourceType,
             String resourceId,
             String actionUrl
     ) {
@@ -61,49 +48,33 @@ public class NotificationService {
         notification.setResourceId(resourceId);
         notification.setActionUrl(actionUrl);
 
-        Notification saved = notificationRepository.save(notification);
-        NotificationResponse response = toResponse(saved);
-
-        webSocketPublisher.pushNotification(userId, response);
-
-        return response;
+        Notification saved = notificationStore.save(notification);
+        notificationRealtimePublisher.publish(saved);
+        return saved;
     }
 
     @Transactional(readOnly = true)
-    public List<NotificationResponse> getMyNotifications(UUID userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .filter(this::isSupportedNotification)
-                .map(this::toResponse)
-                .toList();
+    public List<Notification> getMyNotifications(UUID userId) {
+        return notificationStore.findAllByUserId(userId);
     }
 
     @Transactional(readOnly = true)
     public long getUnreadCount(UUID userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .filter(this::isSupportedNotification)
-                .filter(n -> n.getStatus() == NotificationStatus.UNREAD)
-                .count();
+        return notificationStore.countByUserIdAndStatus(userId, NotificationStatus.UNREAD);
     }
 
-    public NotificationResponse markAsRead(UUID notificationId, UUID userId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .filter(n -> n.getUserId().equals(userId))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Notification not found"));
+    public Notification markAsRead(UUID notificationId, UUID userId) {
+        Notification notification = notificationStore.findByIdAndUserId(notificationId, userId)
+                .orElseThrow(() -> new NotificationNotFoundException(notificationId, userId));
 
         notification.setStatus(NotificationStatus.READ);
         notification.setReadAt(LocalDateTime.now());
 
-        return toResponse(notificationRepository.save(notification));
+        return notificationStore.save(notification);
     }
 
     public void markAllAsRead(UUID userId) {
-        List<Notification> unread = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .filter(this::isSupportedNotification)
-                .filter(n -> n.getStatus() == NotificationStatus.UNREAD)
-                .toList();
+        List<Notification> unread = notificationStore.findAllByUserIdAndStatus(userId, NotificationStatus.UNREAD);
 
         LocalDateTime now = LocalDateTime.now();
         unread.forEach(n -> {
@@ -111,11 +82,11 @@ public class NotificationService {
             n.setReadAt(now);
         });
 
-        notificationRepository.saveAll(unread);
+        notificationStore.saveAll(unread);
     }
 
-    public void markByResourceAsRead(UUID userId, String resourceType, String resourceId) {
-        List<Notification> unread = notificationRepository.findByUserIdAndStatusAndResourceTypeAndResourceId(
+    public void markByResourceAsRead(UUID userId, NotificationResourceType resourceType, String resourceId) {
+        List<Notification> unread = notificationStore.findByUserIdAndStatusAndResource(
                 userId,
                 NotificationStatus.UNREAD,
                 resourceType,
@@ -132,26 +103,6 @@ public class NotificationService {
             n.setReadAt(now);
         });
 
-        notificationRepository.saveAll(unread);
-    }
-
-    private NotificationResponse toResponse(Notification n) {
-        return new NotificationResponse(
-                n.getId(),
-                n.getUserId(),
-                n.getTitle(),
-                n.getMessage(),
-                n.getType(),
-                n.getResourceType(),
-                n.getResourceId(),
-                n.getActionUrl(),
-                n.getStatus(),
-                n.getCreatedAt(),
-                n.getReadAt()
-        );
-    }
-
-    private boolean isSupportedNotification(Notification notification) {
-        return SUPPORTED_NOTIFICATION_TYPES.contains(notification.getType());
+        notificationStore.saveAll(unread);
     }
 }

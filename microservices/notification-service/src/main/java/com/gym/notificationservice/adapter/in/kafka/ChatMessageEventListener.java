@@ -2,16 +2,17 @@ package com.gym.notificationservice.adapter.in.kafka;
 
 import com.gym.notificationservice.adapter.in.kafka.dto.ChatMessageCreatedMessage;
 import com.gym.notificationservice.application.NotificationService;
-import lombok.extern.slf4j.Slf4j;
+import com.gym.notificationservice.domain.NotificationResourceType;
+import com.gym.notificationservice.domain.NotificationType;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 @Component
 public class ChatMessageEventListener {
 
-    private static final String CHAT_RESOURCE_TYPE = "CONVERSATION";
-    private static final String CHAT_NOTIFICATION_TYPE = "CHAT_MESSAGE_RECEIVED";
+    private static final Logger log = LoggerFactory.getLogger(ChatMessageEventListener.class);
 
     private final NotificationService notificationService;
 
@@ -40,8 +41,8 @@ public class ChatMessageEventListener {
                     recipientUserId,
                     title,
                     body,
-                    CHAT_NOTIFICATION_TYPE,
-                    CHAT_RESOURCE_TYPE,
+                    NotificationType.CHAT_MESSAGE_RECEIVED,
+                    NotificationResourceType.CONVERSATION,
                     message.getConversationId(),
                     "/chat?conversationId=" + message.getConversationId()
             );

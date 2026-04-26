@@ -2,18 +2,19 @@ package com.gym.notificationservice.adapter.in.kafka;
 
 import com.gym.notificationservice.adapter.in.kafka.dto.PaymentCompletedMessage;
 import com.gym.notificationservice.application.NotificationService;
-import lombok.extern.slf4j.Slf4j;
+import com.gym.notificationservice.domain.NotificationResourceType;
+import com.gym.notificationservice.domain.NotificationType;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
-@Slf4j
 @Component
 public class PaymentCompletedEventListener {
 
-    private static final String PAYMENT_COMPLETED_TYPE = "PAYMENT_COMPLETED";
-    private static final String PAYMENT_RESOURCE_TYPE = "SUBSCRIPTION";
+    private static final Logger log = LoggerFactory.getLogger(PaymentCompletedEventListener.class);
 
     private final NotificationService notificationService;
 
@@ -35,8 +36,8 @@ public class PaymentCompletedEventListener {
                     userId,
                     "Payment Confirmed",
                     "Your membership payment was confirmed and your membership is now active.",
-                    PAYMENT_COMPLETED_TYPE,
-                    PAYMENT_RESOURCE_TYPE,
+                    NotificationType.PAYMENT_COMPLETED,
+                    NotificationResourceType.SUBSCRIPTION,
                     subscriptionId,
                     "/membership"
             );

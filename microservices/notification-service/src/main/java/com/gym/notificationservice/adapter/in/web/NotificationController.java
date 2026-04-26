@@ -2,6 +2,7 @@ package com.gym.notificationservice.adapter.in.web;
 
 import com.gym.notificationservice.adapter.in.web.dto.NotificationResponse;
 import com.gym.notificationservice.adapter.in.web.dto.NotificationResourceReadRequest;
+import com.gym.notificationservice.adapter.in.web.mapper.NotificationWebMapper;
 import com.gym.notificationservice.application.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -17,15 +18,23 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationWebMapper notificationWebMapper;
 
-    public NotificationController(NotificationService notificationService) {
+    public NotificationController(NotificationService notificationService,
+                                  NotificationWebMapper notificationWebMapper) {
         this.notificationService = notificationService;
+        this.notificationWebMapper = notificationWebMapper;
     }
 
     @GetMapping("/me")
     public ResponseEntity<List<NotificationResponse>> getMyNotifications(JwtAuthenticationToken token) {
         UUID userId = UUID.fromString(token.getToken().getSubject());
-        return ResponseEntity.ok(notificationService.getMyNotifications(userId));
+        return ResponseEntity.ok(
+                notificationService.getMyNotifications(userId)
+                        .stream()
+                        .map(notificationWebMapper::toResponse)
+                        .toList()
+        );
     }
 
     @GetMapping("/me/unread-count")
@@ -37,7 +46,7 @@ public class NotificationController {
     @PostMapping("/{id}/read")
     public ResponseEntity<NotificationResponse> markAsRead(@PathVariable UUID id, JwtAuthenticationToken token) {
         UUID userId = UUID.fromString(token.getToken().getSubject());
-        return ResponseEntity.ok(notificationService.markAsRead(id, userId));
+        return ResponseEntity.ok(notificationWebMapper.toResponse(notificationService.markAsRead(id, userId)));
     }
 
     @PostMapping("/me/read-all")
