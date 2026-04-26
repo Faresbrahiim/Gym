@@ -31,9 +31,11 @@
           <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             <a routerLink="/home">Home</a>
           </li>
-          <li routerLinkActive="active">
-            <a routerLink="/membership/plans">Plans</a>
-          </li>
+          @if (canBrowsePlans) {
+            <li routerLinkActive="active">
+              <a routerLink="/membership/plans">Plans</a>
+            </li>
+          }
           <li class="has-submenu">
             <a href="javascript:void(0);">Coaches <i class="fas fa-chevron-down"></i></a>
             <ul class="submenu">
@@ -289,9 +291,13 @@
               <p><a class="dropdown-item" routerLink="/chat">Open Full Chat</a></p>
               <p><a class="dropdown-item" routerLink="/store">Shop</a></p>
               <p><a class="dropdown-item" routerLink="/cart">My Cart</a></p>
-              <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
+              @if (canAccessMembershipArea) {
+                <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
+              }
               <p><a class="dropdown-item" routerLink="/orders">My Orders</a></p>
-              <p><a class="dropdown-item" routerLink="/payments">Payments</a></p>
+              @if (canAccessMembershipArea) {
+                <p><a class="dropdown-item" routerLink="/payments">Payments</a></p>
+              }
               <p><a class="dropdown-item" href="javascript:void(0);" (click)="onLogout()">Logout</a></p>
             </div>
           </li>

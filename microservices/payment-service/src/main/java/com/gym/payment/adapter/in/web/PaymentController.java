@@ -11,6 +11,7 @@ import com.gym.payment.domain.port.in.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +41,7 @@ public class PaymentController {
     public ResponseEntity<InitiatePaymentResponse> initiatePayment(
             @Valid @RequestBody InitiatePaymentRequest request,
             JwtAuthenticationToken token) {
+        ensureMemberAccess(token);
 
         UUID userId = UUID.fromString(token.getToken().getSubject());
 
@@ -82,9 +84,10 @@ public class PaymentController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         UUID userId = UUID.fromString(token.getToken().getSubject());
+        PaymentTargetType effectiveTargetType = resolveAccessibleTargetType(token, targetType);
 
         PagedResult<com.gym.payment.domain.port.in.PaymentResponse> result =
-                getMyPaymentHistoryUseCase.execute(userId, status, targetType, page, pageSize);
+                getMyPaymentHistoryUseCase.execute(userId, status, effectiveTargetType, page, pageSize);
 
         List<PaymentResponse> responses = result.items()
                 .stream()
@@ -106,9 +109,32 @@ public class PaymentController {
         UUID userId = UUID.fromString(token.getToken().getSubject());
 
         return getMyPaymentByIdUseCase.execute(userId, paymentId)
+                .filter(payment -> isMember(token) || payment.targetType() != PaymentTargetType.MEMBERSHIP)
                 .map(this::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private void ensureMemberAccess(JwtAuthenticationToken token) {
+        if (!isMember(token)) {
+            throw new AccessDeniedException("Membership payments are available to members only");
+        }
+    }
+
+    private PaymentTargetType resolveAccessibleTargetType(JwtAuthenticationToken token, PaymentTargetType targetType) {
+        if (isMember(token)) {
+            return targetType;
+        }
+
+        if (targetType == PaymentTargetType.MEMBERSHIP) {
+            throw new AccessDeniedException("Membership payment history is available to members only");
+        }
+
+        return PaymentTargetType.ORDER;
+    }
+
+    private boolean isMember(JwtAuthenticationToken token) {
+        return "MEMBER".equalsIgnoreCase(token.getToken().getClaimAsString("role"));
     }
 
     private PaymentResponse toDto(com.gym.payment.domain.port.in.PaymentResponse r) {

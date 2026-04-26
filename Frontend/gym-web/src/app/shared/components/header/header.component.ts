@@ -88,6 +88,18 @@ export class HeaderComponent {
     return this.tokenService.isAuthenticated();
   }
 
+  get userRole(): string | null {
+    return this.tokenService.getRole();
+  }
+
+  get canAccessMembershipArea(): boolean {
+    return this.userRole === 'MEMBER';
+  }
+
+  get canBrowsePlans(): boolean {
+    return !this.isAuthenticated || this.canAccessMembershipArea;
+  }
+
   get isHome(): boolean {
     const url = this.router.url;
     return url === '/home' || url === '/';

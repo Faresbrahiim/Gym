@@ -100,6 +100,12 @@ export const routes: Routes = [
       import('./features/auth/pages/setup-two-factor/setup-two-factor.component').then(m => m.SetupTwoFactorComponent)
   },
 
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./features/not-found/not-found.component').then(m => m.NotFoundComponent)
+  },
+
   // Admin panel — protected by authGuard + permissionGuard (role: ADMIN)
   {
     path: 'admin',

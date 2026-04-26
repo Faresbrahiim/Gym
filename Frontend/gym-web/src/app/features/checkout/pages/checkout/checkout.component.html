@@ -83,17 +83,6 @@
                 <input type="text" class="form-control-custom" formControlName="postalCode"
                   [class.invalid]="checkoutForm.get('postalCode')?.invalid && checkoutForm.get('postalCode')?.touched">
               </div>
-              <div class="col-md-4">
-                <label class="form-label-custom">Country *</label>
-                <select class="form-control-custom" formControlName="country">
-                  <option value="">Select country</option>
-                  <option value="United States">United States</option>
-                  <option value="Canada">Canada</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Germany">Germany</option>
-                  <option value="France">France</option>
-                </select>
-              </div>
             </div>
             <div class="checkout-nav mt-4">
               <button type="button" class="btn-step-next" (click)="nextStep()">
@@ -157,8 +146,7 @@
             <p class="review-address">
               {{ checkoutForm.get('firstName')?.value }} {{ checkoutForm.get('lastName')?.value }}<br>
               {{ checkoutForm.get('address')?.value }}<br>
-              {{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('postalCode')?.value }}<br>
-              {{ checkoutForm.get('country')?.value }}
+              {{ checkoutForm.get('city')?.value }}, {{ checkoutForm.get('postalCode')?.value }}
             </p>
           </div>
 

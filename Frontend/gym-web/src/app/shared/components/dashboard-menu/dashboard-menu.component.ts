@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { TokenService } from '../../../core/auth/token.service';
 
 interface DashboardMenuItem {
   label: string;
@@ -19,7 +20,9 @@ interface DashboardMenuItem {
   styleUrl: './dashboard-menu.component.css'
 })
 export class DashboardMenuComponent {
-  readonly primaryItems: DashboardMenuItem[] = [
+  private readonly tokenService = inject(TokenService);
+
+  private readonly allPrimaryItems: DashboardMenuItem[] = [
     { label: 'Profile', route: '/profile', icon: 'assets/img/icons/profile-icon.svg', exact: true },
     { label: 'Security', route: '/profile/security', icon: 'assets/img/icons/sessions.svg' },
     { label: 'Membership', route: '/membership', icon: 'assets/img/icons/wallet-icon.svg', exact: true },
@@ -33,4 +36,28 @@ export class DashboardMenuComponent {
     { label: 'Chat', route: '/chat', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' },
     { label: 'Bookings', icon: 'assets/img/icons/booking-icon.svg', disabled: true, note: 'Soon' }
   ];
+
+  get canAccessMembershipArea(): boolean {
+    return this.tokenService.getRole() === 'MEMBER';
+  }
+
+  get primaryItems(): DashboardMenuItem[] {
+    if (this.canAccessMembershipArea) {
+      return this.allPrimaryItems;
+    }
+
+    return this.allPrimaryItems.filter(item =>
+      item.route !== '/membership'
+      && item.route !== '/membership/history'
+      && item.route !== '/payments'
+    );
+  }
+
+  get accountDeckDescription(): string {
+    if (this.canAccessMembershipArea) {
+      return 'Manage your profile, membership, orders, payments, and activity from one place.';
+    }
+
+    return 'Manage your profile, orders, and activity from one place.';
+  }
 }

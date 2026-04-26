@@ -47,7 +47,6 @@ export class CheckoutComponent implements OnInit {
       address:       ['', Validators.required],
       city:          ['', Validators.required],
       postalCode:    ['', Validators.required],
-      country:       ['', Validators.required],
       paymentMethod: ['credit-card', Validators.required]
     });
   }
@@ -75,7 +74,7 @@ export class CheckoutComponent implements OnInit {
     this.isSubmitting.set(true);
     this.paymentErrorMessage.set(null);
 
-    const shippingAddress = `${v.firstName} ${v.lastName}, ${v.address}, ${v.city}, ${v.postalCode}, ${v.country}`;
+    const shippingAddress = `${v.firstName} ${v.lastName}, ${v.address}, ${v.city}, ${v.postalCode}`;
 
     const { paymentMethod, error: paymentMethodError } = await this.stripeCard.createPaymentMethod({
       email: v.email
