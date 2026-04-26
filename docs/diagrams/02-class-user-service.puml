@@ -1,0 +1,236 @@
+@startuml Class Diagram – User-Service (MVC / Clean Architecture)
+
+skinparam classBackgroundColor #EEF6FF
+skinparam classBorderColor #3A8EBA
+skinparam classHeaderBackgroundColor #3A8EBA
+skinparam classHeaderFontColor #FFFFFF
+skinparam ArrowColor #2C6694
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam packageBorderColor #3A8EBA
+skinparam packageBackgroundColor #F7FBFF
+
+title Diagramme de Classe – User-Service (Architecture MVC)
+
+' ═══════════════════════════════════════
+'  LAYER : MODEL  (Domain / Entities)
+' ═══════════════════════════════════════
+package "Model (Domain Entities)" #EEF6FF {
+
+    enum UserRole {
+        MEMBER
+        COACH
+        ADMIN
+    }
+
+    enum UserStatus {
+        PENDING
+        ACTIVE
+        SUSPENDED
+        BANNED
+    }
+
+    class User {
+        -id : Guid
+        -email : string
+        -passwordHash : string?
+        -username : string
+        -role : UserRole
+        -status : UserStatus
+        -createdAt : DateTime
+        -updatedAt : DateTime
+        -lastLoginAt : DateTime?
+    }
+
+    class UserProfile {
+        -userId : Guid
+        -firstName : string
+        -lastName : string
+        -profilePictureUrl : string?
+        -phone : string?
+        -createdAt : DateTime
+        -updatedAt : DateTime
+    }
+
+    class MemberProfile {
+        -userId : Guid
+        -height : double?
+        -weight : double?
+        -goal : string?
+    }
+
+    class CoachProfile {
+        -userId : Guid
+        -bio : string?
+        -specialization : string?
+        -experienceLevel : ExperienceLevel
+    }
+
+    class RefreshToken {
+        -id : Guid
+        -userId : Guid
+        -token : string
+        -expiresAt : DateTime
+        -createdAt : DateTime
+        -revokedAt : DateTime?
+    }
+
+    class UserTwoFactor {
+        -userId : Guid
+        -secretKey : string
+        -isEnabled : bool
+        -enabledAt : DateTime?
+    }
+
+    class RecoveryCode {
+        -id : Guid
+        -userId : Guid
+        -codeHash : string
+        -usedAt : DateTime?
+    }
+
+    class UserToken {
+        -id : Guid
+        -userId : Guid
+        -token : string
+        -type : UserTokenType
+        -expiresAt : DateTime
+    }
+
+    class ExternalLogin {
+        -id : Guid
+        -userId : Guid
+        -provider : string
+        -providerKey : string
+    }
+
+    User "1" *-- "0..1" UserProfile       : profil
+    User "1" *-- "0..1" MemberProfile     : membre
+    User "1" *-- "0..1" CoachProfile      : coach
+    User "1" *-- "0..1" UserTwoFactor     : 2FA
+    User "1" *-- "0..*" RefreshToken      : tokens
+    User "1" *-- "0..*" RecoveryCode      : recovery
+    User "1" *-- "0..*" UserToken         : pendingTokens
+    User "1" *-- "0..*" ExternalLogin     : logins
+    User --> UserRole
+    User --> UserStatus
+}
+
+' ═══════════════════════════════════════
+'  LAYER : SERVICE  (Application)
+' ═══════════════════════════════════════
+package "Service (Application Layer)" #FFF8E7 {
+
+    interface IAuthService {
+        +RegisterAsync(request) : UserResponseDTO
+        +LoginWithEmail(request) : AuthResponseDTO
+        +LoginWithGoogle(request) : AuthResponseDTO
+        +RefreshToken(token) : AuthResponseDTO
+        +Logout(refreshToken) : void
+        +LogoutAll(userId) : void
+        +RequestPasswordReset(dto) : void
+        +ResetPassword(dto) : void
+        +VerifyTwoFactorLogin(userId, code) : AuthResponseDTO
+        +ResendInvitationAsync(email) : void
+        +ResendEmailVerificationAsync(email) : void
+        +GetActiveSessions(userId) : IEnumerable<SessionDTO>
+        +RevokeSession(userId, tokenId) : void
+    }
+
+    interface IUserProfileService {
+        +GetProfileAsync(userId) : UserProfileDTO
+        +UpdateProfileAsync(userId, dto) : void
+        +UploadAvatarAsync(userId, file) : string
+    }
+
+    interface IAdminService {
+        +GetAllUsersAsync() : IEnumerable<UserResponseDTO>
+        +InviteUserAsync(dto) : void
+        +UpdateUserRoleAsync(userId, role) : void
+        +SuspendUserAsync(userId) : void
+    }
+
+    interface ITwoFactorService {
+        +GenerateSetupAsync(userId) : TwoFactorSetupDTO
+        +ConfirmSetupAsync(userId, code) : IEnumerable<string>
+    }
+
+    class AuthService implements IAuthService {
+        -userRepository : IUserRepository
+        -tokenService : ITokenService
+        -passwordHasher : IPasswordHasher
+        -emailService : IEmailService
+        -eventPublisher : IEventPublisher
+    }
+
+    class AdminService implements IAdminService {
+        -userRepository : IUserRepository
+        -emailService : IEmailService
+    }
+
+    class UserProfileService implements IUserProfileService {
+        -profileRepository : IUserProfileRepository
+        -fileStorage : IFileStorageService
+    }
+}
+
+' ═══════════════════════════════════════
+'  LAYER : CONTROLLER  (API)
+' ═══════════════════════════════════════
+package "Controller (API Layer)" #F0FFF0 {
+
+    class AuthController {
+        -authService : IAuthService
+        -passwordCredentialService : IPasswordCredentialService
+        -twoFactorService : ITwoFactorService
+        +Register(request) : IActionResult
+        +LoginEmail(request) : IActionResult
+        +LoginGoogle(request) : IActionResult
+        +RequestPasswordReset(dto) : IActionResult
+        +ResetPassword(dto) : IActionResult
+        +Refresh(request) : IActionResult
+        +Logout(request) : IActionResult
+        +LogoutAll() : IActionResult
+        +Setup2FA() : IActionResult
+        +ConfirmTwoFactor(dto) : IActionResult
+        +VerifyTwoFactor(dto) : IActionResult
+        +AcceptInvitation(dto) : IActionResult
+        +VerifyEmail(dto) : IActionResult
+        +GetSessions() : IActionResult
+        +RevokeSession(tokenId) : IActionResult
+    }
+
+    class UserController {
+        -usersService : IUsersService
+        +GetUsers() : ActionResult
+        +SearchUsers(q, page, pageSize) : ActionResult
+        +GetContacts(request) : ActionResult
+    }
+
+    class AdminController {
+        -adminService : IAdminService
+        +GetAllUsers() : ActionResult
+        +InviteUser(dto) : ActionResult
+        +UpdateRole(userId, dto) : ActionResult
+        +SuspendUser(userId) : ActionResult
+    }
+
+    class UsersMeController {
+        -profileService : IUserProfileService
+        +GetMyProfile() : ActionResult
+        +UpdateMyProfile(dto) : ActionResult
+        +UploadAvatar(file) : ActionResult
+    }
+}
+
+' ═══════════════════════════════════════
+'  CROSS-CUTTING DEPENDENCIES
+' ═══════════════════════════════════════
+AuthController ..> IAuthService       : uses
+AuthController ..> ITwoFactorService  : uses
+AdminController ..> IAdminService     : uses
+UsersMeController ..> IUserProfileService : uses
+AuthService ..> User                  : manages
+AdminService ..> User                 : manages
+
+@enduml

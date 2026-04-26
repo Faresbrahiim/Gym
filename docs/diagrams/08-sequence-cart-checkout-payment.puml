@@ -1,0 +1,128 @@
+@startuml Sequence Diagram – Cart Checkout & Order Payment
+
+skinparam sequenceArrowColor #2C6694
+skinparam sequenceBoxBorderColor #3A8EBA
+skinparam sequenceBoxBackgroundColor #EEF6FF
+skinparam participantBackgroundColor #EEF6FF
+skinparam participantBorderColor #3A8EBA
+skinparam actorBorderColor #2C6694
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+title Diagramme de Séquence – Panier → Checkout → Paiement Commande
+
+actor "Membre" as Member
+participant "CartController\n[Controller]" as CartCtrl
+participant "CartRepository\n[Repository]" as CartRepo
+participant "ProductRepository\n[Repository]" as ProdRepo
+participant "CheckoutController\n[Controller]" as CheckCtrl
+participant "OrderRepository\n[Repository]" as OrderRepo
+participant "PaymentController\n(payment-service)\n[Controller]" as PayCtrl
+participant "PaymentInitiationService\n[Service]" as PaySvc
+participant "Stripe\nGateway" as Stripe
+participant "Kafka\n[Event Bus]" as Kafka
+participant "OrderPaymentController\n(cart-service internal)\n[Consumer]" as OrdPayCtrl
+database "Cart DB" as CartDB
+database "Payment DB" as PayDB
+
+== Étape 1 : Ajouter un produit au panier ==
+
+Member -> CartCtrl : POST /api/cart/items\n{ productId, quantity } + JWT
+activate CartCtrl
+
+CartCtrl -> ProdRepo : findById(productId)
+ProdRepo -> CartDB : SELECT * FROM products WHERE id=?
+CartDB --> ProdRepo : Product{id, name, price, status:ACTIVE}
+ProdRepo --> CartCtrl : Product
+
+CartCtrl -> CartRepo : findOrCreateByUserId(userId)
+CartRepo -> CartDB : SELECT cart WHERE user_id=?
+CartDB --> CartRepo : Cart (ou nouveau)
+CartRepo --> CartCtrl : Cart
+
+CartCtrl -> CartCtrl : cart.addItem(CartItem{product, qty, unitPrice})
+CartCtrl -> CartRepo : save(cart)
+CartRepo -> CartDB : INSERT/UPDATE cart_items ...
+CartDB --> CartRepo : ok
+
+CartCtrl --> Member : 200 OK { cart }
+deactivate CartCtrl
+
+== Étape 2 : Checkout (Créer la commande) ==
+
+Member -> CheckCtrl : POST /api/checkout + JWT
+activate CheckCtrl
+
+CheckCtrl -> CartRepo : findByUserId(userId)
+CartRepo -> CartDB : SELECT cart + items WHERE user_id=?
+CartDB --> CartRepo : Cart{items: [...]}
+CartRepo --> CheckCtrl : Cart
+
+CheckCtrl -> CheckCtrl : Calculer totalPrice\nCréer OrderItems depuis CartItems
+
+CheckCtrl -> OrderRepo : save(Order{userId, status:PENDING_PAYMENT, totalPrice, items})
+OrderRepo -> CartDB : INSERT INTO orders + order_items ...
+CartDB --> OrderRepo : Order{id}
+OrderRepo --> CheckCtrl : Order
+
+CheckCtrl -> CartRepo : clearCart(userId)
+CartRepo -> CartDB : DELETE FROM cart_items WHERE cart_id=?
+CartDB --> CartRepo : ok
+
+CheckCtrl --> Member : 201 Created { orderId, totalPrice, status:PENDING_PAYMENT }
+deactivate CheckCtrl
+
+== Étape 3 : Payer la commande ==
+
+Member -> PayCtrl : POST /api/payments/order\n{ orderId, paymentMethodToken } + JWT
+activate PayCtrl
+
+PayCtrl -> PaySvc : initiateOrderPayment(InitiateOrderPaymentCommand)
+activate PaySvc
+
+PaySvc -> PaySvc : Fetch order details from cart-service (via HTTP/gRPC)
+PaySvc -> PaySvc : create Payment.forOrder(userId, orderId, amount)
+
+PaySvc -> Stripe : createPaymentIntent(payment)
+activate Stripe
+Stripe --> PaySvc : GatewayResult { paymentIntentId, clientSecret }
+deactivate Stripe
+
+PaySvc -> PayDB : save(Payment{status:PENDING})
+PaySvc --> PayCtrl : InitiatePaymentResponse { clientSecret }
+deactivate PaySvc
+PayCtrl --> Member : 200 OK { clientSecret }
+deactivate PayCtrl
+
+== Étape 4 : Webhook Stripe → confirmation paiement ==
+
+Stripe -> PayCtrl : POST /api/payments/webhook { payload, sig }
+activate PayCtrl
+PayCtrl -> PaySvc : handleWebhook(command)
+activate PaySvc
+PaySvc -> PaySvc : payment.markCompleted(intentId)
+PaySvc -> PayDB : save(payment)
+PaySvc -> Kafka : publish(OrderPaymentCompletedEvent{orderId, userId})
+Kafka --> PaySvc : ack
+PaySvc --> PayCtrl : void
+deactivate PaySvc
+PayCtrl --> Stripe : 200 OK
+deactivate PayCtrl
+
+== Étape 5 : Cart-Service confirme la commande ==
+
+Kafka -> OrdPayCtrl : consume(OrderPaymentCompletedEvent)
+activate OrdPayCtrl
+OrdPayCtrl -> OrderRepo : findById(orderId)
+OrderRepo --> OrdPayCtrl : Order{status:PENDING_PAYMENT}
+OrdPayCtrl -> OrdPayCtrl : order.setStatus("CONFIRMED")
+OrdPayCtrl -> OrderRepo : save(order)
+OrderRepo -> CartDB : UPDATE orders SET status='CONFIRMED' WHERE id=?
+CartDB --> OrderRepo : ok
+OrdPayCtrl --> Kafka : (ack)
+deactivate OrdPayCtrl
+
+Member -> CartCtrl : GET /api/orders/{orderId}
+CartCtrl --> Member : 200 OK { orderId, status:CONFIRMED, items:[...] }
+
+@enduml

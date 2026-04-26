@@ -1,0 +1,188 @@
+@startuml Class Diagram – Cart-Service (MVC / Symfony)
+
+skinparam classBackgroundColor #EEF6FF
+skinparam classBorderColor #3A8EBA
+skinparam classHeaderBackgroundColor #3A8EBA
+skinparam classHeaderFontColor #FFFFFF
+skinparam ArrowColor #2C6694
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam packageBorderColor #3A8EBA
+skinparam packageBackgroundColor #F7FBFF
+
+title Diagramme de Classe – Cart-Service (Architecture MVC / Symfony)
+
+' ═══════════════════════════════════════
+'  LAYER : MODEL  (Entities / Domain)
+' ═══════════════════════════════════════
+package "Model (Domain Entities)" #EEF6FF {
+
+    class Product {
+        -id : Uuid
+        -name : string
+        -description : string?
+        -price : decimal
+        -status : string
+        -imagePath : string?
+        -imageData : string?
+        -imageMimeType : string?
+        -createdAt : DateTimeImmutable
+        -updatedAt : DateTimeImmutable
+        +getId() : Uuid
+        +getName() : string
+        +getPrice() : decimal
+        +getStatus() : string
+        +setName(name) : static
+        +setPrice(price) : static
+        +setStatus(status) : static
+    }
+
+    class Cart {
+        -id : Uuid
+        -userId : Uuid
+        -items : Collection<CartItem>
+        -createdAt : DateTimeImmutable
+        -updatedAt : DateTimeImmutable
+        +getId() : Uuid
+        +getUserId() : Uuid
+        +getItems() : Collection
+        +addItem(item) : static
+        +removeItem(item) : static
+        +setUpdatedAt(dt) : static
+    }
+
+    class CartItem {
+        -id : int
+        -quantity : int
+        -unitPrice : decimal
+        -cart : Cart
+        -product : Product
+        +getId() : int
+        +getQuantity() : int
+        +setQuantity(qty) : static
+        +getUnitPrice() : decimal
+        +getSubtotal() : decimal
+    }
+
+    class Order {
+        -id : Uuid
+        -userId : Uuid
+        -status : string
+        -totalPrice : decimal
+        -orderItems : Collection<OrderItem>
+        -createdAt : DateTimeImmutable
+        +getId() : Uuid
+        +getUserId() : Uuid
+        +getStatus() : string
+        +setStatus(status) : static
+        +getTotalPrice() : decimal
+        +addOrderItem(item) : static
+    }
+
+    class OrderItem {
+        -id : int
+        -productId : Uuid
+        -productName : string
+        -quantity : int
+        -unitPrice : decimal
+        -order : Order
+        +getId() : int
+        +getProductName() : string
+        +getQuantity() : int
+        +getUnitPrice() : decimal
+        +getSubtotal() : decimal
+    }
+
+    Cart "1" *-- "0..*" CartItem    : contient
+    CartItem "0..*" --> "1" Product  : référence
+    Order "1" *-- "1..*" OrderItem  : composé de
+}
+
+' ═══════════════════════════════════════
+'  LAYER : REPOSITORY  (Service / Logic)
+' ═══════════════════════════════════════
+package "Repository / Service (Application Layer)" #FFF8E7 {
+
+    class CartRepository {
+        +findByUserId(userId) : Cart?
+        +findOrCreateByUserId(userId) : Cart
+        +save(cart) : void
+        +remove(cart) : void
+    }
+
+    class ProductRepository {
+        +findAllActive() : Product[]
+        +findById(id) : Product?
+        +save(product) : void
+        +remove(product) : void
+    }
+
+    class OrderRepository {
+        +findByUserId(userId) : Order[]
+        +findById(id) : Order?
+        +save(order) : void
+    }
+
+    CartRepository ..> Cart    : accède
+    ProductRepository ..> Product : accède
+    OrderRepository ..> Order  : accède
+}
+
+' ═══════════════════════════════════════
+'  LAYER : CONTROLLER  (API)
+' ═══════════════════════════════════════
+package "Controller (API Layer)" #F0FFF0 {
+
+    class CartController {
+        -cartRepository : CartRepository
+        -productRepository : ProductRepository
+        +getCart() : JsonResponse
+        +addItem(productId, quantity) : JsonResponse
+        +updateItem(itemId, quantity) : JsonResponse
+        +removeItem(itemId) : JsonResponse
+        +clearCart() : JsonResponse
+    }
+
+    class CheckoutController {
+        -cartRepository : CartRepository
+        -orderRepository : OrderRepository
+        +checkout(request) : JsonResponse
+    }
+
+    class OrderController {
+        -orderRepository : OrderRepository
+        +getMyOrders() : JsonResponse
+        +getOrderById(id) : JsonResponse
+    }
+
+    class ProductController {
+        -productRepository : ProductRepository
+        +listProducts() : JsonResponse
+        +getProduct(id) : JsonResponse
+    }
+
+    class ProductAdminController {
+        -productRepository : ProductRepository
+        +createProduct(dto) : JsonResponse
+        +updateProduct(id, dto) : JsonResponse
+        +deleteProduct(id) : JsonResponse
+    }
+
+    class OrderAdminController {
+        -orderRepository : OrderRepository
+        +getAllOrders() : JsonResponse
+        +updateOrderStatus(id, status) : JsonResponse
+    }
+}
+
+' ─── Dependencies ───
+CartController ..> CartRepository         : uses
+CartController ..> ProductRepository      : uses
+CheckoutController ..> CartRepository     : uses
+CheckoutController ..> OrderRepository    : uses
+OrderController ..> OrderRepository       : uses
+ProductController ..> ProductRepository   : uses
+ProductAdminController ..> ProductRepository : uses
+OrderAdminController ..> OrderRepository  : uses
+
+@enduml

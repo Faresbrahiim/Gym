@@ -1,0 +1,132 @@
+@startuml Use Case – Gym Application (4 Microservices)
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor #EEF6FF
+skinparam usecaseBorderColor #3A8EBA
+skinparam actorBorderColor #2C6694
+skinparam packageBorderColor #3A8EBA
+skinparam packageBackgroundColor #F7FBFF
+skinparam ArrowColor #3A8EBA
+skinparam shadowing false
+
+title Use Case Diagram – Gym Application (4 Microservices)
+
+' ─────────────────────────────────
+'  ACTORS
+' ─────────────────────────────────
+actor "Visiteur\n(Non authentifié)" as Visitor
+actor "Membre\n(USER)" as Member
+actor "Coach\n(COACH)" as Coach
+actor "Administrateur\n(ADMIN)" as Admin
+actor "Stripe\n(Webhook)" as Stripe
+
+' ─────────────────────────────────
+'  MICROSERVICE 1 – USER SERVICE
+' ─────────────────────────────────
+package "Microservice 1 : User-Service" {
+    usecase "S'inscrire" as UC_Register
+    usecase "Se connecter (Email)" as UC_LoginEmail
+    usecase "Se connecter (Google)" as UC_LoginGoogle
+    usecase "Vérifier l'email" as UC_VerifyEmail
+    usecase "Réinitialiser le mot de passe" as UC_ResetPwd
+    usecase "Activer la 2FA" as UC_Enable2FA
+    usecase "Vérifier code 2FA" as UC_Verify2FA
+    usecase "Consulter / Modifier mon profil" as UC_Profile
+    usecase "Rechercher des utilisateurs" as UC_SearchUsers
+    usecase "Gérer les comptes (CRUD)" as UC_ManageUsers
+    usecase "Rafraîchir le token JWT" as UC_RefreshToken
+    usecase "Déconnexion" as UC_Logout
+}
+
+Visitor --> UC_Register
+Visitor --> UC_LoginEmail
+Visitor --> UC_LoginGoogle
+Visitor --> UC_ResetPwd
+Visitor --> UC_Verify2FA
+
+Member --> UC_VerifyEmail
+Member --> UC_Enable2FA
+Member --> UC_Profile
+Member --> UC_SearchUsers
+Member --> UC_RefreshToken
+Member --> UC_Logout
+
+Coach --> UC_Profile
+Coach --> UC_SearchUsers
+Coach --> UC_RefreshToken
+Coach --> UC_Logout
+
+Admin --> UC_ManageUsers
+Admin --> UC_SearchUsers
+
+' ─────────────────────────────────
+'  MICROSERVICE 2 – MEMBERSHIP SERVICE
+' ─────────────────────────────────
+package "Microservice 2 : Membership-Service" {
+    usecase "Consulter les plans" as UC_ViewPlans
+    usecase "S'abonner à un plan" as UC_Subscribe
+    usecase "Changer de plan" as UC_ChangePlan
+    usecase "Suspendre / Reprendre l'abonnement" as UC_PauseResume
+    usecase "Geler l'abonnement" as UC_FreezeSubscription
+    usecase "Consulter l'historique d'abonnement" as UC_SubHistory
+    usecase "Créer / Modifier un plan (Admin)" as UC_ManagePlans
+    usecase "Lister tous les abonnements (Admin)" as UC_AdminSubs
+}
+
+Visitor --> UC_ViewPlans
+Member --> UC_Subscribe
+Member --> UC_ChangePlan
+Member --> UC_PauseResume
+Member --> UC_FreezeSubscription
+Member --> UC_SubHistory
+Admin --> UC_ManagePlans
+Admin --> UC_AdminSubs
+
+' ─────────────────────────────────
+'  MICROSERVICE 3 – PAYMENT SERVICE
+' ─────────────────────────────────
+package "Microservice 3 : Payment-Service" {
+    usecase "Initier un paiement d'abonnement" as UC_PayMembership
+    usecase "Initier un paiement de commande" as UC_PayOrder
+    usecase "Consulter mon historique de paiements" as UC_PayHistory
+    usecase "Traiter le webhook Stripe" as UC_Webhook
+    usecase "Lister tous les paiements (Admin)" as UC_AdminPayments
+    usecase "Expirer les paiements en attente" as UC_ExpirePayments
+}
+
+Member --> UC_PayMembership
+Member --> UC_PayOrder
+Member --> UC_PayHistory
+Stripe --> UC_Webhook
+Admin --> UC_AdminPayments
+Admin --> UC_ExpirePayments
+
+UC_Subscribe ..> UC_PayMembership : <<include>>
+
+' ─────────────────────────────────
+'  MICROSERVICE 4 – CART SERVICE
+' ─────────────────────────────────
+package "Microservice 4 : Cart-Service" {
+    usecase "Consulter le catalogue produits" as UC_ViewProducts
+    usecase "Ajouter un article au panier" as UC_AddToCart
+    usecase "Modifier / Supprimer un article" as UC_EditCart
+    usecase "Vider le panier" as UC_ClearCart
+    usecase "Passer une commande (Checkout)" as UC_Checkout
+    usecase "Consulter mes commandes" as UC_ViewOrders
+    usecase "Gérer les produits (Admin)" as UC_ManageProducts
+    usecase "Gérer les commandes (Admin)" as UC_ManageOrders
+}
+
+Visitor --> UC_ViewProducts
+Member --> UC_AddToCart
+Member --> UC_EditCart
+Member --> UC_ClearCart
+Member --> UC_Checkout
+Member --> UC_ViewOrders
+Admin --> UC_ManageProducts
+Admin --> UC_ManageOrders
+
+UC_Checkout ..> UC_PayOrder : <<include>>
+
+@enduml

@@ -1,0 +1,225 @@
+@startuml Class Diagram – Membership-Service (MVC / Clean Architecture)
+
+skinparam classBackgroundColor #EEF6FF
+skinparam classBorderColor #3A8EBA
+skinparam classHeaderBackgroundColor #3A8EBA
+skinparam classHeaderFontColor #FFFFFF
+skinparam ArrowColor #2C6694
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam packageBorderColor #3A8EBA
+skinparam packageBackgroundColor #F7FBFF
+
+title Diagramme de Classe – Membership-Service (Architecture MVC)
+
+' ═══════════════════════════════════════
+'  LAYER : MODEL  (Domain / Entities)
+' ═══════════════════════════════════════
+package "Model (Domain Entities)" #EEF6FF {
+
+    enum PlanStatus {
+        ACTIVE
+        INACTIVE
+    }
+
+    enum SubscriptionStatus {
+        PENDING_PAYMENT
+        ACTIVE
+        PAUSED
+        FROZEN
+        CANCELLED
+        EXPIRED
+    }
+
+    enum MembershipStatus {
+        ACTIVE
+        SUSPENDED
+    }
+
+    class Plan {
+        -id : UUID
+        -name : string
+        -description : string
+        -features : List<String>
+        -price : Double
+        -durationInDays : int
+        -status : PlanStatus
+        +getId() : UUID
+        +getName() : string
+        +getPrice() : Double
+        +getDurationInDays() : int
+        +getStatus() : PlanStatus
+        +setStatus(status) : void
+    }
+
+    class Subscription {
+        -id : UUID
+        -userId : UUID
+        -status : SubscriptionStatus
+        -startDate : LocalDateTime
+        -endDate : LocalDateTime
+        -pausedAt : LocalDateTime
+        -freezeStartDate : LocalDateTime
+        -freezeEndDate : LocalDateTime
+        -pendingPaymentStartedAt : LocalDateTime
+        -previousStatusBeforeFreeze : SubscriptionStatus
+        +getId() : UUID
+        +getUserId() : UUID
+        +getStatus() : SubscriptionStatus
+        +setStatus(status) : void
+        +getStartDate() : LocalDateTime
+        +getEndDate() : LocalDateTime
+    }
+
+    class UserMembership {
+        -id : UUID
+        -userId : UUID
+        -email : string
+        -status : MembershipStatus
+        +getId() : UUID
+        +getUserId() : UUID
+        +getEmail() : string
+        +getStatus() : MembershipStatus
+        +setStatus(status) : void
+    }
+
+    class SubscriptionHistory {
+        -id : UUID
+        -subscriptionId : UUID
+        -userId : UUID
+        -planName : string
+        -oldStatus : SubscriptionStatus
+        -newStatus : SubscriptionStatus
+        -changedAt : LocalDateTime
+        -note : string
+    }
+
+    Plan "1" o-- "0..*" Subscription     : souscrit à
+    Subscription "0..1" --> Plan          : pendingPlan
+    UserMembership "1" -- "0..*" Subscription : possède
+    Subscription "1" -- "0..*" SubscriptionHistory : historique
+    Plan --> PlanStatus
+    Subscription --> SubscriptionStatus
+    UserMembership --> MembershipStatus
+}
+
+' ═══════════════════════════════════════
+'  LAYER : SERVICE  (Application)
+' ═══════════════════════════════════════
+package "Service (Application Layer)" #FFF8E7 {
+
+    interface PlanService {
+        +createPlan(dto) : PlanResponseDTO
+        +updatePlan(id, dto) : PlanResponseDTO
+        +deletePlan(id) : void
+        +getPlanById(id) : PlanResponseDTO
+        +getAllActivePlans() : List<PlanResponseDTO>
+        +getAllPlans(pageable) : Page<PlanResponseDTO>
+    }
+
+    interface SubscriptionService {
+        +subscribe(userId, planId) : SubscriptionResponseDTO
+        +cancelSubscription(userId) : void
+        +pauseSubscription(userId) : void
+        +resumeSubscription(userId) : void
+        +freezeSubscription(userId, days) : void
+        +changePlan(userId, planId) : void
+        +getMySubscription(userId) : SubscriptionResponseDTO
+        +getAllSubscriptions(filter) : Page<AdminSubscriptionSummaryDTO>
+    }
+
+    interface MembershipService {
+        +getMembershipStatus(userId) : UserMembership
+        +suspendMembership(userId) : void
+        +reactivateMembership(userId) : void
+    }
+
+    interface SubscriptionHistoryService {
+        +getHistoryBySubscription(subscriptionId) : List<SubscriptionHistoryResponseDTO>
+        +getAllHistory(pageable) : Page<SubscriptionHistoryResponseDTO>
+    }
+
+    class PlanServiceImpl implements PlanService {
+        -planRepository : PlanRepository
+        -planMapper : PlanMapper
+    }
+
+    class SubscriptionServiceImpl implements SubscriptionService {
+        -subscriptionRepository : SubscriptionRepository
+        -planRepository : PlanRepository
+        -membershipRepository : UserMembershipRepository
+        -kafkaTemplate : KafkaTemplate
+    }
+
+    class MembershipServiceImpl implements MembershipService {
+        -membershipRepository : UserMembershipRepository
+    }
+
+    class SubscriptionHistoryServiceImpl implements SubscriptionHistoryService {
+        -historyRepository : SubscriptionHistoryRepository
+    }
+}
+
+' ═══════════════════════════════════════
+'  LAYER : CONTROLLER  (API)
+' ═══════════════════════════════════════
+package "Controller (API Layer)" #F0FFF0 {
+
+    class PlanController {
+        -planService : PlanService
+        +getAllActivePlans() : ResponseEntity
+        +getPlanById(id) : ResponseEntity
+    }
+
+    class AdminPlanController {
+        -planService : PlanService
+        +createPlan(dto) : ResponseEntity
+        +updatePlan(id, dto) : ResponseEntity
+        +deletePlan(id) : ResponseEntity
+        +getAllPlans(pageable) : ResponseEntity
+    }
+
+    class UserSubscriptionController {
+        -subscriptionService : SubscriptionService
+        +subscribe(planId) : ResponseEntity
+        +cancelSubscription() : ResponseEntity
+        +pauseSubscription() : ResponseEntity
+        +resumeSubscription() : ResponseEntity
+        +freezeSubscription(days) : ResponseEntity
+        +changePlan(planId) : ResponseEntity
+        +getMySubscription() : ResponseEntity
+    }
+
+    class AdminSubscriptionController {
+        -subscriptionService : SubscriptionService
+        +getAllSubscriptions(filter) : ResponseEntity
+        +getSubscriptionByUser(userId) : ResponseEntity
+    }
+
+    class MembershipController {
+        -membershipService : MembershipService
+        +getMembershipStatus() : ResponseEntity
+    }
+
+    class SubscriptionHistoryController {
+        -historyService : SubscriptionHistoryService
+        +getMyHistory() : ResponseEntity
+        +getAllHistory(pageable) : ResponseEntity
+    }
+}
+
+' ─── Dependencies ───
+PlanController ..> PlanService                       : uses
+AdminPlanController ..> PlanService                  : uses
+UserSubscriptionController ..> SubscriptionService   : uses
+AdminSubscriptionController ..> SubscriptionService  : uses
+MembershipController ..> MembershipService           : uses
+SubscriptionHistoryController ..> SubscriptionHistoryService : uses
+
+PlanServiceImpl ..> Plan             : manages
+SubscriptionServiceImpl ..> Subscription : manages
+SubscriptionServiceImpl ..> UserMembership : reads
+MembershipServiceImpl ..> UserMembership : manages
+SubscriptionHistoryServiceImpl ..> SubscriptionHistory : manages
+
+@enduml

@@ -1,0 +1,114 @@
+@startuml Sequence Diagram – Subscription & Payment
+
+skinparam sequenceArrowColor #2C6694
+skinparam sequenceBoxBorderColor #3A8EBA
+skinparam sequenceBoxBackgroundColor #EEF6FF
+skinparam participantBackgroundColor #EEF6FF
+skinparam participantBorderColor #3A8EBA
+skinparam actorBorderColor #2C6694
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+title Diagramme de Séquence – Souscription à un Plan & Paiement
+
+actor "Membre" as Member
+participant "UserSubscriptionController\n[Controller]" as SubCtrl
+participant "SubscriptionService\n[Service]" as SubSvc
+participant "SubscriptionRepository\n[Repository]" as SubRepo
+participant "PaymentController\n[Controller]" as PayCtrl
+participant "PaymentInitiationService\n[Service]" as PaySvc
+participant "PaymentGatewayPort\n(Stripe Adapter)" as Stripe
+participant "EventPublisherPort\n(Kafka)" as Kafka
+participant "PaymentEventListenerImpl\n[Kafka Consumer]" as PayListener
+database "Membership DB" as MemberDB
+database "Payment DB" as PayDB
+
+== Étape 1 : Souscrire à un plan ==
+
+Member -> SubCtrl : POST /api/subscriptions/subscribe\n{ planId } + JWT
+activate SubCtrl
+
+SubCtrl -> SubSvc : subscribe(userId, planId)
+activate SubSvc
+
+SubSvc -> SubRepo : findActiveByUserId(userId)
+SubRepo -> MemberDB : SELECT subscription WHERE user_id=?
+MemberDB --> SubRepo : null (pas d'abonnement actif)
+SubRepo --> SubSvc : null
+
+SubSvc -> SubRepo : save(Subscription{userId, planId, PENDING_PAYMENT})
+SubRepo -> MemberDB : INSERT INTO subscriptions ...
+MemberDB --> SubRepo : Subscription{id}
+SubRepo --> SubSvc : Subscription
+
+SubSvc --> SubCtrl : SubscriptionResponseDTO
+deactivate SubSvc
+SubCtrl --> Member : 201 Created { subscriptionId, status: PENDING_PAYMENT }
+deactivate SubCtrl
+
+== Étape 2 : Initier le paiement ==
+
+Member -> PayCtrl : POST /api/payments/membership\n{ subscriptionId, planId, paymentMethodToken }
+activate PayCtrl
+
+PayCtrl -> PaySvc : initiatePayment(command)
+activate PaySvc
+
+PaySvc -> PaySvc : create Payment.forMembership(userId, subscriptionId, planId, amount)
+
+PaySvc -> Stripe : createPaymentIntent(payment)
+activate Stripe
+Stripe --> PaySvc : GatewayResult { paymentIntentId, clientSecret }
+deactivate Stripe
+
+PaySvc -> PaySvc : payment.assignStripePaymentIntentId(intentId)
+PaySvc -> PayDB : save(Payment{...status: PENDING})
+
+PaySvc --> PayCtrl : InitiatePaymentResponse { clientSecret }
+deactivate PaySvc
+PayCtrl --> Member : 200 OK { clientSecret }
+deactivate PayCtrl
+
+== Étape 3 : Confirmation Stripe (Webhook) ==
+
+Stripe -> PayCtrl : POST /api/payments/webhook\n{ payload, signature }
+activate PayCtrl
+
+PayCtrl -> PaySvc : handleWebhook(WebhookCommand{payload, sig})
+activate PaySvc
+
+PaySvc -> PaySvc : webhookVerifier.verify(payload, sig)
+PaySvc -> PayDB : findByStripeIntentId(intentId)
+PayDB --> PaySvc : Payment
+
+PaySvc -> PaySvc : payment.markCompleted(intentId)
+PaySvc -> PayDB : save(payment)
+
+PaySvc -> Kafka : publish(PaymentCompletedEvent{userId, subscriptionId, planId})
+activate Kafka
+Kafka --> PaySvc : ack
+deactivate Kafka
+
+PaySvc --> PayCtrl : void
+deactivate PaySvc
+PayCtrl --> Stripe : 200 OK
+deactivate PayCtrl
+
+== Étape 4 : Membership-Service réagit à l'événement ==
+
+Kafka -> PayListener : consume(PaymentCompletedEvent)
+activate PayListener
+
+PayListener -> SubSvc : activateSubscription(subscriptionId)
+activate SubSvc
+SubSvc -> SubRepo : findById(subscriptionId)
+SubRepo --> SubSvc : Subscription{status: PENDING_PAYMENT}
+SubSvc -> SubSvc : subscription.setStatus(ACTIVE)\nsubscription.setStartDate(now)\nsubscription.setEndDate(now + durationInDays)
+SubSvc -> SubRepo : save(subscription)
+SubRepo -> MemberDB : UPDATE subscriptions SET status='ACTIVE', ...
+MemberDB --> SubRepo : ok
+SubSvc --> PayListener : void
+deactivate SubSvc
+deactivate PayListener
+
+@enduml

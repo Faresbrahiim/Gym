@@ -1,0 +1,177 @@
+@startuml Class Diagram – Payment-Service (MVC / Hexagonal)
+
+skinparam classBackgroundColor #EEF6FF
+skinparam classBorderColor #3A8EBA
+skinparam classHeaderBackgroundColor #3A8EBA
+skinparam classHeaderFontColor #FFFFFF
+skinparam ArrowColor #2C6694
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam packageBorderColor #3A8EBA
+skinparam packageBackgroundColor #F7FBFF
+
+title Diagramme de Classe – Payment-Service (Architecture MVC / Hexagonale)
+
+' ═══════════════════════════════════════
+'  LAYER : MODEL  (Domain)
+' ═══════════════════════════════════════
+package "Model (Domain)" #EEF6FF {
+
+    enum PaymentStatus {
+        PENDING
+        COMPLETED
+        FAILED
+        EXPIRED
+    }
+
+    enum PaymentTargetType {
+        MEMBERSHIP
+        ORDER
+    }
+
+    class Money {
+        -amount : BigDecimal
+        -currency : string
+        +Money(amount, currency)
+    }
+
+    class Payment {
+        -id : UUID
+        -userId : UUID
+        -targetType : PaymentTargetType
+        -subscriptionId : UUID?
+        -planId : UUID?
+        -orderId : UUID?
+        -amount : Money
+        -status : PaymentStatus
+        -stripePaymentIntentId : string?
+        -failureReason : string?
+        -createdAt : LocalDateTime
+        -completedAt : LocalDateTime?
+        +{static} forMembership(userId, subscriptionId, planId, amount) : Payment
+        +{static} forOrder(userId, orderId, amount) : Payment
+        +assignStripePaymentIntentId(id) : void
+        +markCompleted(intentId) : void
+        +markFailed(reason) : void
+        +getId() : UUID
+        +getStatus() : PaymentStatus
+        +getAmount() : Money
+    }
+
+    Payment --> PaymentStatus
+    Payment --> PaymentTargetType
+    Payment "1" *-- "1" Money : montant
+}
+
+' ═══════════════════════════════════════
+'  LAYER : SERVICE  (Application)
+' ═══════════════════════════════════════
+package "Service (Application Layer)" #FFF8E7 {
+
+    interface InitiatePaymentUseCase {
+        +initiatePayment(command) : InitiatePaymentResponse
+    }
+
+    interface InitiateOrderPaymentUseCase {
+        +initiateOrderPayment(command) : InitiatePaymentResponse
+    }
+
+    interface HandleWebhookUseCase {
+        +handleWebhook(command) : void
+    }
+
+    interface GetMyPaymentHistoryUseCase {
+        +getHistory(userId, pageable) : PagedResult<PaymentResponse>
+    }
+
+    interface GetAllPaymentsUseCase {
+        +getAllPayments(query) : PagedResult<PaymentResponse>
+    }
+
+    interface ExpirePendingPaymentUseCase {
+        +expirePendingPayments() : void
+    }
+
+    class PaymentInitiationService implements InitiatePaymentUseCase {
+        -paymentRepository : PaymentRepository
+        -paymentGateway : PaymentGatewayPort
+        -planGateway : PlanGatewayPort
+        -subscriptionGateway : SubscriptionGatewayPort
+        -eventPublisher : EventPublisherPort
+    }
+
+    class PaymentWebhookService implements HandleWebhookUseCase {
+        -paymentRepository : PaymentRepository
+        -webhookVerifier : WebhookVerifierPort
+        -eventPublisher : EventPublisherPort
+    }
+
+    class PaymentQueryService implements GetMyPaymentHistoryUseCase, GetAllPaymentsUseCase {
+        -paymentRepository : PaymentRepository
+    }
+}
+
+' ═══════════════════════════════════════
+'  LAYER : CONTROLLER  (API / Adapter In)
+' ═══════════════════════════════════════
+package "Controller (API Layer)" #F0FFF0 {
+
+    class PaymentController {
+        -initiatePaymentUseCase : InitiatePaymentUseCase
+        -initiateOrderPaymentUseCase : InitiateOrderPaymentUseCase
+        -getHistoryUseCase : GetMyPaymentHistoryUseCase
+        -getAllPaymentsUseCase : GetAllPaymentsUseCase
+        +initiateSubscriptionPayment(command) : ResponseEntity
+        +initiateOrderPayment(command) : ResponseEntity
+        +getMyPaymentHistory(pageable) : ResponseEntity
+        +getAllPayments(query) : ResponseEntity
+        +getLatestSubscriptionPayment() : ResponseEntity
+    }
+
+    class WebhookController {
+        -handleWebhookUseCase : HandleWebhookUseCase
+        +handleStripeWebhook(payload, signature) : ResponseEntity
+    }
+}
+
+' ═══════════════════════════════════════
+'  INFRASTRUCTURE  (Adapter Out)
+' ═══════════════════════════════════════
+package "Infrastructure (Adapters Out)" #FFF0F0 {
+
+    interface PaymentRepository {
+        +save(payment) : Payment
+        +findById(id) : Optional<Payment>
+        +findByUserId(userId, pageable) : Page<Payment>
+        +findAllPending() : List<Payment>
+    }
+
+    interface PaymentGatewayPort {
+        +createPaymentIntent(payment) : GatewayResult
+    }
+
+    interface EventPublisherPort {
+        +publish(event) : void
+    }
+
+    class PaymentPersistenceAdapter implements PaymentRepository {
+        -springDataPaymentRepository : SpringDataPaymentRepository
+        -entityMapper : PaymentEntityMapper
+    }
+}
+
+' ─── Dependencies ───
+PaymentController ..> InitiatePaymentUseCase         : uses
+PaymentController ..> InitiateOrderPaymentUseCase    : uses
+PaymentController ..> GetMyPaymentHistoryUseCase     : uses
+PaymentController ..> GetAllPaymentsUseCase          : uses
+WebhookController ..> HandleWebhookUseCase           : uses
+
+PaymentInitiationService ..> Payment  : crée
+PaymentWebhookService ..> Payment     : met à jour
+PaymentQueryService ..> Payment       : consulte
+PaymentInitiationService ..> PaymentRepository : persiste
+PaymentInitiationService ..> PaymentGatewayPort : appelle
+PaymentInitiationService ..> EventPublisherPort : publie
+
+@enduml

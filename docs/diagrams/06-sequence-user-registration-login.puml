@@ -1,0 +1,115 @@
+@startuml Sequence Diagram – User Registration & Login
+
+skinparam sequenceArrowColor #2C6694
+skinparam sequenceBoxBorderColor #3A8EBA
+skinparam sequenceBoxBackgroundColor #EEF6FF
+skinparam participantBackgroundColor #EEF6FF
+skinparam participantBorderColor #3A8EBA
+skinparam actorBorderColor #2C6694
+skinparam shadowing false
+skinparam responseMessageBelowArrow true
+
+title Diagramme de Séquence – Inscription & Connexion (User-Service)
+
+actor "Utilisateur" as User
+participant "AuthController\n[Controller]" as Ctrl
+participant "AuthService\n[Service]" as Svc
+participant "IUserRepository\n[Repository]" as Repo
+participant "IEmailService\n[Service]" as Email
+participant "ITokenService\n[Service]" as TokenSvc
+database "PostgreSQL\n(users DB)" as DB
+queue "Kafka\n[Event Bus]" as Kafka
+
+== Inscription ==
+
+User -> Ctrl : POST /api/auth/register\n{ email, username, password }
+activate Ctrl
+
+Ctrl -> Svc : RegisterAsync(request)
+activate Svc
+
+Svc -> Repo : ExistsByEmail(email)
+activate Repo
+Repo -> DB : SELECT * FROM users WHERE email=?
+DB --> Repo : null
+Repo --> Svc : false
+deactivate Repo
+
+Svc -> Svc : HashPassword(password)
+Svc -> Repo : AddAsync(newUser)
+activate Repo
+Repo -> DB : INSERT INTO users ...
+DB --> Repo : User{id, ...}
+Repo --> Svc : User
+deactivate Repo
+
+Svc -> TokenSvc : GenerateEmailVerificationToken(userId)
+TokenSvc --> Svc : token
+
+Svc -> Email : SendVerificationEmail(email, token)
+activate Email
+Email --> Svc : void
+deactivate Email
+
+Svc -> Kafka : Publish(UserRegisteredEvent{userId, email})
+activate Kafka
+Kafka --> Svc : ack
+deactivate Kafka
+
+Svc --> Ctrl : UserResponseDTO
+deactivate Svc
+
+Ctrl --> User : 200 OK { id, email, username, role }
+deactivate Ctrl
+
+== Vérification Email ==
+
+User -> Ctrl : POST /api/auth/verify-email { token }
+activate Ctrl
+Ctrl -> Svc : VerifyEmailAsync(token)
+activate Svc
+Svc -> Repo : FindUserByToken(token)
+Repo --> Svc : User
+Svc -> Repo : ActivateUser(userId)
+Repo -> DB : UPDATE users SET status='ACTIVE' ...
+DB --> Repo : ok
+Repo --> Svc : ok
+Svc --> Ctrl : void
+deactivate Svc
+Ctrl --> User : 200 OK { message: "Email verified" }
+deactivate Ctrl
+
+== Connexion (Email) ==
+
+User -> Ctrl : POST /api/auth/login/email\n{ email, password }
+activate Ctrl
+Ctrl -> Svc : LoginWithEmail(request)
+activate Svc
+
+Svc -> Repo : FindByEmail(email)
+activate Repo
+Repo -> DB : SELECT * FROM users WHERE email=?
+DB --> Repo : User
+Repo --> Svc : User
+deactivate Repo
+
+Svc -> Svc : VerifyPassword(plain, hash)
+
+alt 2FA activée
+    Svc --> Ctrl : { requires2FA: true, userId }
+    Ctrl --> User : 200 { requires2FA: true }
+    User -> Ctrl : POST /api/auth/2fa/verify { userId, code }
+    Ctrl -> Svc : VerifyTwoFactorLogin(userId, code)
+    Svc -> Svc : ValidateTOTP(code, secret)
+end
+
+Svc -> TokenSvc : GenerateAccessToken(user)
+Svc -> TokenSvc : GenerateRefreshToken(userId)
+TokenSvc --> Svc : { accessToken, refreshToken }
+
+Svc --> Ctrl : AuthResponseDTO { accessToken, refreshToken }
+deactivate Svc
+Ctrl --> User : 200 OK { accessToken, refreshToken }
+deactivate Ctrl
+
+@enduml
