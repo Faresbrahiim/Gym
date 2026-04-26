@@ -37,6 +37,11 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Bad Request", e.getMessage());
     }
 
+    @ExceptionHandler(ConcurrentPaymentUpdateException.class)
+    public ResponseEntity<Map<String, Object>> handleConcurrentUpdate(ConcurrentPaymentUpdateException e) {
+        return build(HttpStatus.CONFLICT, "Conflict", e.getMessage());
+    }
+
     @ExceptionHandler(PaymentGatewayException.class)
     public ResponseEntity<Map<String, Object>> handleGateway(PaymentGatewayException e) {
         log.error("Payment gateway error: {}", e.getMessage());

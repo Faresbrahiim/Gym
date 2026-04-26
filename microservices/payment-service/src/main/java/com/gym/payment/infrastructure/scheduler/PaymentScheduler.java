@@ -1,12 +1,10 @@
 package com.gym.payment.infrastructure.scheduler;
 
-import com.gym.payment.domain.event.PaymentExpiredEvent;
-import com.gym.payment.domain.event.OrderPaymentExpiredEvent;
 import com.gym.payment.domain.model.Payment;
 import com.gym.payment.domain.model.PaymentStatus;
-import com.gym.payment.domain.model.PaymentTargetType;
-import com.gym.payment.domain.port.out.EventPublisherPort;
+import com.gym.payment.domain.port.in.ExpirePendingPaymentUseCase;
 import com.gym.payment.domain.port.out.PaymentRepository;
+import com.gym.payment.infrastructure.config.PaymentProperties;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,17 +16,17 @@ import java.util.List;
 public class PaymentScheduler {
 
     private final PaymentRepository paymentRepository;
-    private final EventPublisherPort eventPublisherPort;
+    private final ExpirePendingPaymentUseCase expirePendingPaymentUseCase;
     private final long pendingPaymentTimeoutMinutes;
 
     public PaymentScheduler(
             PaymentRepository paymentRepository,
-            EventPublisherPort eventPublisherPort,
-            @org.springframework.beans.factory.annotation.Value("${payment.pending-timeout-minutes:2}") long pendingPaymentTimeoutMinutes
+            ExpirePendingPaymentUseCase expirePendingPaymentUseCase,
+            PaymentProperties paymentProperties
     ) {
         this.paymentRepository = paymentRepository;
-        this.eventPublisherPort = eventPublisherPort;
-        this.pendingPaymentTimeoutMinutes = pendingPaymentTimeoutMinutes;
+        this.expirePendingPaymentUseCase = expirePendingPaymentUseCase;
+        this.pendingPaymentTimeoutMinutes = paymentProperties.getPendingTimeoutMinutes();
     }
 
     @Scheduled(fixedRate = 60000)
@@ -39,23 +37,7 @@ public class PaymentScheduler {
 
         for (Payment payment : stalePayments) {
             String reason = "Payment attempt expired after " + pendingPaymentTimeoutMinutes + " minutes";
-            payment.markFailed(reason);
-            paymentRepository.save(payment);
-            if (payment.getTargetType() == PaymentTargetType.ORDER) {
-                eventPublisherPort.publish("order-payment.expired", new OrderPaymentExpiredEvent(
-                        payment.getId(),
-                        payment.getOrderId(),
-                        payment.getUserId(),
-                        reason
-                ));
-            } else {
-                eventPublisherPort.publish("payment.expired", new PaymentExpiredEvent(
-                        payment.getId(),
-                        payment.getSubscriptionId(),
-                        payment.getUserId(),
-                        reason
-                ));
-            }
+            expirePendingPaymentUseCase.expirePendingPayment(payment, reason);
         }
     }
 }

@@ -26,59 +26,72 @@ public class KafkaEventPublisherAdapter implements EventPublisherPort {
     }
 
     @Override
-    public void publish(String topic, Object event) {
-        if (event instanceof PaymentCompletedEvent e) {
-            PaymentCompletedMessage message = new PaymentCompletedMessage(
-                    e.paymentId().toString(),
-                    e.subscriptionId().toString(),
-                    e.userId().toString(),
-                    e.amount().toPlainString(),
-                    e.currency(),
-                    e.completedAt().toString()
-            );
-            kafkaTemplate.send(topic, e.paymentId().toString(), message);
-        } else if (event instanceof OrderPaymentCompletedEvent e) {
-            OrderPaymentCompletedMessage message = new OrderPaymentCompletedMessage(
-                    e.paymentId().toString(),
-                    e.orderId().toString(),
-                    e.userId().toString(),
-                    e.amount().toPlainString(),
-                    e.currency(),
-                    e.completedAt().toString()
-            );
-            kafkaTemplate.send(topic, e.paymentId().toString(), message);
-        } else if (event instanceof PaymentFailedEvent e) {
-            PaymentFailedMessage message = new PaymentFailedMessage(
-                    e.paymentId().toString(),
-                    e.subscriptionId().toString(),
-                    e.userId().toString(),
-                    e.failureReason()
-            );
-            kafkaTemplate.send(topic, e.paymentId().toString(), message);
-        } else if (event instanceof OrderPaymentFailedEvent e) {
-            OrderPaymentFailedMessage message = new OrderPaymentFailedMessage(
-                    e.paymentId().toString(),
-                    e.orderId().toString(),
-                    e.userId().toString(),
-                    e.failureReason()
-            );
-            kafkaTemplate.send(topic, e.paymentId().toString(), message);
-        } else if (event instanceof PaymentExpiredEvent e) {
-            PaymentExpiredMessage message = new PaymentExpiredMessage(
-                    e.paymentId().toString(),
-                    e.subscriptionId().toString(),
-                    e.userId().toString(),
-                    e.reason()
-            );
-            kafkaTemplate.send(topic, e.paymentId().toString(), message);
-        } else if (event instanceof OrderPaymentExpiredEvent e) {
-            OrderPaymentExpiredMessage message = new OrderPaymentExpiredMessage(
-                    e.paymentId().toString(),
-                    e.orderId().toString(),
-                    e.userId().toString(),
-                    e.reason()
-            );
-            kafkaTemplate.send(topic, e.paymentId().toString(), message);
-        }
+    public void publish(PaymentCompletedEvent event) {
+        PaymentCompletedMessage message = new PaymentCompletedMessage(
+                event.paymentId().toString(),
+                event.subscriptionId().toString(),
+                event.userId().toString(),
+                event.amount().toPlainString(),
+                event.currency(),
+                event.completedAt().toString()
+        );
+        kafkaTemplate.send(PaymentTopicNames.MEMBERSHIP_COMPLETED, event.paymentId().toString(), message);
+    }
+
+    @Override
+    public void publish(PaymentFailedEvent event) {
+        PaymentFailedMessage message = new PaymentFailedMessage(
+                event.paymentId().toString(),
+                event.subscriptionId().toString(),
+                event.userId().toString(),
+                event.failureReason()
+        );
+        kafkaTemplate.send(PaymentTopicNames.MEMBERSHIP_FAILED, event.paymentId().toString(), message);
+    }
+
+    @Override
+    public void publish(PaymentExpiredEvent event) {
+        PaymentExpiredMessage message = new PaymentExpiredMessage(
+                event.paymentId().toString(),
+                event.subscriptionId().toString(),
+                event.userId().toString(),
+                event.reason()
+        );
+        kafkaTemplate.send(PaymentTopicNames.MEMBERSHIP_EXPIRED, event.paymentId().toString(), message);
+    }
+
+    @Override
+    public void publish(OrderPaymentCompletedEvent event) {
+        OrderPaymentCompletedMessage message = new OrderPaymentCompletedMessage(
+                event.paymentId().toString(),
+                event.orderId().toString(),
+                event.userId().toString(),
+                event.amount().toPlainString(),
+                event.currency(),
+                event.completedAt().toString()
+        );
+        kafkaTemplate.send(PaymentTopicNames.ORDER_COMPLETED, event.paymentId().toString(), message);
+    }
+
+    @Override
+    public void publish(OrderPaymentFailedEvent event) {
+        OrderPaymentFailedMessage message = new OrderPaymentFailedMessage(
+                event.paymentId().toString(),
+                event.orderId().toString(),
+                event.userId().toString(),
+                event.failureReason()
+        );
+        kafkaTemplate.send(PaymentTopicNames.ORDER_FAILED, event.paymentId().toString(), message);
+    }
+
+    @Override
+    public void publish(OrderPaymentExpiredEvent event) {
+        OrderPaymentExpiredMessage message = new OrderPaymentExpiredMessage(
+                event.paymentId().toString(),
+                event.orderId().toString(),
+                event.userId().toString(),
+                event.reason()
+        );
+        kafkaTemplate.send(PaymentTopicNames.ORDER_EXPIRED, event.paymentId().toString(), message);
     }
 }

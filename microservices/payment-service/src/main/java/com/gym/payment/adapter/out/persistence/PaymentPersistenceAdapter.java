@@ -1,8 +1,8 @@
 package com.gym.payment.adapter.out.persistence;
 
+import com.gym.payment.domain.exception.ConcurrentPaymentUpdateException;
 import com.gym.payment.domain.model.Payment;
 import com.gym.payment.domain.model.PaymentStatus;
-import com.gym.payment.domain.model.PaymentTargetType;
 import com.gym.payment.domain.port.in.GetAllPaymentsQuery;
 import com.gym.payment.domain.port.in.PagedResult;
 import com.gym.payment.domain.port.out.PaymentRepository;
@@ -35,16 +35,24 @@ public class PaymentPersistenceAdapter implements PaymentRepository {
         try {
             PaymentJpaEntity entity = repository.findById(payment.getId())
                     .map(existing -> {
+                        existing.setUserId(payment.getUserId());
+                        existing.setTargetType(payment.getTargetType());
+                        existing.setSubscriptionId(payment.getSubscriptionId());
+                        existing.setPlanId(payment.getPlanId());
+                        existing.setOrderId(payment.getOrderId());
+                        existing.setAmount(payment.getAmount().amount());
+                        existing.setCurrency(payment.getAmount().currency());
                         existing.setStatus(payment.getStatus());
                         existing.setStripePaymentIntentId(payment.getStripePaymentIntentId());
                         existing.setFailureReason(payment.getFailureReason());
+                        existing.setCreatedAt(payment.getCreatedAt());
                         existing.setCompletedAt(payment.getCompletedAt());
                         return existing;
                     })
                     .orElseGet(() -> mapper.toEntity(payment));
             return mapper.toDomain(repository.save(entity));
         } catch (ObjectOptimisticLockingFailureException e) {
-            return payment;
+            throw new ConcurrentPaymentUpdateException("Payment " + payment.getId() + " was updated concurrently", e);
         }
     }
 

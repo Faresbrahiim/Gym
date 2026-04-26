@@ -6,7 +6,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${PAYMENT_HIBERNATE_DDL_AUTO:update}
     show-sql: false
     properties:
       hibernate:
@@ -36,6 +36,7 @@ cart-service:
 
 payment:
   pending-timeout-minutes: ${PAYMENT_PENDING_TIMEOUT_MINUTES:2}
+  default-currency: ${PAYMENT_DEFAULT_CURRENCY:USD}
 
 server:
   port: 8080

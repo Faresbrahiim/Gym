@@ -1,12 +1,10 @@
 package com.gym.payment.adapter.in.web;
 
-import com.gym.payment.adapter.out.gateway.StripePaymentGatewayAdapter;
 import com.gym.payment.domain.exception.WebhookSignatureException;
 import com.gym.payment.domain.port.in.HandleWebhookUseCase;
 import com.gym.payment.domain.port.in.WebhookCommand;
-import com.stripe.model.Event;
-import com.stripe.model.PaymentIntent;
-import com.stripe.model.StripeObject;
+import com.gym.payment.domain.port.out.VerifiedWebhook;
+import com.gym.payment.domain.port.out.WebhookVerifierPort;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,12 +19,12 @@ public class WebhookController {
     private static final Logger log = LoggerFactory.getLogger(WebhookController.class);
 
     private final HandleWebhookUseCase handleWebhookUseCase;
-    private final StripePaymentGatewayAdapter stripeAdapter;
+    private final WebhookVerifierPort webhookVerifierPort;
 
     public WebhookController(HandleWebhookUseCase handleWebhookUseCase,
-                             StripePaymentGatewayAdapter stripeAdapter) {
+                             WebhookVerifierPort webhookVerifierPort) {
         this.handleWebhookUseCase = handleWebhookUseCase;
-        this.stripeAdapter = stripeAdapter;
+        this.webhookVerifierPort = webhookVerifierPort;
     }
 
     @PostMapping("/webhook")
@@ -34,47 +32,30 @@ public class WebhookController {
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String sigHeader) {
 
-        Event event;
+        VerifiedWebhook webhook;
         try {
-            event = StripePaymentGatewayAdapter.verifyWebhookSignature(
-                    payload, sigHeader, stripeAdapter.getWebhookSecret()
-            );
+            webhook = webhookVerifierPort.verify(payload, sigHeader);
         } catch (WebhookSignatureException e) {
             log.warn("Invalid webhook signature: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        StripeObject stripeObject;
-        try {
-            stripeObject = event.getDataObjectDeserializer().deserializeUnsafe();
-        } catch (Exception e) {
-            log.warn("Webhook event {} could not be deserialized (API version mismatch?): {}", event.getId(), e.getMessage());
+        if (webhook.paymentIntentId() == null) {
+            log.warn("Webhook event {} could not be mapped to a supported payment intent, ignoring", webhook.eventId());
             return ResponseEntity.ok().build();
         }
-
-        if (!(stripeObject instanceof PaymentIntent)) {
-            log.warn("Webhook event {} is not a PaymentIntent, ignoring", event.getId());
-            return ResponseEntity.ok().build();
-        }
-
-        PaymentIntent intent = (PaymentIntent) stripeObject;
-        String failureReason = intent.getLastPaymentError() != null
-                ? intent.getLastPaymentError().getMessage()
-                : null;
 
         WebhookCommand command = new WebhookCommand(
-                event.getId(),
-                intent.getId(),
-                event.getType(),
-                failureReason,
-                payload,
-                sigHeader
+                webhook.eventId(),
+                webhook.paymentIntentId(),
+                webhook.eventType(),
+                webhook.failureReason()
         );
 
         try {
             handleWebhookUseCase.execute(command);
         } catch (Exception e) {
-            log.error("Webhook processing failed for event {}: {}", event.getId(), e.getMessage());
+            log.error("Webhook processing failed for event {}: {}", webhook.eventId(), e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 

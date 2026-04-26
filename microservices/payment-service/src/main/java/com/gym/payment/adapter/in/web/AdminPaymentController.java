@@ -1,5 +1,6 @@
 package com.gym.payment.adapter.in.web;
 
+import com.gym.payment.adapter.in.web.mapper.PaymentWebMapper;
 import com.gym.payment.adapter.in.web.dto.PaymentResponse;
 import com.gym.payment.domain.model.PaymentStatus;
 import com.gym.payment.domain.model.PaymentTargetType;
@@ -20,9 +21,12 @@ import java.util.UUID;
 public class AdminPaymentController {
 
     private final GetAllPaymentsUseCase getAllPaymentsUseCase;
+    private final PaymentWebMapper paymentWebMapper;
 
-    public AdminPaymentController(GetAllPaymentsUseCase getAllPaymentsUseCase) {
+    public AdminPaymentController(GetAllPaymentsUseCase getAllPaymentsUseCase,
+                                  PaymentWebMapper paymentWebMapper) {
         this.getAllPaymentsUseCase = getAllPaymentsUseCase;
+        this.paymentWebMapper = paymentWebMapper;
     }
 
     @GetMapping
@@ -35,15 +39,7 @@ public class AdminPaymentController {
 
         GetAllPaymentsQuery query = new GetAllPaymentsQuery(userId, status, targetType, from, to);
 
-        List<PaymentResponse> responses = getAllPaymentsUseCase.execute(query)
-                .stream()
-                .map(r -> new PaymentResponse(
-                        r.id(), r.userId(), r.targetType(), r.subscriptionId(), r.planId(), r.orderId(),
-                        r.amount(), r.currency(), r.status(),
-                        r.stripePaymentIntentId(), r.failureReason(),
-                        r.createdAt(), r.completedAt()
-                ))
-                .toList();
+        List<PaymentResponse> responses = paymentWebMapper.toPaymentResponses(getAllPaymentsUseCase.execute(query));
 
         return ResponseEntity.ok(responses);
     }
