@@ -218,25 +218,26 @@
                 }
               </div>
               <div class="noti-content">
-                <ul class="notification-list">
-                  @if (notificationCenter.loading()) {
-                    <li class="notification-message">
-                      <div class="media d-flex">
-                        <div class="media-body">
-                          <h6>Loading notifications...</h6>
-                        </div>
-                      </div>
-                    </li>
-                  } @else if (notificationCenter.notifications().length === 0) {
-                    <li class="notification-message">
-                      <div class="media d-flex">
-                        <div class="media-body">
-                          <h6>No new notifications</h6>
-                          <p class="noti-details">You're all caught up</p>
-                        </div>
-                      </div>
-                    </li>
-                  } @else {
+                @if (notificationCenter.loading()) {
+                  <div class="notification-state">
+                    <span class="notification-state__spinner"></span>
+                    <div class="notification-state__copy">
+                      <h6>Loading notifications...</h6>
+                      <p>Pulling in your latest updates.</p>
+                    </div>
+                  </div>
+                } @else if (notificationCenter.notifications().length === 0) {
+                  <div class="notification-state notification-state--empty">
+                    <span class="notification-state__icon">
+                      <i class="feather-bell-off"></i>
+                    </span>
+                    <div class="notification-state__copy">
+                      <h6>No new notifications</h6>
+                      <p>You're all caught up for now.</p>
+                    </div>
+                  </div>
+                } @else {
+                  <ul class="notification-list">
                     @for (notification of notificationCenter.notifications().slice(0, 8); track notification.id) {
                       <li class="notification-message" [class.notification-message--unread]="notification.status === 'UNREAD'">
                         <a href="javascript:void(0);" (click)="onNotificationSelected(notification, $event)">
@@ -263,8 +264,8 @@
                         </a>
                       </li>
                     }
-                  }
-                </ul>
+                  </ul>
+                }
               </div>
             </div>
           </li>

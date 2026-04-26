@@ -84,6 +84,56 @@
   color: #8a98a8;
 }
 
+.notification-state {
+  min-height: 180px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  color: #637987;
+}
+
+.notification-state__spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(23, 124, 130, 0.14);
+  border-top-color: #177c82;
+  animation: header-people-spin 0.8s linear infinite;
+}
+
+.notification-state__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: #eef5f7;
+  color: #728794;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.notification-state--empty .notification-state__icon {
+  background: linear-gradient(180deg, #f6fafb 0%, #eef5f7 100%);
+}
+
+.notification-state__copy h6 {
+  margin: 0;
+  color: #17313a;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.notification-state__copy p {
+  margin: 6px 0 0;
+  color: #6e8290;
+  font-size: 13px;
+}
+
 .header-people-search {
   flex: 1 1 360px;
   max-width: 420px;
