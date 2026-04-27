@@ -103,4 +103,15 @@ class BookingRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function findWithSession(Uuid $id): ?Booking
+    {
+        return $this->createQueryBuilder('b')
+            ->addSelect('s')
+            ->innerJoin('b.session', 's')
+            ->where('b.id = :id')
+            ->setParameter('id', $id, UuidType::NAME)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
