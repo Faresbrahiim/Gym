@@ -1,0 +1,21 @@
+security:
+    providers:
+        jwt_provider:
+            memory: ~
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: false
+            stateless: true
+            custom_authenticators:
+                - App\Security\JwtAuthenticator
+            entry_point: App\Security\JwtAuthenticator
+
+    access_control:
+        - { path: ^/api/coach,    roles: ROLE_COACH  }
+        - { path: ^/api/sessions, roles: ROLE_MEMBER }
+        - { path: ^/api/me,       roles: ROLE_MEMBER }
