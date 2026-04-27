@@ -22,7 +22,7 @@ class Booking
     #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     private ?Uuid $id = null;
 
-    #[ORM\ManyToOne(targetEntity: CourtSession::class, inversedBy: 'bookings')]
+    #[ORM\ManyToOne(targetEntity: CourtSession::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private CourtSession $session;
 

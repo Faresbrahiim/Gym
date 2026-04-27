@@ -6,8 +6,6 @@ namespace App\Entity;
 
 use App\Enum\SessionStatus;
 use App\Repository\CourtSessionRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
@@ -56,16 +54,11 @@ class CourtSession
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
 
-    /** @var Collection<int, Booking> */
-    #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'session', cascade: ['remove'], orphanRemoval: true)]
-    private Collection $bookings;
-
     public function __construct()
     {
         $this->status    = SessionStatus::OPEN;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
-        $this->bookings  = new ArrayCollection();
     }
 
     #[ORM\PreUpdate]
@@ -186,11 +179,5 @@ class CourtSession
     public function getUpdatedAt(): \DateTimeImmutable
     {
         return $this->updatedAt;
-    }
-
-    /** @return Collection<int, Booking> */
-    public function getBookings(): Collection
-    {
-        return $this->bookings;
     }
 }

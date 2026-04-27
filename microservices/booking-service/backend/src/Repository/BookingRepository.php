@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Booking;
-use App\Entity\CourtSession;
 use App\Enum\BookingStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -30,37 +29,39 @@ class BookingRepository extends ServiceEntityRepository
         }
     }
 
-    public function findActiveBySessionAndUser(CourtSession $session, Uuid $userId): ?Booking
+    public function findActiveBySessionAndUser(Uuid $sessionId, Uuid $userId): ?Booking
     {
         return $this->createQueryBuilder('b')
-            ->where('b.session = :session')
+            ->where('IDENTITY(b.session) = :sessionId')
             ->andWhere('b.userId = :userId')
             ->andWhere('b.status IN (:activeStatuses)')
-            ->setParameter('session', $session)
+            ->setParameter('sessionId', $sessionId, UuidType::NAME)
             ->setParameter('userId', $userId, UuidType::NAME)
             ->setParameter('activeStatuses', [BookingStatus::PENDING->value, BookingStatus::ACCEPTED->value])
             ->getQuery()
             ->getOneOrNullResult();
     }
 
-    public function countAcceptedBySession(CourtSession $session): int
+    public function countAcceptedBySession(Uuid $sessionId): int
     {
         return (int) $this->createQueryBuilder('b')
             ->select('COUNT(b.id)')
-            ->where('b.session = :session')
+            ->where('IDENTITY(b.session) = :sessionId')
             ->andWhere('b.status = :status')
-            ->setParameter('session', $session)
+            ->setParameter('sessionId', $sessionId, UuidType::NAME)
             ->setParameter('status', BookingStatus::ACCEPTED->value)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
     /** @return Booking[] */
-    public function findBySessionPaginated(CourtSession $session, int $page, int $pageSize): array
+    public function findBySessionPaginated(Uuid $sessionId, int $page, int $pageSize): array
     {
         return $this->createQueryBuilder('b')
-            ->where('b.session = :session')
-            ->setParameter('session', $session)
+            ->addSelect('s')
+            ->innerJoin('b.session', 's')
+            ->where('IDENTITY(b.session) = :sessionId')
+            ->setParameter('sessionId', $sessionId, UuidType::NAME)
             ->orderBy('b.createdAt', 'DESC')
             ->setFirstResult(($page - 1) * $pageSize)
             ->setMaxResults($pageSize)
@@ -68,12 +69,12 @@ class BookingRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function countBySession(CourtSession $session): int
+    public function countBySession(Uuid $sessionId): int
     {
         return (int) $this->createQueryBuilder('b')
             ->select('COUNT(b.id)')
-            ->where('b.session = :session')
-            ->setParameter('session', $session)
+            ->where('IDENTITY(b.session) = :sessionId')
+            ->setParameter('sessionId', $sessionId, UuidType::NAME)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -82,6 +83,8 @@ class BookingRepository extends ServiceEntityRepository
     public function findByUserPaginated(Uuid $userId, int $page, int $pageSize): array
     {
         return $this->createQueryBuilder('b')
+            ->addSelect('s')
+            ->innerJoin('b.session', 's')
             ->where('b.userId = :userId')
             ->setParameter('userId', $userId, UuidType::NAME)
             ->orderBy('b.createdAt', 'DESC')
