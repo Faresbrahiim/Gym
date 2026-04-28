@@ -9,6 +9,7 @@ use App\Enum\BookingStatus;
 use App\Enum\SessionStatus;
 use App\Exception\BookingNotFoundException;
 use App\Exception\DuplicateBookingException;
+use App\Exception\MembershipBookingNotAllowedException;
 use App\Exception\SessionFullException;
 use App\Exception\SessionNotAvailableException;
 use App\Exception\SessionNotFoundException;
@@ -23,6 +24,7 @@ final class BookingService
         private readonly BookingRepository $bookingRepository,
         private readonly CourtSessionRepository $sessionRepository,
         private readonly UserSummaryService $userSummaryService,
+        private readonly MembershipEligibilityService $membershipEligibilityService,
     ) {}
 
     public function bookSession(string $sessionId, string $userId): Booking
@@ -32,20 +34,27 @@ final class BookingService
 
         $session = $this->sessionRepository->find($sessionUuid);
         if ($session === null) {
-            throw new SessionNotFoundException($sessionId);
+            throw new SessionNotFoundException();
         }
 
         if ($session->getStatus() !== SessionStatus::OPEN) {
-            throw new SessionNotAvailableException($sessionId);
+            throw new SessionNotAvailableException();
         }
 
-        if ($this->bookingRepository->findActiveBySessionAndUser($sessionUuid, $userUuid) !== null) {
+        if ($this->bookingRepository->findBySessionAndUser($sessionUuid, $userUuid) !== null) {
             throw new DuplicateBookingException();
+        }
+
+        $eligibility = $this->membershipEligibilityService->getBookingEligibility();
+        if (!$eligibility->allowed) {
+            throw new MembershipBookingNotAllowedException(
+                $eligibility->reason ?? 'Your current membership plan does not include coach session booking.'
+            );
         }
 
         $accepted = $this->bookingRepository->countAcceptedBySession($sessionUuid);
         if ($accepted >= $session->getMaxParticipants()) {
-            throw new SessionFullException($sessionId);
+            throw new SessionFullException();
         }
 
         $member = $this->userSummaryService->getUserSummary($userId);
@@ -65,7 +74,7 @@ final class BookingService
     {
         $booking = $this->bookingRepository->findWithSession(Uuid::fromString($bookingId));
         if ($booking === null) {
-            throw new BookingNotFoundException($bookingId);
+            throw new BookingNotFoundException();
         }
 
         if (!$booking->getSession()->getCoachId()->equals(Uuid::fromString($coachId))) {
@@ -80,7 +89,7 @@ final class BookingService
             $booking->getSession()->getId(),
         );
         if ($accepted >= $booking->getSession()->getMaxParticipants()) {
-            throw new SessionFullException((string) $booking->getSession()->getId());
+            throw new SessionFullException();
         }
 
         $booking->setStatus(BookingStatus::ACCEPTED);
@@ -93,7 +102,7 @@ final class BookingService
     {
         $booking = $this->bookingRepository->findWithSession(Uuid::fromString($bookingId));
         if ($booking === null) {
-            throw new BookingNotFoundException($bookingId);
+            throw new BookingNotFoundException();
         }
 
         if (!$booking->getSession()->getCoachId()->equals(Uuid::fromString($coachId))) {
@@ -117,7 +126,7 @@ final class BookingService
 
         $session = $this->sessionRepository->find($sessionUuid);
         if ($session === null) {
-            throw new SessionNotFoundException($sessionId);
+            throw new SessionNotFoundException();
         }
 
         if (!$session->getCoachId()->equals(Uuid::fromString($coachId))) {

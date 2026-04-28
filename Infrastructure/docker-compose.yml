@@ -308,6 +308,7 @@ services:
       DATABASE_URL: postgresql://booking_user:${BOOKING_DB_PASSWORD}@booking-db:5432/booking_db?serverVersion=15&charset=utf8
       CORS_ALLOW_ORIGIN: "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
       USER_SERVICE_URL: http://gym-user-service:8080
+      MEMBERSHIP_SERVICE_URL: http://membership-service:8080
     depends_on:
       booking-db:
         condition: service_healthy

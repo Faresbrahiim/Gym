@@ -10,6 +10,6 @@ final class DuplicateBookingException extends AppException
 {
     public function __construct()
     {
-        parent::__construct('You already have an active booking for this session.', Response::HTTP_CONFLICT);
+        parent::__construct('You cannot book the same session more than once.', Response::HTTP_CONFLICT);
     }
 }

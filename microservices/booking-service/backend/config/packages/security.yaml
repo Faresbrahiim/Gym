@@ -16,6 +16,4 @@ security:
             entry_point: App\Security\JwtAuthenticator
 
     access_control:
-        - { path: ^/api/coach,    roles: ROLE_COACH  }
-        - { path: ^/api/sessions, roles: ROLE_MEMBER }
-        - { path: ^/api/me,       roles: ROLE_MEMBER }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

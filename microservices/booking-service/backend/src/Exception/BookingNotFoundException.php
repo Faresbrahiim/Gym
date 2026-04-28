@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class BookingNotFoundException extends AppException
 {
-    public function __construct(string $bookingId)
+    public function __construct()
     {
-        parent::__construct(sprintf('Booking "%s" not found.', $bookingId), Response::HTTP_NOT_FOUND);
+        parent::__construct('Booking not found.', Response::HTTP_NOT_FOUND);
     }
 }

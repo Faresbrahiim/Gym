@@ -100,6 +100,10 @@ export class HeaderComponent {
     return !this.isAuthenticated || this.canAccessMembershipArea;
   }
 
+  get canBrowseSessions(): boolean {
+    return this.userRole === 'MEMBER';
+  }
+
   get isHome(): boolean {
     const url = this.router.url;
     return url === '/home' || url === '/';

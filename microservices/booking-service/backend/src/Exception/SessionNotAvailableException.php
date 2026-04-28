@@ -8,10 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class SessionNotAvailableException extends AppException
 {
-    public function __construct(string $sessionId)
+    public function __construct()
     {
         parent::__construct(
-            sprintf('Session "%s" is not available for booking.', $sessionId),
+            'This session is not available for booking.',
             Response::HTTP_UNPROCESSABLE_ENTITY,
         );
     }

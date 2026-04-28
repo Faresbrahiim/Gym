@@ -42,12 +42,41 @@ class CourtSessionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return CourtSession[] */
+    public function findAllPaginated(int $page, int $pageSize): array
+    {
+        return $this->createQueryBuilder('s')
+            ->addSelect(
+                "CASE
+                    WHEN s.status = :openStatus THEN 0
+                    WHEN s.status = :closedStatus THEN 1
+                    ELSE 2
+                END AS HIDDEN statusPriority"
+            )
+            ->setParameter('openStatus', SessionStatus::OPEN->value)
+            ->setParameter('closedStatus', SessionStatus::CLOSED->value)
+            ->orderBy('statusPriority', 'ASC')
+            ->addOrderBy('s.startTime', 'ASC')
+            ->setFirstResult(($page - 1) * $pageSize)
+            ->setMaxResults($pageSize)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function countOpen(): int
     {
         return (int) $this->createQueryBuilder('s')
             ->select('COUNT(s.id)')
             ->where('s.status = :status')
             ->setParameter('status', SessionStatus::OPEN->value)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
             ->getQuery()
             ->getSingleScalarResult();
     }

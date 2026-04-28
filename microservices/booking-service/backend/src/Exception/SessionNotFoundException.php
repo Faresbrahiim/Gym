@@ -8,8 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class SessionNotFoundException extends AppException
 {
-    public function __construct(string $sessionId)
+    public function __construct()
     {
-        parent::__construct(sprintf('Session "%s" not found.', $sessionId), Response::HTTP_NOT_FOUND);
+        parent::__construct('Session not found.', Response::HTTP_NOT_FOUND);
     }
 }

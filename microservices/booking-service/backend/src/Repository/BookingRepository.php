@@ -42,6 +42,17 @@ class BookingRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findBySessionAndUser(Uuid $sessionId, Uuid $userId): ?Booking
+    {
+        return $this->createQueryBuilder('b')
+            ->where('IDENTITY(b.session) = :sessionId')
+            ->andWhere('b.userId = :userId')
+            ->setParameter('sessionId', $sessionId, UuidType::NAME)
+            ->setParameter('userId', $userId, UuidType::NAME)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function countAcceptedBySession(Uuid $sessionId): int
     {
         return (int) $this->createQueryBuilder('b')
@@ -52,6 +63,39 @@ class BookingRepository extends ServiceEntityRepository
             ->setParameter('status', BookingStatus::ACCEPTED->value)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @param Uuid[] $sessionIds
+     * @return array<string, int>
+     */
+    public function countAcceptedBySessionIds(array $sessionIds): array
+    {
+        if ($sessionIds === []) {
+            return [];
+        }
+
+        $sessionIdStrings = array_map(
+            static fn (Uuid $sessionId): string => $sessionId->toRfc4122(),
+            $sessionIds,
+        );
+
+        $rows = $this->createQueryBuilder('b')
+            ->select('IDENTITY(b.session) AS sessionId, COUNT(b.id) AS acceptedCount')
+            ->where('IDENTITY(b.session) IN (:sessionIds)')
+            ->andWhere('b.status = :status')
+            ->setParameter('sessionIds', $sessionIdStrings)
+            ->setParameter('status', BookingStatus::ACCEPTED->value)
+            ->groupBy('b.session')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(string) $row['sessionId']] = (int) $row['acceptedCount'];
+        }
+
+        return $counts;
     }
 
     /** @return Booking[] */

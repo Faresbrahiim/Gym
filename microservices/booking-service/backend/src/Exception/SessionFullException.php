@@ -8,10 +8,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class SessionFullException extends AppException
 {
-    public function __construct(string $sessionId)
+    public function __construct()
     {
         parent::__construct(
-            sprintf('Session "%s" has reached its maximum number of participants.', $sessionId),
+            'This session has reached its maximum number of participants.',
             Response::HTTP_UNPROCESSABLE_ENTITY,
         );
     }

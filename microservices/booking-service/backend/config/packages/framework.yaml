@@ -14,3 +14,7 @@ framework:
                 base_uri: '%env(USER_SERVICE_URL)%'
                 headers:
                     Accept: 'application/json'
+            membership_service.client:
+                base_uri: '%env(MEMBERSHIP_SERVICE_URL)%'
+                headers:
+                    Accept: 'application/json'

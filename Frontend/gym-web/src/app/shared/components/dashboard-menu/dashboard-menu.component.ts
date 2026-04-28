@@ -25,6 +25,7 @@ export class DashboardMenuComponent {
   private readonly allPrimaryItems: DashboardMenuItem[] = [
     { label: 'Profile', route: '/profile', icon: 'assets/img/icons/profile-icon.svg', exact: true },
     { label: 'Security', route: '/profile/security', icon: 'assets/img/icons/sessions.svg' },
+    { label: 'My Bookings', route: '/bookings/my', icon: 'assets/img/icons/booking-icon.svg', exact: false },
     { label: 'Membership', route: '/membership', icon: 'assets/img/icons/wallet-icon.svg', exact: true },
     { label: 'History', route: '/membership/history', icon: 'assets/img/icons/booking-icon.svg', exact: true },
     { label: 'Orders', route: '/orders', icon: 'assets/img/icons/booking-icon.svg', exact: false },
@@ -33,29 +34,54 @@ export class DashboardMenuComponent {
 
   readonly utilityItems: DashboardMenuItem[] = [
     { label: 'Dashboard', route: '/home', icon: 'assets/img/icons/dashboard-icon.svg', exact: true },
-    { label: 'Chat', route: '/chat', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' },
-    { label: 'Bookings', icon: 'assets/img/icons/booking-icon.svg', disabled: true, note: 'Soon' }
+    { label: 'Chat', route: '/chat', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' }
   ];
 
   get canAccessMembershipArea(): boolean {
     return this.tokenService.getRole() === 'MEMBER';
   }
 
+  get isCoach(): boolean {
+    return this.tokenService.getRole() === 'COACH';
+  }
+
   get primaryItems(): DashboardMenuItem[] {
     if (this.canAccessMembershipArea) {
-      return this.allPrimaryItems;
+      return [...this.allPrimaryItems];
     }
 
-    return this.allPrimaryItems.filter(item =>
-      item.route !== '/membership'
-      && item.route !== '/membership/history'
-      && item.route !== '/payments'
-    );
+    const items = [
+      ...this.allPrimaryItems.filter(item =>
+        item.route !== '/bookings/my'
+        && item.route !== '/membership'
+        && item.route !== '/membership/history'
+        && item.route !== '/payments'
+      )
+    ];
+
+    if (this.isCoach) {
+      return [
+        ...items,
+        { label: 'Coach Sessions', route: '/bookings/coach', icon: 'assets/img/icons/booking-icon.svg', exact: false }
+      ];
+    }
+
+    return [
+      ...items.filter(item =>
+        item.route !== '/membership'
+        && item.route !== '/membership/history'
+        && item.route !== '/payments'
+      )
+    ];
   }
 
   get accountDeckDescription(): string {
     if (this.canAccessMembershipArea) {
-      return 'Manage your profile, membership, orders, payments, and activity from one place.';
+      return 'Manage your profile, bookings, membership, orders, payments, and activity from one place.';
+    }
+
+    if (this.isCoach) {
+      return 'Manage your profile, coach sessions, orders, and activity from one place.';
     }
 
     return 'Manage your profile, orders, and activity from one place.';

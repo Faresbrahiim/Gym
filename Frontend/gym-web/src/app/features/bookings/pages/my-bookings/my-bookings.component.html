@@ -1,0 +1,137 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">My Bookings</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/bookings/sessions">Sessions</a></li>
+        <li>My Bookings</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-dashboard-menu></app-dashboard-menu>
+
+<div class="content py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-11">
+
+        <div class="premium-card">
+          <div class="premium-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <h4 class="premium-card-title mb-1">
+                <i class="feather-list"></i> My Bookings
+              </h4>
+              <p class="booking-subtitle mb-0">Track upcoming session requests and see which ones were accepted by your coach.</p>
+            </div>
+            <a routerLink="/bookings/sessions" class="btn btn-primary btn-sm">
+              <i class="feather-search me-1"></i> Browse Sessions
+            </a>
+          </div>
+
+          <div class="card-body p-0">
+            @if (isLoading()) {
+              <div class="spinner-wrap">
+                <div class="spinner-border premium-spinner" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            } @else if (errorMessage()) {
+              <div class="p-4">
+                <div class="status-notice danger">
+                  <i class="feather-alert-circle"></i>
+                  <div>
+                    <p class="notice-title">Failed to load data</p>
+                    <p class="notice-text">{{ errorMessage() }}</p>
+                  </div>
+                  <button class="btn btn-primary mt-3" (click)="loadBookings()">Retry</button>
+                </div>
+              </div>
+            } @else if (bookings().length === 0) {
+              <div class="premium-empty">
+                <div class="empty-icon-wrap">
+                  <i class="feather-calendar"></i>
+                </div>
+                <h5 class="empty-title">No bookings yet</h5>
+                <p class="empty-desc">You haven't booked any sessions. Browse available sessions to get started.</p>
+                <a routerLink="/bookings/sessions" class="btn-premium">
+                  <i class="feather-search"></i> Browse Sessions
+                </a>
+              </div>
+            } @else {
+              <div class="booking-stats-grid booking-stats-grid--padded">
+                <div class="booking-stat-card">
+                  <span class="booking-stat-label">Pending</span>
+                  <span class="booking-stat-value">{{ pendingCount() }}</span>
+                </div>
+                <div class="booking-stat-card booking-stat-card--success">
+                  <span class="booking-stat-label">Accepted</span>
+                  <span class="booking-stat-value">{{ acceptedCount() }}</span>
+                </div>
+                <div class="booking-stat-card booking-stat-card--soft-danger">
+                  <span class="booking-stat-label">Declined</span>
+                  <span class="booking-stat-value">{{ declinedCount() }}</span>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="premium-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width:200px;">Session</th>
+                      <th style="min-width:160px;">Coach</th>
+                      <th style="min-width:180px;">Date & Time</th>
+                      <th style="min-width:120px;">Status</th>
+                      <th style="min-width:160px;">Booked On</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (booking of bookings(); track booking.id) {
+                      <tr>
+                        <td>
+                          <div class="fw-semibold">{{ booking.sessionTitle }}</div>
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="plan-avatar plan-avatar--sm">{{ booking.coachFullName.charAt(0) | uppercase }}</div>
+                            <span>{{ booking.coachFullName }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="date-primary">{{ booking.startTime | date:'EEE, MMM d, yyyy' }}</div>
+                          <div class="date-secondary">{{ booking.startTime | date:'h:mm a' }} - {{ booking.endTime | date:'h:mm a' }}</div>
+                        </td>
+                        <td>
+                          <app-booking-status-badge [status]="booking.status"></app-booking-status-badge>
+                        </td>
+                        <td>
+                          <div class="date-primary">{{ booking.createdAt | date:'MMM d, yyyy' }}</div>
+                          <div class="date-secondary">{{ booking.createdAt | date:'h:mm a' }}</div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="p-4 pt-0">
+                <app-pagination-bar
+                  [page]="currentPage()"
+                  [pageSize]="pageSize"
+                  [totalItems]="totalItems()"
+                  [totalPages]="totalPages()"
+                  label="bookings"
+                  (pageChange)="goToPage($event)"
+                />
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
