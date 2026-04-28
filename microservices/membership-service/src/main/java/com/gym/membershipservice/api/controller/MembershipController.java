@@ -1,6 +1,7 @@
 package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.BookingEligibilityResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.MembershipService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +34,11 @@ public class MembershipController {
     @GetMapping("/{userId}/permissions")
     public List<String> getPermissions(@PathVariable UUID userId) {
         return membershipService.getPermissions(userId);
+    }
+
+    @GetMapping("/{userId}/booking-eligibility")
+    public BookingEligibilityResponseDTO getBookingEligibility(@PathVariable UUID userId) {
+        return membershipService.getBookingEligibility(userId);
     }
 
     @PostMapping("/validate")

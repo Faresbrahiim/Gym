@@ -13,4 +13,6 @@ public interface IUsersService
     Task<IEnumerable<UserContactDto>> GetContactsByIdsAsync(
         IEnumerable<string> userIds,
         CancellationToken cancellationToken = default);
+
+    Task<UserSummaryDto> GetUserSummaryAsync(Guid userId, CancellationToken cancellationToken = default);
 }

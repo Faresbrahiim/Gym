@@ -1,0 +1,245 @@
+@import '../bookings-page.shared.css';
+
+.coach-table-shell {
+  padding: 0 18px 6px;
+}
+
+.coach-sessions-table tbody tr td {
+  vertical-align: middle;
+}
+
+.coach-session-title {
+  color: #17313a;
+  font-weight: 700;
+}
+
+.coach-session-desc {
+  display: inline-block;
+  margin-top: 4px;
+  color: #5f7280;
+  line-height: 1.45;
+}
+
+.coach-session-desc--muted {
+  color: #8a9aa4;
+}
+
+.coach-capacity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.coach-capacity__value {
+  color: #17313a;
+  font-weight: 700;
+}
+
+.coach-capacity__meta {
+  color: #6f838f;
+  font-size: 0.8rem;
+}
+
+.coach-status-badge {
+  min-width: 72px;
+  text-align: center;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.coach-view-link {
+  font-weight: 700;
+}
+
+.coach-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 24px 0;
+  margin-top: 10px;
+  border-top: 1px solid rgba(23, 124, 130, 0.08);
+}
+
+.coach-pagination__summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: #6f838f;
+  font-size: 0.88rem;
+}
+
+.coach-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.coach-pagination__button {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d8e5ea;
+  border-radius: 12px;
+  background: #fff;
+  color: #17313a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.coach-pagination__button:hover:not(:disabled) {
+  border-color: rgba(23, 124, 130, 0.34);
+  color: #177c82;
+}
+
+.coach-pagination__button--active {
+  border-color: transparent;
+  background: linear-gradient(135deg, #177c82 0%, #0f646a 100%);
+  color: #fff;
+  box-shadow: 0 10px 16px rgba(23, 124, 130, 0.18);
+}
+
+.coach-pagination__button--ghost {
+  min-width: 96px;
+}
+
+.coach-pagination__button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.coach-form-section {
+  padding: 18px;
+  border: 1px solid #e7eef2;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdfe 100%);
+}
+
+.coach-form-section + .coach-form-section,
+.coach-form-section + .coach-form-error,
+.coach-form-error + .coach-form-section {
+  margin-top: 16px;
+}
+
+.coach-form-section__header {
+  margin-bottom: 14px;
+}
+
+.coach-form-section__header h6 {
+  margin-bottom: 4px;
+  color: #17313a;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.coach-form-section__header p {
+  margin-bottom: 0;
+  color: #6f838f;
+  line-height: 1.5;
+  font-size: 0.88rem;
+}
+
+.coach-form-section--compact {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.coach-form-error {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(220, 53, 69, 0.08);
+  color: #b4232f;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.coach-form-help {
+  margin-top: 8px;
+  color: #6f838f;
+  font-size: 0.82rem;
+}
+
+.modal-backdrop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 1040;
+}
+
+.modal {
+  z-index: 1050;
+}
+
+.modal-dialog {
+  max-width: 640px;
+  padding: 18px;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.16);
+}
+
+.modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #f8f9fc 0%, #ffffff 100%);
+  border-bottom: 1px solid #edf2f7;
+}
+
+.modal-title {
+  font-weight: 700;
+  color: #17313a;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 18px 24px 24px;
+  border-top: 1px solid #edf2f7;
+  background: #fbfdfe;
+}
+
+.form-control {
+  border-radius: 12px;
+  border-color: #dbe5eb;
+  min-height: 48px;
+  box-shadow: none;
+}
+
+textarea.form-control {
+  min-height: unset;
+}
+
+.form-control:focus {
+  border-color: rgba(23, 124, 130, 0.45);
+  box-shadow: 0 0 0 4px rgba(23, 124, 130, 0.12);
+}
+
+@media (max-width: 767.98px) {
+  .coach-table-shell {
+    padding: 0 12px 6px;
+  }
+
+  .coach-pagination {
+    padding: 18px 16px 0;
+    align-items: flex-start;
+  }
+
+  .coach-pagination__controls {
+    width: 100%;
+  }
+
+  .coach-form-section {
+    padding: 16px;
+  }
+}

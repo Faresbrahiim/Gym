@@ -2,6 +2,7 @@ package com.gym.membershipservice.application.service.membership;
 
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.BookingEligibilityResponseDTO;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
@@ -65,10 +66,46 @@ public class MembershipServiceImpl implements MembershipService {
 
     @Override
     public boolean validateMembership(UUID userId, String action) {
-        Subscription sub = subscriptionRepository
-                .findTopByUserIdOrderByStartDateDesc(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("No subscription found for user: " + userId));
+        return switch (action) {
+            case "ENTER_GYM" -> hasActiveSubscription(userId);
+            case "BOOK_SESSION" -> getBookingEligibility(userId).allowed();
+            default -> false;
+        };
+    }
 
-        return sub.getStatus() == SubscriptionStatus.ACTIVE && action.equals("ENTER_GYM");
+    @Override
+    public BookingEligibilityResponseDTO getBookingEligibility(UUID userId) {
+        return subscriptionRepository
+                .findTopByUserIdOrderByStartDateDesc(userId)
+                .map(subscription -> {
+                    if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
+                        return new BookingEligibilityResponseDTO(
+                                false,
+                                "Coach session booking is available only with an active paid membership."
+                        );
+                    }
+
+                    Double price = subscription.getPlan() != null ? subscription.getPlan().getPrice() : null;
+                    boolean paidPlan = price != null && price > 0;
+                    if (!paidPlan) {
+                        return new BookingEligibilityResponseDTO(
+                                false,
+                                "Your current membership plan does not include coach session booking."
+                        );
+                    }
+
+                    return new BookingEligibilityResponseDTO(true, null);
+                })
+                .orElseGet(() -> new BookingEligibilityResponseDTO(
+                        false,
+                        "You need an active paid membership to book coach sessions."
+                ));
+    }
+
+    private boolean hasActiveSubscription(UUID userId) {
+        return subscriptionRepository
+                .findTopByUserIdOrderByStartDateDesc(userId)
+                .map(subscription -> subscription.getStatus() == SubscriptionStatus.ACTIVE)
+                .orElse(false);
     }
 }

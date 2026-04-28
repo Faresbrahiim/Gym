@@ -1,0 +1,20 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    http_method_override: false
+    handle_all_throwables: true
+    php_errors:
+        log: true
+    router:
+        utf8: true
+    serializer:
+        enabled: true
+    http_client:
+        scoped_clients:
+            user_service.client:
+                base_uri: '%env(USER_SERVICE_URL)%'
+                headers:
+                    Accept: 'application/json'
+            membership_service.client:
+                base_uri: '%env(MEMBERSHIP_SERVICE_URL)%'
+                headers:
+                    Accept: 'application/json'

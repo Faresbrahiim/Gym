@@ -122,18 +122,15 @@ export class SecurityComponent implements OnInit {
 
     const currentUA = navigator.userAgent;
 
-    // All sessions from this browser
     const uaMatches = all.filter(s => s.userAgent === currentUA);
 
     if (uaMatches.length > 0) {
-      // Newest among UA-matching sessions is the live one
       return uaMatches.reduce((a, b) =>
         new Date(b.createdAt) > new Date(a.createdAt) ? b : a
       ).tokenId;
     }
 
-    // Fallback: no exact UA match (different machine, proxy, etc.)
-    return all[0].tokenId; // already sorted newest-first
+    return all[0].tokenId;
   }
 
   isCurrentSession(session: Session): boolean {

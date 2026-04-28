@@ -1,0 +1,280 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">My Sessions</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>Coach Sessions</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-dashboard-menu></app-dashboard-menu>
+
+<div class="content py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-11">
+
+        <div class="premium-card">
+          <div class="premium-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <h4 class="premium-card-title mb-1">
+                <i class="feather-calendar"></i> My Sessions
+              </h4>
+              <p class="booking-subtitle mb-0">Create, schedule, and review the sessions members can request with you.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="openModal()">
+              <i class="feather-plus me-1"></i> New Session
+            </button>
+          </div>
+
+          <div class="card-body p-0">
+            @if (isLoading()) {
+              <div class="spinner-wrap">
+                <div class="spinner-border premium-spinner" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            } @else if (errorMessage()) {
+              <div class="p-4">
+                <div class="status-notice danger">
+                  <i class="feather-alert-circle"></i>
+                  <div>
+                    <p class="notice-title">Failed to load data</p>
+                    <p class="notice-text">{{ errorMessage() }}</p>
+                  </div>
+                  <button class="btn btn-primary mt-3" (click)="loadSessions()">Retry</button>
+                </div>
+              </div>
+            } @else if (sessions().length === 0) {
+              <div class="premium-empty">
+                <div class="empty-icon-wrap">
+                  <i class="feather-calendar"></i>
+                </div>
+                <h5 class="empty-title">No sessions yet</h5>
+                <p class="empty-desc">You haven't created any sessions. Create your first one to get started.</p>
+                <button class="btn-premium" (click)="openModal()">
+                  <i class="feather-plus"></i> Create Session
+                </button>
+              </div>
+            } @else {
+              <div class="booking-stats-grid booking-stats-grid--padded">
+                <div class="booking-stat-card">
+                  <span class="booking-stat-label">Open now</span>
+                  <span class="booking-stat-value">{{ openCount() }}</span>
+                </div>
+                <div class="booking-stat-card">
+                  <span class="booking-stat-label">Upcoming</span>
+                  <span class="booking-stat-value">{{ upcomingCount() }}</span>
+                </div>
+                <div class="booking-stat-card booking-stat-card--accent">
+                  <span class="booking-stat-label">Planned capacity</span>
+                  <span class="booking-stat-value">{{ totalCapacity() }}</span>
+                </div>
+              </div>
+
+              <div class="coach-table-shell table-responsive">
+                <table class="premium-table coach-sessions-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width:220px;">Title</th>
+                      <th style="min-width:200px;">Date & Time</th>
+                      <th style="min-width:150px;">Capacity</th>
+                      <th style="min-width:110px;">Status</th>
+                      <th class="text-end" style="min-width:120px;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (session of sessions(); track session.id) {
+                      <tr>
+                        <td>
+                          <div class="coach-session-title">{{ session.title }}</div>
+                          @if (session.description) {
+                            <small class="coach-session-desc">{{ session.description | slice:0:72 }}{{ session.description.length > 72 ? '...' : '' }}</small>
+                          } @else {
+                            <small class="coach-session-desc coach-session-desc--muted">No session description added yet.</small>
+                          }
+                        </td>
+                        <td>
+                          <div class="date-primary">{{ session.startTime | date:'EEE, MMM d, yyyy' }}</div>
+                          <div class="date-secondary">{{ session.startTime | date:'h:mm a' }} - {{ session.endTime | date:'h:mm a' }}</div>
+                        </td>
+                        <td>
+                          <div class="coach-capacity">
+                            <span class="coach-capacity__value">{{ session.acceptedParticipants }} / {{ session.maxParticipants }}</span>
+                            <small class="coach-capacity__meta">
+                              {{ session.isFull ? 'Session full' : session.remainingSeats + ' spots left' }}
+                            </small>
+                          </div>
+                        </td>
+                        <td>
+                          <span [class]="statusBadge(session.status)" class="coach-status-badge">{{ session.isFull && session.status === SessionStatus.OPEN ? 'FULL' : session.status }}</span>
+                        </td>
+                        <td class="text-end">
+                          <a [routerLink]="['/bookings/coach', session.id]" class="btn-view coach-view-link">
+                            Bookings <i class="feather-chevron-right"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="coach-pagination">
+                <div class="coach-pagination__summary">
+                  <span>Showing {{ firstVisibleItem() }}-{{ lastVisibleItem() }} of {{ totalItems() }} sessions</span>
+                  <span>Page {{ currentPage() }} of {{ totalPages() || 1 }}</span>
+                </div>
+                <div class="coach-pagination__controls">
+                  <button
+                    type="button"
+                    class="coach-pagination__button coach-pagination__button--ghost"
+                    (click)="goToPage(currentPage() - 1)"
+                    [disabled]="currentPage() <= 1"
+                  >
+                    Previous
+                  </button>
+
+                  @for (pageNumber of pageNumbers(); track pageNumber) {
+                    <button
+                      type="button"
+                      class="coach-pagination__button"
+                      [class.coach-pagination__button--active]="pageNumber === currentPage()"
+                      (click)="goToPage(pageNumber)"
+                    >
+                      {{ pageNumber }}
+                    </button>
+                  }
+
+                  <button
+                    type="button"
+                    class="coach-pagination__button coach-pagination__button--ghost"
+                    (click)="goToPage(currentPage() + 1)"
+                    [disabled]="currentPage() >= (totalPages() || 1)"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (showModal()) {
+  <div class="modal-backdrop-overlay" (click)="closeModal()"></div>
+  <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="feather-plus-circle me-2"></i>Create New Session</h5>
+          <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <div class="modal-body">
+            <div class="coach-form-section">
+              <div class="coach-form-section__header">
+                <h6>Session details</h6>
+                <p>Set the title, short context, and schedule members will see before they book.</p>
+              </div>
+
+              <div class="mb-3">
+              <label class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="title"
+                placeholder="e.g. Morning HIIT"
+                [class.is-invalid]="form.get('title')?.invalid && form.get('title')?.touched"
+              >
+              @if (form.get('title')?.errors?.['required'] && form.get('title')?.touched) {
+                <div class="invalid-feedback">Title is required.</div>
+              }
+            </div>
+
+              <div class="mb-0">
+              <label class="form-label fw-semibold">Description</label>
+              <textarea
+                class="form-control"
+                formControlName="description"
+                rows="3"
+                placeholder="Optional session description..."
+              ></textarea>
+            </div>
+            </div>
+
+            <div class="coach-form-section">
+              <div class="coach-form-grid row g-3 mb-0">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Start Time <span class="text-danger">*</span></label>
+                <input
+                  type="datetime-local"
+                  class="form-control"
+                  formControlName="startTime"
+                  [class.is-invalid]="form.get('startTime')?.invalid && form.get('startTime')?.touched"
+                >
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">End Time <span class="text-danger">*</span></label>
+                <input
+                  type="datetime-local"
+                  class="form-control"
+                  formControlName="endTime"
+                  [class.is-invalid]="(form.get('endTime')?.invalid && form.get('endTime')?.touched) || ((form.hasError('invalidTimeRange') && (form.get('endTime')?.touched || form.get('startTime')?.touched)))"
+                >
+              </div>
+            </div>
+            </div>
+
+            @if (form.hasError('invalidTimeRange') && (form.get('startTime')?.touched || form.get('endTime')?.touched)) {
+              <div class="coach-form-error">
+                End time must be after start time.
+              </div>
+            }
+
+            <div class="coach-form-section coach-form-section--compact">
+              <label class="form-label fw-semibold">Max Participants <span class="text-danger">*</span></label>
+              <input
+                type="number"
+                class="form-control"
+                formControlName="maxParticipants"
+                placeholder="e.g. 15"
+                min="1"
+                max="100"
+                [class.is-invalid]="form.get('maxParticipants')?.invalid && form.get('maxParticipants')?.touched"
+              >
+              @if (form.get('maxParticipants')?.errors && form.get('maxParticipants')?.touched) {
+                <div class="invalid-feedback">Must be between 1 and 100.</div>
+              }
+              <p class="coach-form-help mb-0">Choose the maximum number of accepted participants for this session.</p>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" (click)="closeModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSubmitting()">
+              @if (isSubmitting()) {
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                Creating...
+              } @else {
+                <i class="feather-check me-1"></i> Create Session
+              }
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+}

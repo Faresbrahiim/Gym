@@ -3,7 +3,9 @@ package com.gym.membershipservice.api.controller;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionRequestDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.BookingEligibilityResponseDTO;
 import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
+import com.gym.membershipservice.application.port.MembershipService;
 import com.gym.membershipservice.application.port.SubscriptionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,9 +23,12 @@ import java.util.UUID;
 public class UserSubscriptionController {
 
     private final SubscriptionService subscriptionService;
+    private final MembershipService membershipService;
 
-    public UserSubscriptionController(SubscriptionService subscriptionService) {
+    public UserSubscriptionController(SubscriptionService subscriptionService,
+                                      MembershipService membershipService) {
         this.subscriptionService = subscriptionService;
+        this.membershipService = membershipService;
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -39,6 +44,13 @@ public class UserSubscriptionController {
     public List<SubscriptionResponseDTO> getMySubscriptions(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return subscriptionService.getUserSubscriptions(userId);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
+    @GetMapping("/me/booking-eligibility")
+    public BookingEligibilityResponseDTO getMyBookingEligibility(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return membershipService.getBookingEligibility(userId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")

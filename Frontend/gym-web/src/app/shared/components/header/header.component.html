@@ -36,6 +36,11 @@
               <a routerLink="/membership/plans">Plans</a>
             </li>
           }
+          @if (canBrowseSessions) {
+            <li routerLinkActive="active">
+              <a routerLink="/bookings/sessions">Sessions</a>
+            </li>
+          }
           <li class="has-submenu">
             <a href="javascript:void(0);">Coaches <i class="fas fa-chevron-down"></i></a>
             <ul class="submenu">
@@ -292,6 +297,9 @@
               <p><a class="dropdown-item" routerLink="/chat">Open Full Chat</a></p>
               <p><a class="dropdown-item" routerLink="/store">Shop</a></p>
               <p><a class="dropdown-item" routerLink="/cart">My Cart</a></p>
+              @if (canBrowseSessions) {
+                <p><a class="dropdown-item" routerLink="/bookings/my">My Bookings</a></p>
+              }
               @if (canAccessMembershipArea) {
                 <p><a class="dropdown-item" routerLink="/membership">My Membership</a></p>
               }

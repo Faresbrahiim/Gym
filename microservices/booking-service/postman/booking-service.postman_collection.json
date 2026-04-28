@@ -1,0 +1,410 @@
+{
+  "info": {
+    "name": "Booking Service",
+    "_postman_id": "booking-service-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Gym Platform — Booking Service API\n\nSet environment variables before running:\n- base_url: http://localhost:8000 (or Kong gateway URL)\n- coach_token: JWT with role=COACH\n- member_token: JWT with role=MEMBER"
+  },
+  "variable": [
+    { "key": "base_url",     "value": "http://localhost:8000" },
+    { "key": "coach_token",  "value": "" },
+    { "key": "member_token", "value": "" },
+    { "key": "session_id",   "value": "" },
+    { "key": "booking_id",   "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Coach",
+      "item": [
+        {
+          "name": "Create Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('session_id', body.id);",
+                  "    pm.test('session_id captured', () => pm.expect(body.id).to.be.a('string'));",
+                  "}",
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{coach_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/api/coach/sessions", "host": ["{{base_url}}"], "path": ["api", "coach", "sessions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Morning HIIT\",\n  \"description\": \"High intensity interval training for all levels.\",\n  \"startTime\": \"2026-05-10T09:00:00+00:00\",\n  \"endTime\": \"2026-05-10T10:00:00+00:00\",\n  \"maxParticipants\": 15\n}"
+            }
+          }
+        },
+        {
+          "name": "List My Sessions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has items array', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.items).to.be.an('array');",
+                  "    pm.expect(body).to.have.property('total');",
+                  "    pm.expect(body).to.have.property('totalPages');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{coach_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/coach/sessions?page=1&pageSize=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "coach", "sessions"],
+              "query": [
+                { "key": "page",     "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Session Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has items array', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.items).to.be.an('array');",
+                  "    if (body.items.length > 0) {",
+                  "        pm.collectionVariables.set('booking_id', body.items[0].id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{coach_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/coach/sessions/{{session_id}}/bookings?page=1&pageSize=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "coach", "sessions", "{{session_id}}", "bookings"],
+              "query": [
+                { "key": "page",     "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Accept Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is ACCEPTED', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.eql('ACCEPTED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{coach_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/coach/bookings/{{booking_id}}/accept",
+              "host": ["{{base_url}}"],
+              "path": ["api", "coach", "bookings", "{{booking_id}}", "accept"]
+            }
+          }
+        },
+        {
+          "name": "Decline Booking",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is DECLINED', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.eql('DECLINED');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{coach_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/coach/bookings/{{booking_id}}/decline",
+              "host": ["{{base_url}}"],
+              "path": ["api", "coach", "bookings", "{{booking_id}}", "decline"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Member",
+      "item": [
+        {
+          "name": "List Open Sessions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has items array', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.items).to.be.an('array');",
+                  "    if (body.items.length > 0) {",
+                  "        pm.collectionVariables.set('session_id', body.items[0].id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{member_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/sessions?page=1&pageSize=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sessions"],
+              "query": [
+                { "key": "page",     "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Book Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('booking_id', body.id);",
+                  "    pm.test('booking_id captured', () => pm.expect(body.id).to.be.a('string'));",
+                  "    pm.test('Status is PENDING', () => pm.expect(body.status).to.eql('PENDING'));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{member_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/sessions/{{session_id}}/book",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sessions", "{{session_id}}", "book"]
+            }
+          }
+        },
+        {
+          "name": "My Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has items array', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.items).to.be.an('array');",
+                  "    pm.expect(body).to.have.property('total');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{member_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/me/bookings?page=1&pageSize=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me", "bookings"],
+              "query": [
+                { "key": "page",     "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Book Session — No Token (expect 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));",
+                  "pm.test('Error field present', () => pm.expect(pm.response.json()).to.have.property('error'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/sessions/{{session_id}}/book",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sessions", "{{session_id}}", "book"]
+            }
+          }
+        },
+        {
+          "name": "Create Session — Member Token (expect 403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Error field present', () => pm.expect(pm.response.json()).to.have.property('error'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{member_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/api/coach/sessions", "host": ["{{base_url}}"], "path": ["api", "coach", "sessions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test\",\n  \"startTime\": \"2026-05-10T09:00:00+00:00\",\n  \"endTime\": \"2026-05-10T10:00:00+00:00\",\n  \"maxParticipants\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Session — Validation Error (expect 422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));",
+                  "pm.test('Error field present', () => pm.expect(pm.response.json()).to.have.property('error'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{coach_token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/api/coach/sessions", "host": ["{{base_url}}"], "path": ["api", "coach", "sessions"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\",\n  \"startTime\": \"\",\n  \"endTime\": \"\",\n  \"maxParticipants\": -1\n}"
+            }
+          }
+        },
+        {
+          "name": "Book Non-Existent Session (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Error field present', () => pm.expect(pm.response.json()).to.have.property('error'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{member_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/sessions/00000000-0000-0000-0000-000000000000/book",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sessions", "00000000-0000-0000-0000-000000000000", "book"]
+            }
+          }
+        },
+        {
+          "name": "Duplicate Booking (expect 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Error field present', () => pm.expect(pm.response.json()).to.have.property('error'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{member_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/sessions/{{session_id}}/book",
+              "host": ["{{base_url}}"],
+              "path": ["api", "sessions", "{{session_id}}", "book"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+@import '../bookings-page.shared.css';
+
+.coach-table-shell {
+  padding: 0 18px 6px;
+}
+
+.coach-bookings-table tbody tr td {
+  vertical-align: middle;
+}
+
+.coach-member-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.coach-member-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  object-fit: cover;
+  object-position: center top;
+  flex-shrink: 0;
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.1);
+  border: 1px solid rgba(23, 124, 130, 0.1);
+}
+
+.coach-member-avatar--placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  background: linear-gradient(135deg, #177c82 0%, #0f646a 100%);
+}
+
+.coach-member-meta {
+  min-width: 0;
+}
+
+.coach-member-name {
+  color: #17313a;
+  font-weight: 700;
+}
+
+.coach-member-subtitle {
+  color: #7a8d99;
+}
+
+.coach-actions {
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.coach-action-complete {
+  color: #7a8d99;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.coach-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 24px 0;
+  margin-top: 10px;
+  border-top: 1px solid rgba(23, 124, 130, 0.08);
+}
+
+.coach-pagination__summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: #6f838f;
+  font-size: 0.88rem;
+}
+
+.coach-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.coach-pagination__button {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #d8e5ea;
+  border-radius: 12px;
+  background: #fff;
+  color: #17313a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.coach-pagination__button:hover:not(:disabled) {
+  border-color: rgba(23, 124, 130, 0.34);
+  color: #177c82;
+}
+
+.coach-pagination__button--active {
+  border-color: transparent;
+  background: linear-gradient(135deg, #177c82 0%, #0f646a 100%);
+  color: #fff;
+  box-shadow: 0 10px 16px rgba(23, 124, 130, 0.18);
+}
+
+.coach-pagination__button--ghost {
+  min-width: 96px;
+}
+
+.coach-pagination__button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 767.98px) {
+  .coach-table-shell {
+    padding: 0 12px 6px;
+  }
+
+  .coach-pagination {
+    padding: 18px 16px 0;
+    align-items: flex-start;
+  }
+
+  .coach-pagination__controls {
+    width: 100%;
+  }
+
+  .coach-actions {
+    justify-content: flex-start;
+  }
+}
