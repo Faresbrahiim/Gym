@@ -44,6 +44,13 @@ microservices/cart-service/backend/public/uploads/
 microservices/cart-service/backend/config/jwt/*.pem
 microservices/cart-service/backend/.env.local
 microservices/cart-service/backend/.env.*.local
+microservices/booking-service/backend/vendor/
+microservices/booking-service/backend/var/
+microservices/booking-service/backend/public/bundles/
+microservices/booking-service/backend/public/uploads/
+microservices/booking-service/backend/config/jwt/*.pem
+microservices/booking-service/backend/.env.local
+microservices/booking-service/backend/.env.*.local
 
 # -------------------------
 # Node / Angular
