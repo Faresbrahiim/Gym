@@ -1,28 +1,23 @@
-<footer class="footer">
+<footer class="footer footer-refined">
   <div class="container">
-
-    <!-- Footer Join -->
-    <div class="footer-join">
-      <h2>We Welcome Your Passion And Expertise</h2>
-      <p class="sub-title">Join our empowering sports community today and grow with us.</p>
-      <a routerLink="/register" class="btn btn-primary"><i class="feather-user-plus"></i> Join With Us</a>
-    </div>
-    <!-- /Footer Join -->
-
-    <!-- Footer Top -->
-    <div class="footer-top">
-      <div class="row">
-        <div class="col-lg-2 col-md-6">
-          <div class="footer-widget footer-menu">
-            <h4 class="footer-title">Contact us</h4>
-            <div class="footer-address-blk">
+    <div class="footer-top footer-top--refined">
+      <div class="row g-4">
+        <div class="col-xl-4 col-lg-5">
+          <div class="footer-widget footer-brand-card">
+            <a routerLink="/home" class="footer-brand">
+              <img src="assets/img/logo.svg" alt="Gym logo" class="footer-brand__logo">
+            </a>
+            <p class="footer-brand__description">
+              A connected fitness platform for memberships, coach sessions, shop orders, and day-to-day progress with a clean member experience.
+            </p>
+            <div class="footer-address-blk footer-address-blk--refined">
               <div class="footer-call">
-                <span>Toll free Customer Care</span>
-                <p>+017 123 456 78</p>
+                <span>Toll free customer care</span>
+                <p><a href="tel:+01712345678">+017 123 456 78</a></p>
               </div>
               <div class="footer-call">
-                <span>Need Live Support</span>
-                <p>support&#64;gym.com</p>
+                <span>Need live support</span>
+                <p><a href="mailto:support@gym.com">support&#64;gym.com</a></p>
               </div>
             </div>
             <div class="social-icon">
@@ -36,112 +31,86 @@
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
+        <div class="col-xl-2 col-lg-3 col-md-6">
           <div class="footer-widget footer-menu">
-            <h4 class="footer-title">Quick Links</h4>
+            <h4 class="footer-title">Explore</h4>
             <ul>
-              <li><a href="javascript:void(0);">About us</a></li>
-              <li><a href="javascript:void(0);">Services</a></li>
-              <li><a href="javascript:void(0);">Events</a></li>
-              <li><a href="javascript:void(0);">Blogs</a></li>
-              <li><a href="javascript:void(0);">Contact us</a></li>
+              <li><a routerLink="/home">Home</a></li>
+              <li><a routerLink="/people">People</a></li>
+              <li><a routerLink="/store">Shop</a></li>
+              <li><a routerLink="/login">Login</a></li>
+              <li><a routerLink="/register">Create Account</a></li>
             </ul>
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
+        <div class="col-xl-2 col-lg-4 col-md-6">
+          <div class="footer-widget footer-menu">
+            <h4 class="footer-title">Platform</h4>
+            <ul>
+              <li><span>Membership management</span></li>
+              <li><span>Coach booking flows</span></li>
+              <li><span>People directory</span></li>
+              <li><span>Integrated shop checkout</span></li>
+              <li><span>Realtime notifications</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-xl-2 col-lg-4 col-md-6">
           <div class="footer-widget footer-menu">
             <h4 class="footer-title">Support</h4>
             <ul>
-              <li><a href="javascript:void(0);">Contact Us</a></li>
-              <li><a href="javascript:void(0);">FAQ</a></li>
-              <li><a href="javascript:void(0);">Privacy Policy</a></li>
-              <li><a href="javascript:void(0);">Terms &amp; Conditions</a></li>
-              <li><a href="javascript:void(0);">Pricing</a></li>
+              <li><a href="mailto:support@gym.com">Contact us</a></li>
+              <li><a href="tel:+01712345678">Call support</a></li>
+              <li><span>FAQ coming soon</span></li>
+              <li><span>Privacy policy</span></li>
+              <li><span>Terms &amp; conditions</span></li>
             </ul>
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-6">
-          <div class="footer-widget footer-menu">
-            <h4 class="footer-title">Other Links</h4>
-            <ul>
-              <li><a href="javascript:void(0);">Coaches</a></li>
-              <li><a href="javascript:void(0);">Sports Venue</a></li>
-              <li><a href="javascript:void(0);">Join As Coach</a></li>
-              <li><a href="javascript:void(0);">Add Venue</a></li>
-              <li><a routerLink="/profile">My Account</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="col-lg-2 col-md-6">
-          <div class="footer-widget footer-menu">
-            <h4 class="footer-title">Our Locations</h4>
-            <ul>
-              <li><a href="javascript:void(0);">Germany</a></li>
-              <li><a href="javascript:void(0);">Russia</a></li>
-              <li><a href="javascript:void(0);">France</a></li>
-              <li><a href="javascript:void(0);">UK</a></li>
-              <li><a href="javascript:void(0);">Colombia</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="col-lg-2 col-md-6">
+        <div class="col-xl-2 col-lg-4 col-md-6">
           <div class="footer-widget footer-menu">
             <h4 class="footer-title">Download</h4>
-            <ul>
-              <li><a href="#"><img src="assets/img/icons/icon-apple.svg" alt="Apple"></a></li>
-              <li><a href="#"><img src="assets/img/icons/google-icon.svg" alt="Google"></a></li>
-            </ul>
+            <div class="footer-downloads">
+              <a href="javascript:void(0);" class="footer-download">
+                <span class="footer-download__icon" aria-hidden="true">
+                  <i class="fab fa-apple"></i>
+                </span>
+                <span>App Store</span>
+              </a>
+              <a href="javascript:void(0);" class="footer-download">
+                <span class="footer-download__icon" aria-hidden="true">
+                  <i class="fab fa-google-play"></i>
+                </span>
+                <span>Google Play</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- /Footer Top -->
 
   </div>
 
-  <!-- Footer Bottom -->
-  <div class="footer-bottom">
+  <div class="footer-bottom footer-bottom--refined">
     <div class="container">
       <div class="copyright">
         <div class="row align-items-center">
           <div class="col-md-6">
             <div class="copyright-text">
-              <p class="mb-0">&copy; 2025 DreamSports - All rights reserved.</p>
+              <p class="mb-0">&copy; 2026 Gym Platform. Built for connected fitness experiences.</p>
             </div>
           </div>
           <div class="col-md-6">
-            <div class="dropdown-blk">
-              <ul class="navbar-nav selection-list">
-                <li class="nav-item dropdown">
-                  <div class="lang-select">
-                    <span class="select-icon"><i class="feather-globe"></i></span>
-                    <select class="select">
-                      <option>English (US)</option>
-                      <option>UK</option>
-                      <option>Japan</option>
-                    </select>
-                  </div>
-                </li>
-                <li class="nav-item dropdown">
-                  <div class="lang-select">
-                    <span class="select-icon"></span>
-                    <select class="select">
-                      <option>$ USD</option>
-                      <option>$ Euro</option>
-                    </select>
-                  </div>
-                </li>
-              </ul>
+            <div class="dropdown-blk footer-bottom__controls">
+              <span class="footer-bottom__note">Community first. Consistency always.</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- /Footer Bottom -->
 
 </footer>

@@ -1,0 +1,191 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">Session Bookings</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li><a routerLink="/bookings/coach">My Sessions</a></li>
+        <li>Bookings</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<app-dashboard-menu></app-dashboard-menu>
+
+<div class="content py-5 bg-light">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-xl-11">
+
+        <div class="premium-card">
+          <div class="premium-card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <h4 class="premium-card-title mb-1">
+                <i class="feather-users"></i> Booking Requests
+              </h4>
+              <p class="booking-subtitle mb-0">Review each member request and confirm who gets a spot in this session.</p>
+            </div>
+            <a routerLink="/bookings/coach" class="btn btn-outline-primary btn-sm">
+              <i class="feather-arrow-left me-1"></i> Back to Sessions
+            </a>
+          </div>
+
+          <div class="card-body p-0">
+            @if (isLoading()) {
+              <div class="spinner-wrap">
+                <div class="spinner-border premium-spinner" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            } @else if (errorMessage()) {
+              <div class="p-4">
+                <div class="status-notice danger">
+                  <i class="feather-alert-circle"></i>
+                  <div>
+                    <p class="notice-title">Failed to load data</p>
+                    <p class="notice-text">{{ errorMessage() }}</p>
+                  </div>
+                  <button class="btn btn-primary mt-3" (click)="loadBookings()">Retry</button>
+                </div>
+              </div>
+            } @else if (bookings().length === 0) {
+              <div class="premium-empty">
+                <div class="empty-icon-wrap">
+                  <i class="feather-users"></i>
+                </div>
+                <h5 class="empty-title">No bookings yet</h5>
+                <p class="empty-desc">No one has booked this session yet.</p>
+              </div>
+            } @else {
+              <div class="booking-stats-grid booking-stats-grid--padded">
+                <div class="booking-stat-card">
+                  <span class="booking-stat-label">Pending</span>
+                  <span class="booking-stat-value">{{ pendingCount() }}</span>
+                </div>
+                <div class="booking-stat-card booking-stat-card--success">
+                  <span class="booking-stat-label">Accepted</span>
+                  <span class="booking-stat-value">{{ acceptedCount() }}</span>
+                </div>
+                <div class="booking-stat-card booking-stat-card--soft-danger">
+                  <span class="booking-stat-label">Declined</span>
+                  <span class="booking-stat-value">{{ declinedCount() }}</span>
+                </div>
+              </div>
+
+              <div class="coach-table-shell table-responsive">
+                <table class="premium-table coach-bookings-table">
+                  <thead>
+                    <tr>
+                      <th style="min-width:220px;">Member</th>
+                      <th style="min-width:120px;">Status</th>
+                      <th style="min-width:160px;">Requested On</th>
+                      <th class="text-end" style="min-width:180px;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (booking of bookings(); track booking.id) {
+                      <tr>
+                        <td>
+                          <div class="coach-member-cell">
+                            @if (booking.userProfilePictureUrl) {
+                              <img
+                                [src]="booking.userProfilePictureUrl"
+                                [alt]="booking.userFullName"
+                                class="coach-member-avatar"
+                                width="44"
+                                height="44"
+                              >
+                            } @else {
+                              <div class="coach-member-avatar coach-member-avatar--placeholder">{{ booking.userFullName.charAt(0) | uppercase }}</div>
+                            }
+                            <div class="coach-member-meta">
+                              <div class="coach-member-name">{{ booking.userFullName }}</div>
+                              <small class="coach-member-subtitle">Member request</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <app-booking-status-badge [status]="booking.status"></app-booking-status-badge>
+                        </td>
+                        <td>
+                          <div class="date-primary">{{ booking.createdAt | date:'MMM d, yyyy' }}</div>
+                          <div class="date-secondary">{{ booking.createdAt | date:'h:mm a' }}</div>
+                        </td>
+                        <td class="text-end">
+                          @if (booking.status === BookingStatus.PENDING) {
+                            <div class="coach-actions">
+                              <button
+                                class="btn btn-success btn-sm"
+                                (click)="accept(booking.id)"
+                                [disabled]="actionInProgress() === booking.id"
+                              >
+                                @if (actionInProgress() === booking.id) {
+                                  <span class="spinner-border spinner-border-sm" role="status"></span>
+                                } @else {
+                                  <i class="feather-check me-1"></i>Accept
+                                }
+                              </button>
+                              <button
+                                class="btn btn-outline-danger btn-sm"
+                                (click)="decline(booking.id)"
+                                [disabled]="actionInProgress() === booking.id"
+                              >
+                                <i class="feather-x me-1"></i>Decline
+                              </button>
+                            </div>
+                          } @else {
+                            <span class="coach-action-complete">Review complete</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="coach-pagination">
+                <div class="coach-pagination__summary">
+                  <span>Showing {{ firstVisibleItem() }}-{{ lastVisibleItem() }} of {{ totalItems() }} bookings</span>
+                  <span>Page {{ currentPage() }} of {{ totalPages() || 1 }}</span>
+                </div>
+                <div class="coach-pagination__controls">
+                  <button
+                    type="button"
+                    class="coach-pagination__button coach-pagination__button--ghost"
+                    (click)="goToPage(currentPage() - 1)"
+                    [disabled]="currentPage() <= 1"
+                  >
+                    Previous
+                  </button>
+
+                  @for (pageNumber of pageNumbers(); track pageNumber) {
+                    <button
+                      type="button"
+                      class="coach-pagination__button"
+                      [class.coach-pagination__button--active]="pageNumber === currentPage()"
+                      (click)="goToPage(pageNumber)"
+                    >
+                      {{ pageNumber }}
+                    </button>
+                  }
+
+                  <button
+                    type="button"
+                    class="coach-pagination__button coach-pagination__button--ghost"
+                    (click)="goToPage(currentPage() + 1)"
+                    [disabled]="currentPage() >= (totalPages() || 1)"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

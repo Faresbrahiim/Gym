@@ -1,5 +1,6 @@
 ﻿using user_service.Application.Contracts.Repositories;
 using user_service.Application.Contracts.Services;
+using user_service.Application.Domain.Exceptions;
 using user_service.Application.DTOs;
 using user_service.Application.Mappers;
 
@@ -86,5 +87,15 @@ public class UsersService : IUsersService
             .Where(id => contactsById.ContainsKey(id))
             .Select(id => contactsById[id])
             .ToList();
+    }
+
+    public async Task<UserSummaryDto> GetUserSummaryAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetById(userId, cancellationToken);
+
+        if (user is null)
+            throw new UserNotFoundException(userId);
+
+        return UserMapper.ToSummaryDto(user);
     }
 }

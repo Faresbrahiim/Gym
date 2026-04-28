@@ -1,6 +1,7 @@
 package com.gym.membershipservice.application.port;
 
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
+import com.gym.membershipservice.application.dto.common.BookingEligibilityResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface MembershipService {
     List<String> getPermissions(UUID userId);
 
     boolean validateMembership(UUID userId, String action);
+
+    BookingEligibilityResponseDTO getBookingEligibility(UUID userId);
 }

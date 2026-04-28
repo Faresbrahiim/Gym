@@ -124,3 +124,30 @@ button .img-fluid,
   padding: 4px 24px 4px 8px;
   border-radius: 4px;
 }
+
+/* ── Bookings feature ─────────────────────────────────────── */
+.session-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  border-radius: 12px !important;
+}
+.session-card:hover {
+  box-shadow: 0 6px 24px rgba(23, 124, 130, 0.12) !important;
+  transform: translateY(-2px);
+}
+
+.plan-avatar--sm {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+}
+
+.modal-backdrop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+}
+.modal {
+  z-index: 1050;
+}
+

@@ -1,0 +1,19 @@
+security:
+    providers:
+        jwt_provider:
+            memory: ~
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        main:
+            lazy: false
+            stateless: true
+            custom_authenticators:
+                - App\Security\JwtAuthenticator
+            entry_point: App\Security\JwtAuthenticator
+
+    access_control:
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

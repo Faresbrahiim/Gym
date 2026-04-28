@@ -14,10 +14,10 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { shareReplay } from 'rxjs/operators';
 
-// Marks a request as a retry — prevents the interceptor from retrying again
+// Marks a request as a retry - prevents the interceptor from retrying again
 const IS_RETRY = new HttpContextToken<boolean>(() => false);
 
-// Shared in-flight refresh observable — ensures concurrent 401s share one refresh call
+// Shared in-flight refresh observable - ensures concurrent 401s share one refresh call
 let refreshInProgress$: Observable<LoginResponse> | null = null;
 
 const REFRESH_URL = `${environment.apiUrl}/api/auth/refresh`;
@@ -42,12 +42,12 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 
   return next(authRequest).pipe(
     catchError((error) => {
-      // Only handle 401s — pass everything else through
+      // Only handle 401s - pass everything else through
       if (!(error instanceof HttpErrorResponse) || error.status !== 401) {
         return throwError(() => error);
       }
 
-      // Do not retry pre-auth or refresh requests — avoids infinite loops
+      // Do not retry pre-auth or refresh requests - avoids infinite loops
       if (
         request.url.includes('/api/auth/login') ||
         request.url.includes('/api/auth/refresh') ||
@@ -71,7 +71,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       }
 
-      // Start refresh only once — concurrent 401s share the same observable
+      // Start refresh only once - concurrent 401s share the same observable
       if (!refreshInProgress$) {
         refreshInProgress$ = http
           .post<LoginResponse>(REFRESH_URL, { refreshToken })
@@ -80,7 +80,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 
       return refreshInProgress$.pipe(
         switchMap((response) => {
-          refreshInProgress$ = null; 
+          refreshInProgress$ = null;
 
           if (!response.accessToken || !response.refreshToken) {
             tokenService.clearTokens();

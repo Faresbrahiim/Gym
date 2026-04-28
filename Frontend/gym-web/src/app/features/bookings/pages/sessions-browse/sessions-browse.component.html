@@ -1,0 +1,227 @@
+<div class="breadcrumb breadcrumb-list mb-0">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">Browse Sessions</h1>
+      <ul>
+        <li><a routerLink="/home">Home</a></li>
+        <li>Sessions</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="content sessions-page">
+  <div class="container sessions-stage">
+
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center align-items-center sessions-state-card">
+        <div class="spinner-border premium-spinner" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="sessions-state-card status-notice danger">
+        <i class="feather-alert-circle"></i>
+        <div>
+          <p class="notice-title">Failed to load sessions</p>
+          <p class="notice-text">{{ errorMessage() }}</p>
+        </div>
+        <button class="btn btn-primary mt-3" (click)="loadSessions()">Retry</button>
+      </div>
+    } @else if (sessions().length === 0) {
+      <div class="sessions-state-card premium-empty">
+        <div class="empty-icon-wrap">
+          <i class="feather-calendar"></i>
+        </div>
+        <h5 class="empty-title">No sessions available</h5>
+        <p class="empty-desc">There are no sessions published right now. Check back soon for the next coach-led openings.</p>
+      </div>
+    } @else {
+      <section class="sessions-hero">
+        <div class="sessions-hero__copy">
+          <span class="sessions-hero__eyebrow">Coach booking zone</span>
+          <h2>Find a session, lock your spot, and keep your week moving.</h2>
+          <p>Browse the full coaching calendar, spot open sessions instantly, and book faster without digging through your account area.</p>
+
+          <div class="sessions-hero__chips">
+            <span class="sessions-hero__chip">
+              <i class="feather-calendar"></i>
+              {{ totalItems() }} total sessions
+            </span>
+            <span class="sessions-hero__chip">
+              <i class="feather-check-circle"></i>
+              {{ availableSessions() }} open now
+            </span>
+          </div>
+
+          <div class="sessions-hero__actions">
+            <a routerLink="/bookings/my" class="btn btn-light sessions-hero__button">
+              <i class="feather-list me-2"></i> My Bookings
+            </a>
+            <span class="sessions-hero__hint">Page {{ currentPage() }} of {{ totalPages() || 1 }}</span>
+          </div>
+        </div>
+
+        <div class="sessions-hero__spotlight">
+          <div class="sessions-hero__spotlight-top">
+            <span class="sessions-hero__spotlight-label">Next spotlight</span>
+            <span class="sessions-hero__spotlight-status">{{ sessions()[0].status }}</span>
+          </div>
+          <strong>{{ sessions()[0].title }}</strong>
+          <p>with {{ sessions()[0].coachFullName }}</p>
+          <div class="sessions-hero__spotlight-meta">
+            <span><i class="feather-calendar"></i>{{ sessions()[0].startTime | date:'EEE, MMM d' }}</span>
+            <span><i class="feather-clock"></i>{{ sessions()[0].startTime | date:'h:mm a' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="sessions-dashboard">
+        @if (!bookingEligible()) {
+          <div class="status-notice warning mb-4">
+            <i class="feather-lock"></i>
+            <div>
+              <p class="notice-title">Booking unavailable on your current plan</p>
+              <p class="notice-text">{{ bookingEligibilityReason() || 'Coach session booking requires an active paid membership.' }}</p>
+            </div>
+            <a routerLink="/membership/plans" class="btn btn-primary">View Plans</a>
+          </div>
+        }
+
+        <div class="booking-stats-grid sessions-stats-grid">
+          <div class="booking-stat-card sessions-stat-card">
+            <span class="booking-stat-label">Open sessions</span>
+            <span class="booking-stat-value">{{ availableSessions() }}</span>
+          </div>
+          <div class="booking-stat-card sessions-stat-card sessions-stat-card--dark">
+            <span class="booking-stat-label">Next session</span>
+            <span class="booking-stat-value booking-stat-value--compact">{{ nextSessionLabel() }}</span>
+          </div>
+        </div>
+
+        <div class="sessions-list">
+          @for (session of sessions(); track session.id) {
+            <article class="session-showcase-card" [class.session-showcase-card--inactive]="!canBook(session)">
+              <div class="session-showcase-card__media">
+                @if (session.coachProfilePictureUrl) {
+                  <img
+                    [src]="session.coachProfilePictureUrl"
+                    [alt]="session.coachFullName"
+                    class="session-showcase-card__portrait"
+                    width="156"
+                    height="156"
+                  >
+                } @else {
+                  <div class="session-showcase-card__placeholder">{{ session.coachFullName.charAt(0) | uppercase }}</div>
+                }
+              </div>
+
+              <div class="session-showcase-card__body">
+                <div class="session-showcase-card__header">
+                  <div>
+                    <span class="session-showcase-card__eyebrow">Coach-led session</span>
+                    <h3>{{ session.title }}</h3>
+                    <p class="session-showcase-card__coach">{{ session.coachFullName }}</p>
+                  </div>
+                  <div class="session-showcase-card__status-stack">
+                    <span
+                    class="session-showcase-card__status"
+                      [class.session-showcase-card__status--inactive]="session.status !== SessionStatus.OPEN && !session.isFull"
+                      [class.session-showcase-card__status--full]="session.isFull"
+                    >
+                      {{ session.isFull ? 'FULL' : session.status }}
+                    </span>
+                    <span class="session-showcase-card__capacity">
+                      {{ session.remainingSeats }} / {{ session.maxParticipants }} spots left
+                    </span>
+                  </div>
+                </div>
+
+                @if (session.description) {
+                  <p class="session-showcase-card__description">{{ session.description }}</p>
+                } @else {
+                  <p class="session-showcase-card__description session-showcase-card__description--muted">This session is ready to book and coach-managed directly in the platform.</p>
+                }
+
+                <div class="session-showcase-card__facts">
+                  <div class="session-fact">
+                    <i class="feather-calendar"></i>
+                    <div>
+                      <strong>{{ session.startTime | date:'EEE, MMM d' }}</strong>
+                      <span>{{ session.startTime | date:'h:mm a' }} - {{ session.endTime | date:'h:mm a' }}</span>
+                    </div>
+                  </div>
+                  <div class="session-fact">
+                    <i class="feather-users"></i>
+                    <div>
+                      <strong>Capacity</strong>
+                      <span>{{ session.acceptedParticipants }} joined, {{ session.remainingSeats }} left</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="session-showcase-card__actions">
+                <a routerLink="/bookings/my" class="session-secondary-link">
+                  Review my bookings
+                </a>
+                <button
+                  class="btn session-book-button"
+                  [class.btn-primary]="canBook(session)"
+                  [class.btn-outline-secondary]="!canBook(session)"
+                  (click)="book(session.id)"
+                  [disabled]="bookingInProgress() === session.id || !canBook(session)"
+                >
+                  @if (bookingInProgress() === session.id) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Booking...
+                  } @else {
+                    <i class="feather-check-circle me-1"></i> {{ actionLabel(session) }}
+                  }
+                </button>
+              </div>
+            </article>
+          }
+        </div>
+
+        <div class="sessions-pagination">
+          <div class="sessions-pagination__summary">
+            <span>Showing {{ firstVisibleItem() }}-{{ lastVisibleItem() }} of {{ totalItems() }} sessions</span>
+            <span>Page {{ currentPage() }} of {{ totalPages() || 1 }}</span>
+          </div>
+          <div class="sessions-pagination__controls">
+            <button
+              type="button"
+              class="sessions-pagination__button sessions-pagination__button--ghost"
+              (click)="goToPage(currentPage() - 1)"
+              [disabled]="currentPage() <= 1"
+            >
+              Previous
+            </button>
+
+            @for (pageNumber of pageNumbers(); track pageNumber) {
+              <button
+                type="button"
+                class="sessions-pagination__button"
+                [class.sessions-pagination__button--active]="pageNumber === currentPage()"
+                (click)="goToPage(pageNumber)"
+              >
+                {{ pageNumber }}
+              </button>
+            }
+
+            <button
+              type="button"
+              class="sessions-pagination__button sessions-pagination__button--ghost"
+              (click)="goToPage(currentPage() + 1)"
+              [disabled]="currentPage() >= (totalPages() || 1)"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+</div>
