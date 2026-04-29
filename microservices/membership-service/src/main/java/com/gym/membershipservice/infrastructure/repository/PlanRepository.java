@@ -11,6 +11,5 @@ import java.util.UUID;
 public interface PlanRepository extends JpaRepository<Plan, UUID> {
     List<Plan> findByStatus(PlanStatus status);
     Optional<Plan> findByStatusAndName(PlanStatus status, String name);
-
     boolean existsByName(String name);
 }

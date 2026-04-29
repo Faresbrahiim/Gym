@@ -1,4 +1,4 @@
-package com.gym.membershipservice.api.mapper;
+package com.gym.membershipservice.application.mapper;
 
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
