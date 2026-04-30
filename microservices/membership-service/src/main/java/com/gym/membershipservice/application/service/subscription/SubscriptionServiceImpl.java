@@ -3,7 +3,7 @@ package com.gym.membershipservice.application.service.subscription;
 import com.gym.membershipservice.api.exception.BadRequestException;
 import com.gym.membershipservice.api.exception.ConflictException;
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
-import com.gym.membershipservice.api.mapper.SubscriptionMapper;
+import com.gym.membershipservice.application.mapper.SubscriptionMapper;
 import com.gym.membershipservice.application.dto.Subscription.AdminSubscriptionSummaryDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
