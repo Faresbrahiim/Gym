@@ -12,7 +12,7 @@ public static class InfrastructureServiceExtensions
 {
     public static IServiceCollection AddInfrastructureServices(
         this IServiceCollection services,
-        IConfiguration configuration)   // ← needs the using above
+        IConfiguration configuration)   
     {
         // Repositories
         services.AddScoped<IUserRepository,            UserRepository>();

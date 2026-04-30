@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;                  // ← fixes Migrate()
+﻿using Microsoft.EntityFrameworkCore;                  
 using user_service.Infrastructure.Data;
 using user_service.Infrastructure.Data.Seeding;
 using user_service.Application.Extensions;
@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 #region DEPENDENCY INJECTION
 
 builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices(builder.Configuration);  // ← pass configuration
+builder.Services.AddInfrastructureServices(builder.Configuration);  
 builder.Services.AddApiServices(builder.Configuration);
 
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -48,7 +48,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
     var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
 
-    db.Database.Migrate();  // ← now works with Microsoft.EntityFrameworkCore using
+    db.Database.Migrate();  
 
     var bootstrapEnabled = configuration.GetValue<bool>("BootstrapAdmin:Enabled");
     if (bootstrapEnabled)

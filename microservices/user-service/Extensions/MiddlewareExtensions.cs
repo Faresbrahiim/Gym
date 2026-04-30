@@ -7,6 +7,8 @@ namespace user_service.Extensions
     {
         public static WebApplication UseApplicationMiddlewares(this WebApplication app)
         {
+            app.UseResponseCompression(); 
+
             app.UseMiddleware<GlobalExceptionMiddleware>();
 
             var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
