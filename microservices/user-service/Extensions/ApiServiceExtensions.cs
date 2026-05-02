@@ -14,6 +14,12 @@ public static class ApiServiceExtensions
         services.AddHealthChecks();
         services.AddHttpContextAccessor();
         services.AddScoped<AdminSeeder>();
+        services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+            options.Providers.Add<BrotliCompressionProvider>();
+            options.Providers.Add<GzipCompressionProvider>();
+        });
 
         services.Configure<BrotliCompressionProviderOptions>(options =>
             options.Level = System.IO.Compression.CompressionLevel.Fastest);
