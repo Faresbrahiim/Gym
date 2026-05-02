@@ -8,7 +8,7 @@ import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
-import com.gym.membershipservice.api.mapper.PlanMapper;
+import com.gym.membershipservice.application.mapper.PlanMapper;
 import com.gym.membershipservice.application.dto.Plan.PlanRequestDTO;
 import com.gym.membershipservice.application.port.PlanService;
 import org.springframework.stereotype.Service;

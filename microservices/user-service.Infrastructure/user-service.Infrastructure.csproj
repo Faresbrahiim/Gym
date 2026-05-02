@@ -9,6 +9,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Confluent.Kafka" Version="2.6.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
 		<PackageReference Include="Otp.NET" Version="1.4.1" />
 		<PackageReference Include="QRCoder" Version="1.7.0" />
 		<ProjectReference Include="..\user-service.Application\user-service.Application.csproj" />
