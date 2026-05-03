@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,34 +16,33 @@ import { ExerciseCardComponent } from '../../components/exercise-card/exercise-c
   styleUrls: ['./workouts-browse.component.css'],
 })
 export class WorkoutsBrowseComponent implements OnInit, OnDestroy {
-  // ── State ──────────────────────────────────────────────────────────────
   exercises: Exercise[] = [];
   bodyParts: string[] = [];
   targets: string[] = [];
   equipmentList: string[] = [];
 
-  // ── Filters ───────────────────────────────────────────────────────────
   selectedBodyPart = '';
   selectedTarget = '';
   selectedEquipment = '';
   searchName = '';
 
-  // ── Pagination ────────────────────────────────────────────────────────
   limit = 12;
   offset = 0;
   hasMore = true;
 
-  // ── UI ────────────────────────────────────────────────────────────────
   loading = false;
   error = '';
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
-  constructor(private workoutService: WorkoutService, private router: Router) {}
+  constructor(
+    private workoutService: WorkoutService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
-    // Load filter dropdown data in parallel
     forkJoin({
       bodyParts: this.workoutService.getBodyPartList(),
       targets: this.workoutService.getTargetList(),
@@ -55,10 +54,11 @@ export class WorkoutsBrowseComponent implements OnInit, OnDestroy {
           this.bodyParts = bodyParts;
           this.targets = targets;
           this.equipmentList = equipmentList;
+          this.cdr.detectChanges();
         },
+        error: () => {},
       });
 
-    // Debounce name search
     this.searchSubject
       .pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe(() => this.resetAndLoad());
@@ -71,41 +71,41 @@ export class WorkoutsBrowseComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ── Data Loading ──────────────────────────────────────────────────────
   loadExercises(): void {
-  this.loading = true;
-  this.error = '';
+    this.loading = true;
+    this.error = '';
+    this.cdr.detectChanges();
 
-  // Free plan: avoid /search endpoint, use individual filter endpoints instead
-  let request$;
+    let request$;
 
-  if (this.searchName) {
-    request$ = this.workoutService.searchByName(this.searchName);
-  } else if (this.selectedBodyPart) {
-    request$ = this.workoutService.getByBodyPart(this.selectedBodyPart, this.limit, this.offset);
-  } else if (this.selectedTarget) {
-    request$ = this.workoutService.getByTarget(this.selectedTarget, this.limit, this.offset);
-  } else if (this.selectedEquipment) {
-    request$ = this.workoutService.getByEquipment(this.selectedEquipment, this.limit, this.offset);
-  } else {
-    request$ = this.workoutService.getExercises(this.limit, this.offset);
+    if (this.searchName) {
+      request$ = this.workoutService.searchByName(this.searchName);
+    } else if (this.selectedBodyPart) {
+      request$ = this.workoutService.getByBodyPart(this.selectedBodyPart, this.limit, this.offset);
+    } else if (this.selectedTarget) {
+      request$ = this.workoutService.getByTarget(this.selectedTarget, this.limit, this.offset);
+    } else if (this.selectedEquipment) {
+      request$ = this.workoutService.getByEquipment(this.selectedEquipment, this.limit, this.offset);
+    } else {
+      request$ = this.workoutService.getExercises(this.limit, this.offset);
+    }
+
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (results: any) => {
+        const arr: Exercise[] = Array.isArray(results) ? results : (results?.data ?? []);
+        this.exercises = this.offset === 0 ? arr : [...this.exercises, ...arr];
+        this.hasMore = arr.length === this.limit;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.error = 'Failed to load exercises. Please try again.';
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
-  request$.pipe(takeUntil(this.destroy$)).subscribe({
-    next: (results: any) => {
-      // Handle both array and { data: [] } response shapes
-      const arr: Exercise[] = Array.isArray(results) ? results : (results?.data ?? []);
-        console.log('gifUrl sample:', arr[0]?.gifUrl); // 👈 add this
-      this.exercises = this.offset === 0 ? arr : [...this.exercises, ...arr];
-      this.hasMore = arr.length === this.limit;
-      this.loading = false;
-    },
-    error: () => {
-      this.error = 'Failed to load exercises. Please try again.';
-      this.loading = false;
-    },
-  });
-}
   resetAndLoad(): void {
     this.offset = 0;
     this.exercises = [];
@@ -117,15 +117,16 @@ export class WorkoutsBrowseComponent implements OnInit, OnDestroy {
     this.loadExercises();
   }
 
-  // ── Filter Handlers ───────────────────────────────────────────────────
+  selectBodyPart(bp: string): void {
+    this.selectedBodyPart = this.selectedBodyPart === bp ? '' : bp;
+    this.cdr.detectChanges();
+    this.resetAndLoad();
+  }
+
   onFilterChange(): void {
     this.resetAndLoad();
   }
-selectBodyPart(bp: string): void {
-  // toggle off if same
-  this.selectedBodyPart = this.selectedBodyPart === bp ? '' : bp;
-  this.resetAndLoad();
-}
+
   onSearchInput(value: string): void {
     this.searchName = value;
     this.searchSubject.next(value);
@@ -136,6 +137,7 @@ selectBodyPart(bp: string): void {
     this.selectedTarget = '';
     this.selectedEquipment = '';
     this.searchName = '';
+    this.cdr.detectChanges();
     this.resetAndLoad();
   }
 
@@ -148,7 +150,6 @@ selectBodyPart(bp: string): void {
     );
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────
   onViewDetails(exerciseId: string): void {
     this.router.navigate(['/workouts', exerciseId]);
   }
