@@ -3,6 +3,7 @@ using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using user_service.Application.Contracts.Services;
+using user_service.Application.Domain.Exceptions;
 
 public class EmailService : IEmailService
 {
@@ -11,6 +12,27 @@ public class EmailService : IEmailService
     public EmailService(IConfiguration config)
     {
         _config = config;
+    }
+
+    private async Task SendMailAsync(MimeMessage email)
+    {
+        try
+        {
+            using var smtp = new SmtpClient();
+            await smtp.ConnectAsync(
+                _config["Email:SmtpHost"],
+                int.Parse(_config["Email:SmtpPort"]!),
+                SecureSocketOptions.StartTls);
+            await smtp.AuthenticateAsync(
+                _config["Email:SmtpUser"],
+                _config["Email:SmtpPass"]);
+            await smtp.SendAsync(email);
+            await smtp.DisconnectAsync(true);
+        }
+        catch (Exception ex)
+        {
+            throw new EmailDeliveryException("Failed to send email. Please try again later.", ex);
+        }
     }
 
     public async Task SendPasswordResetEmail(string toEmail, string resetLink)
@@ -92,20 +114,7 @@ public class EmailService : IEmailService
 </html>"
 };
 
-        using var smtp = new SmtpClient();
-        await smtp.ConnectAsync(
-            _config["Email:SmtpHost"],
-            int.Parse(_config["Email:SmtpPort"]),
-            SecureSocketOptions.StartTls
-        );
-
-        await smtp.AuthenticateAsync(
-            _config["Email:SmtpUser"],
-            _config["Email:SmtpPass"]
-        );
-
-        await smtp.SendAsync(email);
-        await smtp.DisconnectAsync(true);
+        await SendMailAsync(email);
     }
 
     public async Task SendInvitationEmail(string toEmail, string invitationLink)
@@ -182,21 +191,7 @@ public class EmailService : IEmailService
                     </html>"
         };
 
-        using var smtp = new SmtpClient();
-
-        await smtp.ConnectAsync(
-            _config["Email:SmtpHost"],
-            int.Parse(_config["Email:SmtpPort"]),
-            SecureSocketOptions.StartTls
-        );
-
-        await smtp.AuthenticateAsync(
-            _config["Email:SmtpUser"],
-            _config["Email:SmtpPass"]
-        );
-
-        await smtp.SendAsync(email);
-        await smtp.DisconnectAsync(true);
+        await SendMailAsync(email);
     }
 
     public async Task SendEmailVerification(string toEmail, string verificationLink)
@@ -270,18 +265,6 @@ public class EmailService : IEmailService
 </html>"
         };
 
-        using var smtp = new SmtpClient();
-
-        await smtp.ConnectAsync(
-            _config["Email:SmtpHost"],
-            int.Parse(_config["Email:SmtpPort"]),
-            SecureSocketOptions.StartTls);
-
-        await smtp.AuthenticateAsync(
-            _config["Email:SmtpUser"],
-            _config["Email:SmtpPass"]);
-
-        await smtp.SendAsync(email);
-        await smtp.DisconnectAsync(true);
+        await SendMailAsync(email);
     }
 }

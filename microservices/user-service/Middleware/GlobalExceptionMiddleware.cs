@@ -52,6 +52,7 @@ namespace user_service.Middleware
                 UserNotFoundException => StatusCodes.Status404NotFound,
                 ProfileNotFoundException => StatusCodes.Status404NotFound,
                 ExternalAuthException => StatusCodes.Status401Unauthorized,
+                EmailDeliveryException => StatusCodes.Status502BadGateway,
 
                 _ => StatusCodes.Status500InternalServerError
             };
@@ -66,6 +67,7 @@ namespace user_service.Middleware
                 UserNotFoundException             => "User not found.",
                 ProfileNotFoundException          => "Profile not found.",
                 ExternalAuthException             => "Authentication failed.",
+                EmailDeliveryException            => "The invitation was created but the email could not be sent. Please use resend invitation.",
                 KeyNotFoundException              => "Resource not found.",
                 ArgumentException                 => exception.Message,
                 _                                 => "An unexpected error occurred."

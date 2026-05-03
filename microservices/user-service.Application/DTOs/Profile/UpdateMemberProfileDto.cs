@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using user_service.Application.Validation;
 
 namespace user_service.Application.DTOs
 {
@@ -7,6 +8,7 @@ namespace user_service.Application.DTOs
         [RegularExpression(@"^(Male|Female|Other)$")]
         public string? Gender { get; set; }
 
+        [DateNotInFuture]
         public DateTime? DateOfBirth { get; set; }
 
         [Range(50, 300)]

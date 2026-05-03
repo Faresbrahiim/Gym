@@ -7,6 +7,12 @@ import { TokenService } from '../../../../core/auth/token.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { UpdateMemberProfileRequest } from '../../models/update-member-profile-request.model';
 import { UpdateCoachProfileRequest } from '../../models/update-coach-profile-request.model';
+import {
+  dateOfBirthValidator,
+  maxDateInputValue,
+  minDateInputValue,
+  normalizeDateInputValue
+} from '../../../../shared/validators/date-of-birth.validator';
 
 @Component({
   standalone: true,
@@ -20,6 +26,8 @@ export class OnboardingComponent implements OnInit {
   isCheckingProfile = signal(true);
   isSaving          = signal(false);
   errorMessage      = signal<string | null>(null);
+  readonly maxDate = maxDateInputValue();
+  readonly minDate = minDateInputValue();
 
   memberForm!: FormGroup;
   coachForm!: FormGroup;
@@ -52,7 +60,7 @@ export class OnboardingComponent implements OnInit {
   private buildForms(): void {
     this.memberForm = this.fb.group({
       gender:         [''],
-      dateOfBirth:    [''],
+      dateOfBirth:    ['', [dateOfBirthValidator()]],
       heightCm:       [null, [Validators.min(50), Validators.max(300)]],
       weightKg:       [null, [Validators.min(20), Validators.max(500)]],
       fitnessGoal:    ['', Validators.maxLength(255)],
@@ -93,6 +101,12 @@ export class OnboardingComponent implements OnInit {
   onSubmit(): void {
     if (this.isSaving()) return;
 
+    const activeForm = this.role === 'MEMBER' ? this.memberForm : this.coachForm;
+    if (activeForm.invalid) {
+      activeForm.markAllAsTouched();
+      return;
+    }
+
     this.isSaving.set(true);
     this.errorMessage.set(null);
 
@@ -113,6 +127,24 @@ export class OnboardingComponent implements OnInit {
 
   skip(): void {
     this.router.navigate(['/home']);
+  }
+
+  onMemberDateOfBirthChange(): void {
+    const control = this.memberForm.get('dateOfBirth');
+    const rawValue = control?.value;
+
+    if (!control || !rawValue) {
+      return;
+    }
+
+    const normalized = normalizeDateInputValue(rawValue);
+    if (normalized === rawValue) {
+      return;
+    }
+
+    control.setValue('', { emitEvent: false });
+    control.markAsTouched();
+    control.updateValueAndValidity({ emitEvent: false });
   }
 
   private buildMemberDto(): UpdateMemberProfileRequest {

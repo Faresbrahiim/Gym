@@ -19,8 +19,12 @@ export class ErrorService {
       return 'Something went wrong. Please try again.';
     }
 
-    // Never expose raw server error messages
+    // For 5xx, show an intentional backend message if present, otherwise keep generic
     if (error.status >= 500) {
+      const body = error.error;
+      if (typeof body?.message === 'string' && body.message.trim()) {
+        return body.message.trim();
+      }
       return 'A server error occurred. Please try again later.';
     }
 

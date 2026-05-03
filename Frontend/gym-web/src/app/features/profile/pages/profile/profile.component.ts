@@ -13,6 +13,12 @@ import { UpdateProfileRequest } from '../../models/update-profile-request.model'
 import { UpdateMemberProfileRequest } from '../../models/update-member-profile-request.model';
 import { UpdateCoachProfileRequest } from '../../models/update-coach-profile-request.model';
 import { moroccanPhoneValidators } from '../../../../shared/validators/phone.validator';
+import {
+  dateOfBirthValidator,
+  maxDateInputValue,
+  minDateInputValue,
+  normalizeDateInputValue
+} from '../../../../shared/validators/date-of-birth.validator';
 
 const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
 
@@ -26,6 +32,8 @@ const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
 export class ProfileComponent implements OnInit {
 
   readonly DEFAULT_AVATAR = DEFAULT_AVATAR;
+  readonly maxDate = maxDateInputValue();
+  readonly minDate = minDateInputValue();
 
   isLoading         = signal(true);
   isSavingProfile   = signal(false);
@@ -72,7 +80,7 @@ export class ProfileComponent implements OnInit {
 
     this.memberForm = this.fb.group({
       gender:         [''],
-      dateOfBirth:    [''],
+      dateOfBirth:    ['', [dateOfBirthValidator()]],
       heightCm:       [null, [Validators.min(50), Validators.max(300)]],
       weightKg:       [null, [Validators.min(20), Validators.max(500)]],
       fitnessGoal:    ['', Validators.maxLength(255)],
@@ -219,6 +227,10 @@ export class ProfileComponent implements OnInit {
         this.extraError.set(this.errorService.extractMessage(err));
       }
     });
+  }
+
+  onMemberDateOfBirthChange(): void {
+    this.enforceValidMemberDateOfBirth();
   }
 
   onSaveCoachProfile(): void {
@@ -449,7 +461,7 @@ export class ProfileComponent implements OnInit {
 
     this.memberForm.patchValue({
       gender: data.memberProfile.gender ?? '',
-      dateOfBirth: data.memberProfile.dateOfBirth ? data.memberProfile.dateOfBirth.substring(0, 10) : '',
+      dateOfBirth: normalizeDateInputValue(data.memberProfile.dateOfBirth),
       heightCm: data.memberProfile.heightCm,
       weightKg: data.memberProfile.weightKg,
       fitnessGoal: data.memberProfile.fitnessGoal ?? '',
@@ -457,6 +469,24 @@ export class ProfileComponent implements OnInit {
     });
 
     this.memberForm.markAsPristine();
+  }
+
+  private enforceValidMemberDateOfBirth(): void {
+    const control = this.memberForm.get('dateOfBirth');
+    const rawValue = control?.value;
+
+    if (!control || !rawValue) {
+      return;
+    }
+
+    const normalized = normalizeDateInputValue(rawValue);
+    if (normalized === rawValue) {
+      return;
+    }
+
+    control.setValue('', { emitEvent: false });
+    control.markAsTouched();
+    control.updateValueAndValidity({ emitEvent: false });
   }
 
   private patchCoachForm(data: UserMe): void {

@@ -281,7 +281,26 @@
 
                 <div class="profile-field">
                   <label class="form-label">Date of Birth</label>
-                  <input type="date" class="form-control" formControlName="dateOfBirth" />
+                    <input
+                      type="date"
+                      class="form-control"
+                      formControlName="dateOfBirth"
+                      [attr.max]="maxDate"
+                      [attr.min]="minDate"
+                      (input)="onMemberDateOfBirthChange()"
+                      (change)="onMemberDateOfBirthChange()"
+                      (blur)="onMemberDateOfBirthChange()"
+                      [class.is-invalid]="memberForm.get('dateOfBirth')?.invalid && memberForm.get('dateOfBirth')?.touched"
+                    />
+                  @if (memberForm.get('dateOfBirth')?.hasError('futureDateOfBirth') && memberForm.get('dateOfBirth')?.touched) {
+                    <div class="invalid-feedback">Date of birth cannot be in the future.</div>
+                  }
+                  @if (memberForm.get('dateOfBirth')?.hasError('tooYoung') && memberForm.get('dateOfBirth')?.touched) {
+                    <div class="invalid-feedback">You must be at least 13 years old.</div>
+                  }
+                  @if (memberForm.get('dateOfBirth')?.hasError('tooOld') && memberForm.get('dateOfBirth')?.touched) {
+                    <div class="invalid-feedback">Please enter a valid date of birth.</div>
+                  }
                 </div>
 
                 <div class="profile-field">
