@@ -150,6 +150,19 @@ export class WorkoutsBrowseComponent implements OnInit, OnDestroy {
     );
   }
 
+  // ── Helpers ────────────────────────────────────────────
+  getGifUrl(exercise: any): string {
+    const filename = exercise?.gifUrl?.split('/').pop();
+    return `/workout-gifs/${filename}`;
+  }
+
+  onGifError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    const fallback = img.nextElementSibling as HTMLElement;
+    if (fallback) fallback.style.display = 'flex';
+  }
+
   onViewDetails(exerciseId: string): void {
     this.router.navigate(['/workouts', exerciseId]);
   }
