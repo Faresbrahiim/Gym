@@ -1,46 +1,30 @@
-<div class="exercise-card card h-100 shadow-sm border-0">
-  <!-- GIF / Fallback -->
-  <div class="exercise-gif-wrapper">
+<div class="ex-card">
+
+  <div class="ex-card-gif">
     <img
       *ngIf="!gifError"
       [src]="authenticatedGifUrl"
       [alt]="exercise.name"
-      class="exercise-gif"
       (error)="onGifError()"
       loading="lazy"
     />
-    <div *ngIf="gifError" class="gif-fallback d-flex align-items-center justify-content-center">
-      <i class="fas fa-dumbbell fa-3x text-muted"></i>
+    <div *ngIf="gifError" class="gif-fallback">
+      <i class="fas fa-dumbbell"></i>
     </div>
+    <span class="body-part-pill">{{ exercise.bodyPart }}</span>
   </div>
 
-  <!-- Card Body -->
-  <div class="card-body d-flex flex-column">
-    <h6 class="exercise-name fw-semibold mb-2 text-capitalize">
-      {{ exercise.name }}
-    </h6>
+  <div class="ex-card-body">
+    <div class="ex-card-name">{{ exercise.name }}</div>
 
-    <div class="exercise-tags mb-3 d-flex flex-wrap gap-1">
-      <span class="badge badge-body-part">{{ bodyPartLabel }}</span>
-      <span class="badge badge-target text-capitalize">{{ exercise.target }}</span>
-      <span class="badge badge-equipment text-capitalize">{{ exercise.equipment }}</span>
+    <div class="ex-card-tags">
+      <span class="tag tag-target">{{ exercise.target }}</span>
+      <span class="tag tag-equip">{{ exercise.equipment }}</span>
     </div>
 
-    <div *ngIf="exercise.secondaryMuscles?.length" class="secondary-muscles mb-3">
-      <small class="text-muted">
-        <i class="fas fa-layer-group me-1"></i>
-        <span class="text-capitalize">{{ exercise.secondaryMuscles!.join(', ') }}</span>
-      </small>
-    </div>
-
-    <div class="mt-auto">
-      <button
-        class="btn btn-sm btn-view-exercise w-100"
-        (click)="onViewDetails()"
-      >
-        View Exercise
-        <i class="fas fa-arrow-right ms-1"></i>
-      </button>
-    </div>
+    <button class="ex-card-btn" (click)="onViewDetails()">
+      View Exercise <i class="fas fa-arrow-right"></i>
+    </button>
   </div>
+
 </div>

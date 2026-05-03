@@ -1,83 +1,141 @@
-.exercise-card {
-  border-radius: 12px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: hidden;
+@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+:host {
+  --grad: linear-gradient(105.55deg, #085A6C -6.68%, #269089 43.13%, #7ABC82 96.15%);
+  --grad-soft: linear-gradient(135deg, #E8F7F5 0%, #F4FAF8 100%);
+  --c-dark: #062F38;
+  --c-mid: #269089;
+  --c-border: #C8E8E2;
+  --c-muted: #5B8A90;
+  --c-white: #ffffff;
+  --radius: 18px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 20px rgba(6,47,56,0.09);
+  --shadow-hover: 0 14px 40px rgba(6,47,56,0.16);
+  display: block;
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
 }
 
-.exercise-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+.ex-card {
+  background: var(--c-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--c-border);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.28s cubic-bezier(.22,.68,0,1.2), box-shadow 0.28s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.exercise-gif-wrapper {
-  height: 200px;
-  background: #f8f9fa;
+.ex-card:hover {
+  transform: translateY(-7px) scale(1.01);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ── GIF ─────────────────────────────────────────────────── */
+.ex-card-gif {
+  height: 190px;
+  background: var(--grad-soft);
   overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ex-card-gif img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.ex-card:hover .ex-card-gif img { transform: scale(1.06); }
+
+.gif-fallback {
+  width: 100%; height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--grad-soft);
+  color: var(--c-mid);
+  font-size: 2.4rem;
 }
 
-.exercise-gif {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.body-part-pill {
+  position: absolute;
+  top: 12px; left: 12px;
+  background: rgba(8,90,108,0.82);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 100px;
+  text-transform: capitalize;
+  letter-spacing: 0.04em;
 }
 
-.gif-fallback {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+/* ── Body ─────────────────────────────────────────────────── */
+.ex-card-body {
+  padding: 14px 16px 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.exercise-name {
-  font-size: 0.95rem;
+.ex-card-name {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-dark);
   line-height: 1.3;
-  min-height: 2.6rem;
+  text-transform: capitalize;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: 36px;
 }
 
-.badge {
-  font-size: 0.7rem;
+.ex-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag {
+  font-size: 10px;
   font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 20px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
 }
 
-.badge-body-part {
-  background-color: #e8f4fd;
-  color: #1a6fa8;
-}
+.tag-target { background: #E0F4F1; color: #085A6C; border: 1px solid #B8E6E3; }
+.tag-equip  { background: #FFF3E0; color: #E65100; border: 1px solid #FFD8B0; }
 
-.badge-target {
-  background-color: #e8fdf0;
-  color: #1a8a44;
-}
-
-.badge-equipment {
-  background-color: #fdf4e8;
-  color: #a85c1a;
-}
-
-.btn-view-exercise {
-  background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
-  color: #fff;
+.ex-card-btn {
+  margin-top: auto;
+  width: 100%;
+  padding: 10px;
   border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  padding: 8px 16px;
-  transition: opacity 0.2s ease;
-}
-
-.btn-view-exercise:hover {
-  opacity: 0.9;
+  border-radius: var(--radius-sm);
+  background: var(--grad);
   color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.01em;
 }
 
-.secondary-muscles {
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
+.ex-card-btn:hover { opacity: 0.88; transform: scale(0.98); }
+.ex-card-btn i { font-size: 11px; }

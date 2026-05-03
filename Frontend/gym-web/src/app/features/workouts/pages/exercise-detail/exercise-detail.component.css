@@ -1,60 +1,538 @@
-.back-link {
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.back-link:hover { color: #ff5722 !important; }
+@import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 
-.exercise-gif-wrapper {
-  border-radius: 16px;
+:host {
+  --grad: linear-gradient(105.55deg, #085A6C -6.68%, #269089 43.13%, #7ABC82 96.15%);
+  --grad-soft: linear-gradient(135deg, #085A6C12 0%, #7ABC8208 100%);
+  --grad-card: linear-gradient(160deg, #E8F7F5 0%, #F4FAF8 100%);
+  --c-dark: #062F38;
+  --c-mid: #269089;
+  --c-light: #7ABC82;
+  --c-accent: #3DBFB8;
+  --c-surface: #F4FAF8;
+  --c-border: #C8E8E2;
+  --c-text: #0D3D47;
+  --c-muted: #5B8A90;
+  --c-white: #ffffff;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow: 0 4px 24px rgba(6,47,56,0.09);
+  --shadow-lg: 0 16px 48px rgba(6,47,56,0.14);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Page ───────────────────────────────────────────────── */
+.detail-page {
+  background: var(--c-surface);
+  min-height: 100vh;
+}
+
+/* ── Loading ────────────────────────────────────────────── */
+.loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px;
+  gap: 20px;
+}
+
+.loading-ring {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 3px solid var(--c-border);
+  border-top-color: var(--c-mid);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-wrap p {
+  font-size: 14px;
+  color: var(--c-muted);
+  font-weight: 300;
+}
+
+/* ── Error ──────────────────────────────────────────────── */
+.error-wrap {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.error-wrap h4 {
+  font-family: 'Clash Display', sans-serif;
+  color: var(--c-dark);
+  margin-bottom: 16px;
+}
+
+/* ── Hero Band ──────────────────────────────────────────── */
+.detail-hero {
+  background: var(--grad);
+  padding: 32px 0 100px;
+  position: relative;
   overflow: hidden;
-  background: #f8f9fa;
-  min-height: 280px;
+}
+
+.detail-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.detail-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 70px;
+  background: var(--c-surface);
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 0.2s;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.back-btn:hover { color: #fff; }
+
+.hero-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.hero-name {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  color: #fff;
+  text-transform: capitalize;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.hero-badge i { font-size: 11px; opacity: 0.8; }
+
+/* ── Main Content ───────────────────────────────────────── */
+.detail-content {
+  margin-top: -60px;
+  position: relative;
+  z-index: 2;
+  padding-bottom: 80px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 991px) {
+  .content-grid { grid-template-columns: 1fr; }
+}
+
+/* ── GIF Card ───────────────────────────────────────────── */
+.gif-card {
+  background: var(--c-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: sticky;
+  top: 20px;
+}
+
+.gif-wrap {
+  height: 320px;
+  background: var(--grad-card);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.gif-fallback {
-  width: 100%;
-  min-height: 280px;
-  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+.gif-wrap img {
+  width: 100%; height: 100%;
+  object-fit: cover;
 }
 
-.detail-badge {
-  font-size: 0.8rem;
-  padding: 6px 14px;
-  border-radius: 20px;
+.gif-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  color: var(--c-mid);
+  font-size: 3rem;
+  background: var(--grad-card);
+}
+
+.gif-meta {
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--c-border);
+}
+
+.gif-meta-item {
+  background: var(--c-white);
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.gif-meta-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-muted);
+  margin-bottom: 4px;
+}
+
+.gif-meta-value {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-dark);
+  text-transform: capitalize;
+}
+
+.secondary-muscles-section {
+  padding: 16px 20px;
+  border-top: 1px solid var(--c-border);
+}
+
+.sec-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-muted);
+  margin-bottom: 10px;
   font-weight: 500;
 }
-.badge-body-part { background: #e8f4fd; color: #1a6fa8; }
-.badge-target    { background: #e8fdf0; color: #1a8a44; }
-.badge-equipment { background: #fdf4e8; color: #a85c1a; }
 
-.secondary-muscles-card {
-  background: #f8f9fa;
-  border: 1px solid #e8ecf0;
+.sec-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
+.sec-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 11px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, #E8F7F5, #D4F0EC);
+  border: 1px solid var(--c-border);
+  color: var(--c-dark);
+  text-transform: capitalize;
+}
+
+/* ── Right Column ───────────────────────────────────────── */
+.right-col { display: flex; flex-direction: column; gap: 20px; }
+
+/* ── Info Panel ─────────────────────────────────────────── */
+.info-panel {
+  background: var(--c-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--c-border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-icon {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-dark);
+}
+
+.panel-body { padding: 20px 22px; }
+
+/* ── Instructions ───────────────────────────────────────── */
 .instruction-list {
-  padding-left: 1.2rem;
-  line-height: 1.8;
-  color: #555;
+  list-style: none;
+  padding: 0; margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.instruction-list li { margin-bottom: 0.5rem; }
 
-.calorie-card {
-  background: linear-gradient(135deg, #fff5f3 0%, #ffeae6 100%);
-  border: 1px solid #ffd6cc;
+.instruction-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.step-num {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.step-text {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--c-text);
+  font-weight: 300;
+}
+
+/* ── Description ────────────────────────────────────────── */
+.description-text {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--c-text);
+  font-weight: 300;
+}
+
+/* ── Calorie Calculator ─────────────────────────────────── */
+.calorie-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 500px) { .calorie-grid { grid-template-columns: 1fr; } }
+
+.calorie-field label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-muted);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.calorie-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  transition: border-color 0.2s;
+}
+
+.calorie-input:focus {
+  outline: none;
+  border-color: var(--c-mid);
+  box-shadow: 0 0 0 3px rgba(38,144,137,0.1);
+}
+
+.btn-calc {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--grad);
+  color: #fff;
+  font-family: 'Clash Display', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+}
+
+.btn-calc:hover { opacity: 0.9; transform: scale(0.99); }
+
+.calorie-result {
+  background: linear-gradient(135deg, #E8F7F5 0%, #D4F0EC 100%);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.calorie-big {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--c-dark);
+  line-height: 1;
+}
+
+.calorie-big span {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
+.calorie-detail {
+  font-size: 13px;
+  color: var(--c-muted);
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+.calorie-detail strong { color: var(--c-dark); font-weight: 500; }
+
+.calorie-hint {
+  font-size: 13px;
+  color: var(--c-muted);
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* ── Similar Exercises ──────────────────────────────────── */
+.similar-section { padding-bottom: 0; }
+
+.similar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
 }
 
 .similar-card {
-  background: #f8f9fa;
-  border: 1px solid #e8ecf0;
-  transition: transform 0.2s ease, background 0.2s ease;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s ease;
 }
+
 .similar-card:hover {
+  background: var(--c-white);
+  border-color: var(--c-mid);
   transform: translateY(-3px);
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow);
 }
+
+.similar-name {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-dark);
+  text-transform: capitalize;
+  line-height: 1.3;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 32px;
+}
+
+.similar-meta {
+  font-size: 11px;
+  color: var(--c-muted);
+  text-transform: capitalize;
+}
+
+.similar-arrow {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--c-mid);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Btn Back ───────────────────────────────────────────── */
+.btn-back-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 100px;
+  border: none;
+  background: var(--grad);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.btn-back-primary:hover { opacity: 0.88; color: #fff; }
