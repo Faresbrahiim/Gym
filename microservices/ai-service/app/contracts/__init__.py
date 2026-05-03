@@ -1,4 +1,5 @@
 from app.contracts.recommendation_contracts import (
+    FeedbackStore,
     IntentDetector,
     LlmGenerator,
     PromptBuilderContract,
@@ -8,6 +9,7 @@ from app.contracts.recommendation_contracts import (
 )
 
 __all__ = [
+    "FeedbackStore",
     "IntentDetector",
     "LlmGenerator",
     "PromptBuilderContract",

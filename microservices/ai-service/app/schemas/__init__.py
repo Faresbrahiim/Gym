@@ -1,3 +1,4 @@
+from app.schemas.feedback import FeedbackRequest, FeedbackResponse
 from app.schemas.recommendations import (
     HealthResponse,
     RecommendationHistoryItem,
@@ -8,6 +9,8 @@ from app.schemas.recommendations import (
 )
 
 __all__ = [
+    "FeedbackRequest",
+    "FeedbackResponse",
     "HealthResponse",
     "RecommendationHistoryItem",
     "RecommendationHistoryResponse",

@@ -45,9 +45,23 @@ class RecommendationRepository:
 
         return list(result.scalars().all())
 
+    async def get_by_id(self, recommendation_id: str) -> Recommendation | None:
+        parsed_recommendation_id = self._parse_uuid(recommendation_id, "recommendation_id")
+
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(Recommendation).where(Recommendation.id == parsed_recommendation_id)
+            )
+
+        return result.scalar_one_or_none()
+
     @staticmethod
     def _parse_user_id(user_id: str) -> UUID:
+        return RecommendationRepository._parse_uuid(user_id, "user_id")
+
+    @staticmethod
+    def _parse_uuid(value: str, field_name: str) -> UUID:
         try:
-            return UUID(user_id)
+            return UUID(value)
         except ValueError as exc:
-            raise ValueError(f"Invalid user_id '{user_id}'. Expected a UUID.") from exc
+            raise ValueError(f"Invalid {field_name} '{value}'. Expected a UUID.") from exc

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from app.models.feedback import Feedback
 from app.models.recommendation import Recommendation
 from app.schemas.recommendations import UserProfileContext
 
@@ -23,6 +24,19 @@ class RecommendationStore(Protocol):
         ...
 
     async def list_for_user(self, user_id: str, limit: int = 20) -> list[Recommendation]:
+        ...
+
+    async def get_by_id(self, recommendation_id: str) -> Recommendation | None:
+        ...
+
+
+class FeedbackStore(Protocol):
+    async def upsert_for_recommendation(
+        self,
+        recommendation_id: str,
+        rating: int,
+        comment: str | None,
+    ) -> Feedback:
         ...
 
 

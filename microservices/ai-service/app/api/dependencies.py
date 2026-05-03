@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.services.coach_service import CoachService
+from app.services.feedback_service import FeedbackService
 from app.services.history_service import RecommendationHistoryService
 from app.services.user_profile_service import UserProfileService
 from app.services.intent_service import IntentService
@@ -15,6 +17,11 @@ from app.services.rag_service import RagService
 @lru_cache
 def get_recommendation_repository() -> RecommendationRepository:
     return RecommendationRepository()
+
+
+@lru_cache
+def get_feedback_repository() -> FeedbackRepository:
+    return FeedbackRepository()
 
 
 @lru_cache
@@ -57,3 +64,11 @@ def get_coach_service() -> CoachService:
 @lru_cache
 def get_history_service() -> RecommendationHistoryService:
     return RecommendationHistoryService(get_recommendation_repository())
+
+
+@lru_cache
+def get_feedback_service() -> FeedbackService:
+    return FeedbackService(
+        recommendation_store=get_recommendation_repository(),
+        feedback_store=get_feedback_repository(),
+    )
