@@ -25,7 +25,4 @@ class LLMService:
             )
             return response.choices[0].message.content
         except Exception as e:
-            raise Exception(f"Erreur LLM : {str(e)}")
-
-
-llm_service = LLMService()
+            raise RuntimeError(f"Erreur LLM : {str(e)}") from e

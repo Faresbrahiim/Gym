@@ -2,6 +2,7 @@ from sqlalchemy import text
 from app.db.database import AsyncSessionLocal
 from app.services.embedding_service import embedding_service
 
+
 class RagService:
 
     async def search(self, question: str, top_k: int = 3) -> list[str]:
@@ -21,5 +22,3 @@ class RagService:
             rows = result.fetchall()
 
         return [row.content for row in rows]
-
-rag_service = RagService()

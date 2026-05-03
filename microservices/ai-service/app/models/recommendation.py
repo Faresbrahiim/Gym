@@ -6,8 +6,11 @@ from app.db.database import Base
 import enum
 
 class RecommendationType(str, enum.Enum):
+    greeting = "greeting"
+    salle_info = "salle_info"
+    general = "general"
     nutrition = "nutrition"
-    sport = "sport"
+    coaching = "coaching"
 
 class Recommendation(Base):
     __tablename__ = "recommendations"

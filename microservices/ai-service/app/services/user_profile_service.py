@@ -5,13 +5,14 @@ from datetime import date, datetime
 import httpx
 
 from app.core.config import settings
+from app.schemas.recommendations import UserProfileContext
 
 
 class UserProfileService:
     def __init__(self) -> None:
         self._base_url = settings.USER_SERVICE_URL.rstrip("/")
 
-    async def get_profile(self, user_id: str) -> dict:
+    async def get_profile(self, user_id: str) -> UserProfileContext:
         if not self._base_url:
             raise RuntimeError("USER_SERVICE_URL is not configured.")
 
@@ -36,18 +37,18 @@ class UserProfileService:
 
         return self._normalize_profile(response.json())
 
-    def _normalize_profile(self, payload: dict) -> dict:
-        return {
-            "firstName": self._get(payload, "firstName", "FirstName") or "cher membre",
-            "age": self._compute_age(self._get(payload, "dateOfBirth", "DateOfBirth")),
-            "weight_kg": self._get(payload, "weightKg", "WeightKg"),
-            "height_cm": self._get(payload, "heightCm", "HeightCm"),
-            "fitness_goal": self._get(payload, "fitnessGoal", "FitnessGoal"),
-            "experience_level": self._experience_label(
+    def _normalize_profile(self, payload: dict) -> UserProfileContext:
+        return UserProfileContext(
+            firstName=self._get(payload, "firstName", "FirstName") or "cher membre",
+            age=self._compute_age(self._get(payload, "dateOfBirth", "DateOfBirth")),
+            weight_kg=self._get(payload, "weightKg", "WeightKg"),
+            height_cm=self._get(payload, "heightCm", "HeightCm"),
+            fitness_goal=self._get(payload, "fitnessGoal", "FitnessGoal"),
+            experience_level=self._experience_label(
                 self._get(payload, "experienceLevel", "ExperienceLevel")
             ),
-            "gender": self._get(payload, "gender", "Gender"),
-        }
+            gender=self._get(payload, "gender", "Gender"),
+        )
 
     @staticmethod
     def _compute_age(raw_date: str | None) -> int | None:
@@ -82,6 +83,3 @@ class UserProfileService:
                 return payload[key]
 
         return None
-
-
-user_profile_service = UserProfileService()

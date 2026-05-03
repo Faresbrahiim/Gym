@@ -37,5 +37,3 @@ class IntentService:
             return "coaching"
 
         return "general"
-
-intent_service = IntentService()
