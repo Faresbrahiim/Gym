@@ -28,7 +28,13 @@ namespace user_service.Infrastructure.Repositories
 
         public async Task Update(UserProfile profile, CancellationToken cancellationToken = default)
         {
-            _context.UserProfiles.Update(profile);
+            var tracked = await _context.UserProfiles
+                .AsTracking()
+                .FirstOrDefaultAsync(p => p.UserId == profile.UserId, cancellationToken);
+
+            if (tracked is null) return;
+
+            _context.Entry(tracked).CurrentValues.SetValues(profile);
             await _context.SaveChangesAsync(cancellationToken);
         }
     }

@@ -22,9 +22,9 @@ namespace user_service.Infrastructure.Repositories
         }
 
         public async Task<UserToken?> GetValidToken(
-                        string tokenHash,
-                        UserTokenType type,
-                        CancellationToken cancellationToken = default)
+            string tokenHash,
+            UserTokenType type,
+            CancellationToken cancellationToken = default)
         {
             return await _context.UserTokens
                 .Include(t => t.User)
@@ -33,46 +33,20 @@ namespace user_service.Infrastructure.Repositories
                     t.Type == type &&
                     t.UsedAt == null &&
                     t.ExpiresAt > DateTime.UtcNow,
-                    cancellationToken
-                );
+                    cancellationToken);
         }
 
         public async Task Update(UserToken token, CancellationToken cancellationToken = default)
         {
-            _context.UserTokens.Update(token);
+            var tracked = await _context.UserTokens
+                .AsTracking()
+                .FirstOrDefaultAsync(t => t.Id == token.Id, cancellationToken);
+
+            if (tracked is null) return;
+
+            _context.Entry(tracked).CurrentValues.SetValues(token);
             await _context.SaveChangesAsync(cancellationToken);
         }
-
-        //public async Task<UserToken?> GetLatestInvitationToken(
-        //    Guid userId,
-        //    CancellationToken cancellationToken = default)
-        //{
-        //    return await _context.UserTokens
-        //        .Where(t => t.UserId == userId && t.Type == UserTokenType.INVITATION)
-        //        .OrderByDescending(t => t.CreatedAt)
-        //        .FirstOrDefaultAsync(cancellationToken);
-
-        //}
-
-        //public async Task RevokeInvitationTokens(
-        //    Guid userId,
-        //    CancellationToken cancellationToken = default
-        //    )
-        //{
-        //    var tokens = await _context.UserTokens
-        //        .Where(t =>
-        //            t.UserId == userId &&
-        //            t.Type == UserTokenType.INVITATION &&
-        //            t.UsedAt == null)
-        //        .ToListAsync(cancellationToken);
-
-        //    foreach (var token in tokens)
-        //    {
-        //        token.UsedAt = DateTime.UtcNow;
-        //    }
-
-        //    await _context.SaveChangesAsync(cancellationToken);
-        //}
 
         public async Task<UserToken?> GetLatestToken(
             Guid userId,
@@ -91,6 +65,7 @@ namespace user_service.Infrastructure.Repositories
             CancellationToken cancellationToken = default)
         {
             var tokens = await _context.UserTokens
+                .AsTracking()
                 .Where(t =>
                     t.UserId == userId &&
                     t.Type == type &&
@@ -102,6 +77,5 @@ namespace user_service.Infrastructure.Repositories
 
             await _context.SaveChangesAsync(cancellationToken);
         }
-
     }
 }

@@ -30,12 +30,20 @@ namespace user_service.Infrastructure.Repositories
                     cancellationToken);
         }
 
-        public async Task MarkUsed(RecoveryCode code, CancellationToken cancellationToken = default)
+        public async Task MarkUsed(Guid userId, string codeHash, CancellationToken cancellationToken = default)
         {
+            var code = await _context.RecoveryCodes
+                .AsTracking()
+                .FirstOrDefaultAsync(
+                    x => x.UserId == userId &&
+                         x.CodeHash == codeHash &&
+                         !x.Used,
+                    cancellationToken);
+
+            if (code is null) return;
+
             code.Used = true;
             code.UsedAt = DateTime.UtcNow;
-
-            _context.RecoveryCodes.Update(code);
 
             await _context.SaveChangesAsync(cancellationToken);
         }
@@ -43,6 +51,7 @@ namespace user_service.Infrastructure.Repositories
         public async Task InvalidateAll(Guid userId, CancellationToken cancellationToken = default)
         {
             var codes = await _context.RecoveryCodes
+                .AsTracking()
                 .Where(x => x.UserId == userId && !x.Used)
                 .ToListAsync(cancellationToken);
 
