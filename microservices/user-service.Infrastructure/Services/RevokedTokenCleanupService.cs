@@ -1,4 +1,3 @@
-// Immediate Session Invalidation — JTI Blacklist  author: Anas
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using user_service.Application.Contracts.Repositories;
@@ -16,13 +15,26 @@ namespace user_service.Infrastructure.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                while (!stoppingToken.IsCancellationRequested)
+                {
+                    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
 
-                using var scope = _scopeFactory.CreateScope();
-                var repo = scope.ServiceProvider.GetRequiredService<IRevokedTokenRepository>();
-                await repo.DeleteExpired(stoppingToken);
+                    using var scope = _scopeFactory.CreateScope();
+                    var repo = scope.ServiceProvider.GetRequiredService<IRevokedTokenRepository>();
+
+                    await repo.DeleteExpired(stoppingToken);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Normal shutdown → ignore
+            }
+            catch (Exception ex)
+            {
+                // ❗ Real error → log it
+                Console.WriteLine($"Cleanup service error: {ex}");
             }
         }
     }
