@@ -1,188 +1,188 @@
-<app-page-header
-  title="AI Coach"
-  [breadcrumbs]="breadcrumbs"
-  image="breadcrumb-bg2.jpg"
-/>
-
-<div class="content">
-  <div class="container">
-    @if (missingUserId) {
-      <div class="ai-coach-state">
-        <h4>Session Required</h4>
-        <p>Please log in again to open your AI coach workspace.</p>
-        <a routerLink="/login" class="btn btn-primary">Go to Login</a>
-      </div>
-    } @else {
-      <div class="ai-coach-shell">
-        <aside class="ai-coach-sidebar" [class.ai-coach-sidebar--hidden]="!sidebarOpen">
-          <div class="ai-coach-brand">
-            <div>
-              <p class="ai-coach-eyebrow">Assistant</p>
-              <h3>AI Coach</h3>
+<div class="coach-page">
+  @if (missingUserId) {
+    <section class="coach-state">
+      <span class="coach-state__icon">AI</span>
+      <h1>Session required</h1>
+      <p>Please log in again so Coach IA can load your profile context and saved history.</p>
+    </section>
+  } @else {
+    <div class="coach-app">
+      <aside class="sidebar" [class.sidebar--closed]="!sidebarOpen">
+        <div class="sidebar-header">
+          <div class="logo">
+            <span class="logo-icon">AI</span>
+            <div class="logo-copy">
+              <span class="logo-kicker">Training Assistant</span>
+              <span class="logo-text">Coach IA</span>
             </div>
-            <button class="ai-coach-reset" type="button" (click)="newConversation()">
-              New chat
-            </button>
           </div>
 
-          <div class="ai-coach-history">
-            <div class="ai-coach-history__header">
-              <span>Recent prompts</span>
-              <button class="ai-coach-refresh" type="button" (click)="loadHistory()">Refresh</button>
-            </div>
+          <button class="new-chat-btn" type="button" (click)="newConversation()">
+            + New conversation
+          </button>
+        </div>
 
-            @if (isLoadingHistory) {
-              <div class="ai-coach-sidebar-state">Loading history...</div>
-            } @else if (historyError) {
-              <div class="ai-coach-sidebar-state">
-                <p>{{ historyError }}</p>
-                <button type="button" class="ai-coach-refresh" (click)="loadHistory()">Retry</button>
+        <div class="history-section">
+          <div class="history-header">
+            <p class="history-label">History</p>
+            <button class="history-refresh" type="button" (click)="loadHistory()">Refresh</button>
+          </div>
+
+          @if (isLoadingHistory) {
+            <div class="history-state">Loading history...</div>
+          } @else if (historyError) {
+            <div class="history-state">
+              <p>{{ historyError }}</p>
+              <button class="history-refresh" type="button" (click)="loadHistory()">Retry</button>
+            </div>
+          } @else if (history.length === 0) {
+            <div class="history-state">No saved conversations yet.</div>
+          } @else {
+            <div class="history-list">
+              @for (entry of history; track entry.id) {
+                <button
+                  type="button"
+                  class="history-item"
+                  [class.history-item--active]="activeHistoryId === entry.id"
+                  (click)="loadConversation(entry)"
+                >
+                  <span class="history-icon">AI</span>
+                  <span class="history-copy">
+                    <span class="history-title">{{ formatHistoryTitle(entry) }}</span>
+                    <span class="history-meta">{{ prettyIntent(entry.type) }} · {{ formatTimestamp(entry.createdAt) }}</span>
+                  </span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <div class="topbar">
+          <button class="menu-btn" type="button" (click)="sidebarOpen = !sidebarOpen">
+            Menu
+          </button>
+
+          <div class="topbar-copy">
+            <span class="topbar-kicker">Profile-aware coaching</span>
+            <span class="topbar-title">Coach IA</span>
+          </div>
+        </div>
+
+        <div class="messages-area" #messagesArea>
+          @if (!hasMessages) {
+            <section class="welcome">
+              <span class="welcome-icon">AI</span>
+              <h1>Bonjour, je suis votre Coach IA</h1>
+              <p>
+                Posez vos questions sur l'entrainement, la recuperation et la nutrition.
+                Cette version utilise votre profil et enregistre votre historique.
+              </p>
+
+              <div class="suggestions">
+                <button class="suggestion-pill" type="button" (click)="quickSend('Programme perte de poids')">
+                  Programme perte de poids
+                </button>
+                <button class="suggestion-pill" type="button" (click)="quickSend('Que manger avant une seance ?')">
+                  Nutrition pre-seance
+                </button>
+                <button class="suggestion-pill" type="button" (click)="quickSend('Comment mieux recuperer apres une seance jambes ?')">
+                  Recuperation musculaire
+                </button>
               </div>
-            } @else if (history.length === 0) {
-              <div class="ai-coach-sidebar-state">No saved recommendations yet.</div>
-            } @else {
-              <div class="ai-coach-history__list">
-                @for (entry of history; track entry.id) {
-                  <button
-                    type="button"
-                    class="ai-coach-history__item"
-                    [class.ai-coach-history__item--active]="activeHistoryId === entry.id"
-                    (click)="loadConversation(entry)"
-                  >
-                    <span class="ai-coach-history__title">{{ formatHistoryTitle(entry) }}</span>
-                    <span class="ai-coach-history__meta">
-                      {{ prettyIntent(entry.type) }} - {{ formatTimestamp(entry.createdAt) }}
-                    </span>
-                  </button>
+            </section>
+          }
+
+          @for (message of messages; track $index) {
+            <div class="message" [class.message--user]="message.role === 'user'">
+              <div class="avatar">{{ message.role === 'user' ? 'You' : 'AI' }}</div>
+
+              <div class="message-body">
+                <div class="bubble">
+                  {{ message.text }}
+                </div>
+
+                @if (message.createdAt) {
+                  <span class="message-meta">
+                    {{ message.role === 'assistant' ? prettyIntent(message.intent) : 'Question' }}
+                    · {{ formatTimestamp(message.createdAt) }}
+                  </span>
+                }
+
+                @if (message.role === 'assistant' && message.recommendationId) {
+                  <div class="feedback">
+                    @if (message.feedbackRating) {
+                      <span class="feedback-saved">Feedback saved · Rated {{ message.feedbackRating }}/5</span>
+                    } @else {
+                      <span class="feedback-label">Was this recommendation useful?</span>
+                      <div class="feedback-actions">
+                        <button
+                          type="button"
+                          [disabled]="message.feedbackPending"
+                          (click)="submitFeedback(message, 5)"
+                        >
+                          Helpful
+                        </button>
+                        <button
+                          type="button"
+                          [disabled]="message.feedbackPending"
+                          (click)="submitFeedback(message, 1)"
+                        >
+                          Not helpful
+                        </button>
+                      </div>
+                    }
+
+                    @if (message.feedbackPending) {
+                      <span class="feedback-pending">Saving feedback...</span>
+                    }
+
+                    @if (message.feedbackError) {
+                      <span class="feedback-error">{{ message.feedbackError }}</span>
+                    }
+                  </div>
                 }
               </div>
-            }
-          </div>
-        </aside>
+            </div>
+          }
 
-        <section class="ai-coach-main">
-          <div class="ai-coach-topbar">
-            <button class="ai-coach-menu" type="button" (click)="sidebarOpen = !sidebarOpen">
-              Menu
+          @if (isSending) {
+            <div class="message">
+              <div class="avatar">AI</div>
+              <div class="message-body">
+                <div class="bubble bubble--typing">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="input-area">
+          <div class="input-box">
+            <textarea
+              [(ngModel)]="userInput"
+              rows="1"
+              placeholder="Posez votre question..."
+              (keydown.enter)="onEnter($event)"
+            ></textarea>
+
+            <button
+              class="send-btn"
+              type="button"
+              [disabled]="!userInput.trim() || isSending"
+              (click)="sendMessage()"
+            >
+              Send
             </button>
-            <div>
-              <p class="ai-coach-topbar__label">Personal guidance</p>
-              <h4>Ask your AI coach anything about training, recovery, or nutrition.</h4>
-            </div>
           </div>
 
-          <div class="ai-coach-messages" #messagesArea>
-            @if (!hasMessages) {
-              <div class="ai-coach-welcome">
-                <span class="ai-coach-welcome__badge">Ready</span>
-                <h2>Build smarter fitness routines with real profile context.</h2>
-                <p>
-                  This assistant uses your saved profile and recommendation history to give
-                  more personal answers than a generic chatbot.
-                </p>
-
-                <div class="ai-coach-suggestions">
-                  <button type="button" (click)="quickSend('Build me a weekly weight-loss workout plan')">
-                    Weight-loss plan
-                  </button>
-                  <button type="button" (click)="quickSend('What should I eat before training?')">
-                    Pre-workout nutrition
-                  </button>
-                  <button type="button" (click)="quickSend('How can I recover better after leg day?')">
-                    Recovery help
-                  </button>
-                </div>
-              </div>
-            }
-
-            @for (message of messages; track $index) {
-              <div class="ai-coach-message" [class.ai-coach-message--user]="message.role === 'user'">
-                <div class="ai-coach-message__avatar">
-                  {{ message.role === 'user' ? 'You' : 'AI' }}
-                </div>
-                <div class="ai-coach-message__body">
-                  <div class="ai-coach-message__bubble">
-                    {{ message.text }}
-                  </div>
-
-                  @if (message.createdAt) {
-                    <span class="ai-coach-message__timestamp">
-                      {{ message.role === 'assistant' ? prettyIntent(message.intent) : 'Question' }}
-                      - {{ formatTimestamp(message.createdAt) }}
-                    </span>
-                  }
-
-                  @if (message.role === 'assistant' && message.recommendationId) {
-                    <div class="ai-coach-feedback">
-                      @if (message.feedbackRating) {
-                        <span class="ai-coach-feedback__saved">
-                          Feedback saved - Rated {{ message.feedbackRating }}/5
-                        </span>
-                      } @else {
-                        <span class="ai-coach-feedback__label">Was this recommendation useful?</span>
-                        <div class="ai-coach-feedback__actions">
-                          <button
-                            type="button"
-                            [disabled]="message.feedbackPending"
-                            (click)="submitFeedback(message, 5)"
-                          >
-                            Helpful
-                          </button>
-                          <button
-                            type="button"
-                            [disabled]="message.feedbackPending"
-                            (click)="submitFeedback(message, 1)"
-                          >
-                            Not helpful
-                          </button>
-                        </div>
-                      }
-
-                      @if (message.feedbackPending) {
-                        <span class="ai-coach-feedback__pending">Saving feedback...</span>
-                      }
-
-                      @if (message.feedbackError) {
-                        <span class="ai-coach-feedback__error">{{ message.feedbackError }}</span>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            @if (isSending) {
-              <div class="ai-coach-message">
-                <div class="ai-coach-message__avatar">AI</div>
-                <div class="ai-coach-message__body">
-                  <div class="ai-coach-message__bubble ai-coach-message__bubble--typing">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-
-          <div class="ai-coach-input">
-            <div class="ai-coach-input__box">
-              <textarea
-                [(ngModel)]="userInput"
-                rows="1"
-                placeholder="Ask about training plans, meals, recovery, or gym info..."
-                (keydown.enter)="onEnter($event)"
-              ></textarea>
-              <button type="button" [disabled]="!userInput.trim() || isSending" (click)="sendMessage()">
-                Send
-              </button>
-            </div>
-            <p class="ai-coach-input__note">
-              AI Coach can make mistakes. Double-check important health and nutrition advice.
-            </p>
-          </div>
-        </section>
-      </div>
-    }
-  </div>
+          <p class="disclaimer">Coach IA peut faire des erreurs. Verifiez les conseils importants.</p>
+        </div>
+      </main>
+    </div>
+  }
 </div>

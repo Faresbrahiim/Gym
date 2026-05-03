@@ -1,11 +1,9 @@
 import { AfterViewChecked, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ErrorService } from '../../../../core/services/error.service';
 import { TokenService } from '../../../../core/auth/token.service';
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { AiCoachFeedbackRequest } from '../../models/ai-coach-feedback-request.model';
 import { AiCoachHistoryEntry } from '../../models/ai-coach-history-entry.model';
 import { AiCoachRecommendation } from '../../models/ai-coach-recommendation.model';
@@ -27,17 +25,12 @@ interface AiCoachMessage {
 @Component({
   standalone: true,
   selector: 'app-ai-coach-chat',
-  imports: [CommonModule, FormsModule, RouterLink, PageHeaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './ai-coach-chat.component.html',
   styleUrl: './ai-coach-chat.component.css'
 })
 export class AiCoachChatComponent implements OnInit, AfterViewChecked {
   @ViewChild('messagesArea') private messagesArea?: ElementRef<HTMLDivElement>;
-
-  readonly breadcrumbs = [
-    { label: 'Home', link: '/home' },
-    { label: 'AI Coach' }
-  ];
 
   messages: AiCoachMessage[] = [];
   history: AiCoachHistoryEntry[] = [];
