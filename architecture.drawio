@@ -1,0 +1,158 @@
+<?xml version="1.0" ?>
+<mxfile host="Electron" modified="2023-10-27T10:00:00.000Z" agent="Mozilla/5.0" version="22.0.4" type="device">
+  <diagram id="gym-architecture" name="Gym System Architecture">
+    <mxGraphModel dx="2000" dy="2000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="2000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="frontend" value="Frontend (Angular)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="800" y="50" width="200" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="kong" value="API Gateway (Kong)&#10;:8000" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="800" y="150" width="200" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="user_service" value="User Service&#10;(.NET)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="200" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="membership_service" value="Membership Service&#10;(Spring Boot)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="400" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="payment_service" value="Payment Service&#10;(Spring Boot)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="600" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="notification_service" value="Notification Service&#10;(Spring Boot)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="800" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="chat_service" value="Chat Service&#10;(Node.js/MongoDB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="presence_service" value="Presence Service&#10;(Rust/Redis)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="cart_service" value="Cart Service&#10;(Symfony/PHP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="booking_service" value="Booking Service&#10;(Symfony/PHP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="1600" y="300" width="160" height="60" as_="geometry"/>
+        </mxCell>
+        <mxCell id="user_db" value="User DB&#10;(PostgreSQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="200" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="membership_db" value="Membership DB&#10;(PostgreSQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="400" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="payment_db" value="Payment DB&#10;(PostgreSQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="600" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="notification_db" value="Notification DB&#10;(PostgreSQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="800" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="chat_db" value="Chat DB&#10;(MongoDB)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1000" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="presence_redis" value="Presence Cache&#10;(Redis)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1200" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="cart_db" value="Cart DB&#10;(PostgreSQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1400" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="booking_db" value="Booking DB&#10;(PostgreSQL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1600" y="450" width="100" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="kafka" value="Apache Kafka&#10;Message Broker" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="800" y="600" width="200" height="80" as_="geometry"/>
+        </mxCell>
+        <mxCell id="100" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="user_service" target="user_db">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="101" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="membership_service" target="membership_db">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="102" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="payment_service" target="payment_db">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="103" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="notification_service" target="notification_db">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="104" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="chat_service" target="chat_db">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="105" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="cart_service" target="cart_db">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="106" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="booking_service" target="booking_db">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="107" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="presence_service" target="presence_redis">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="108" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="frontend" target="kong">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="109" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="user_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="110" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="membership_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="111" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="payment_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="112" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="notification_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="113" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="chat_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="114" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="presence_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="115" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="cart_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="116" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kong" target="booking_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="117" value="Produces: auth.user.*" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="user_service" target="kafka">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="118" value="Produces: subscription.created" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="membership_service" target="kafka">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="119" value="Produces: payment.*, order-payment.*" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="payment_service" target="kafka">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="120" value="Produces: chat.message.created" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="chat_service" target="kafka">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="121" value="Consumes: auth.user.*, payment.*" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kafka" target="membership_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="122" value="Consumes: payment.*, chat.*" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kafka" target="notification_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="123" value="Consumes: order-payment.*" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kafka" target="cart_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="124" value="Consumes (ws)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="kafka" target="chat_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="125" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="user_service" target="presence_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="126" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="chat_service" target="presence_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="127" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="payment_service" target="membership_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="128" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="booking_service" target="user_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+        <mxCell id="129" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" edge="1" source="booking_service" target="membership_service">
+          <mxGeometry relative="1" as_="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

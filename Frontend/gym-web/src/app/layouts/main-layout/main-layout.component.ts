@@ -1,11 +1,12 @@
 import { toSignal } from '@angular/core/rxjs-interop';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnDestroy } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs';
 import { ChatPopupComponent } from '../../features/chat/components/chat-popup/chat-popup.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { FooterComponent } from '../../shared/components/footer/footer.component';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
+import { SessionHeartbeatService } from '../../core/services/session-heartbeat.service';
 
 @Component({
   standalone: true,
@@ -23,8 +24,17 @@ import { ToastComponent } from '../../shared/components/toast/toast.component';
     <app-toast />
   `
 })
-export class MainLayoutComponent {
-  private readonly router = inject(Router);
+export class MainLayoutComponent implements OnDestroy {
+  private readonly router    = inject(Router);
+  private readonly heartbeat = inject(SessionHeartbeatService);
+
+  constructor() {
+    this.heartbeat.start();
+  }
+
+  ngOnDestroy(): void {
+    this.heartbeat.stop();
+  }
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
