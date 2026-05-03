@@ -16,7 +16,7 @@ import { SessionHeartbeatService } from '../../core/services/session-heartbeat.s
     <div class="main-wrapper">
       <app-header />
       <router-outlet />
-      @if (!isChatRoute()) {
+      @if (!isImmersiveRoute()) {
         <app-footer />
         <app-chat-popup />
       }
@@ -45,5 +45,8 @@ export class MainLayoutComponent implements OnDestroy {
     { initialValue: this.router.url }
   );
 
-  protected readonly isChatRoute = computed(() => this.currentUrl().startsWith('/chat'));
+  protected readonly isImmersiveRoute = computed(() => {
+    const currentUrl = this.currentUrl();
+    return currentUrl.startsWith('/chat') || currentUrl.startsWith('/ai-coach');
+  });
 }

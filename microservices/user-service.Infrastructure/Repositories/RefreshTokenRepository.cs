@@ -30,18 +30,18 @@ namespace user_service.Infrastructure.Repositories
                     t.ExpiresAt > DateTime.UtcNow, cancellationToken);
         }
 
-        public async Task Revoke(string tokenHash, CancellationToken cancellationToken = default)
+        public async Task Revoke(RefreshToken token, CancellationToken cancellationToken = default)
         {
-            var token = await _context.RefreshTokens
+            var trackedToken = await _context.RefreshTokens
                 .AsTracking()
                 .FirstOrDefaultAsync(t =>
-                    t.TokenHash == tokenHash &&
+                    t.Id == token.Id &&
                     t.RevokedAt == null &&
                     t.ExpiresAt > DateTime.UtcNow, cancellationToken);
 
-            if (token is null) return;
+            if (trackedToken is null) return;
 
-            token.RevokedAt = DateTime.UtcNow;
+            trackedToken.RevokedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
         }
 

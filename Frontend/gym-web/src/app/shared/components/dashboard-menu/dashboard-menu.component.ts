@@ -34,7 +34,8 @@ export class DashboardMenuComponent {
 
   readonly utilityItems: DashboardMenuItem[] = [
     { label: 'Dashboard', route: '/home', icon: 'assets/img/icons/dashboard-icon.svg', exact: true },
-    { label: 'Chat', route: '/chat', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' }
+    { label: 'Chat', route: '/chat', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' },
+    { label: 'AI Coach', route: '/ai-coach', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' }
   ];
 
   get canAccessMembershipArea(): boolean {
