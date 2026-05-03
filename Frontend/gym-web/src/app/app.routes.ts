@@ -86,6 +86,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadChildren: () =>
           import('./features/bookings/bookings.routes').then(m => m.bookingsRoutes)
+      },
+      
+      {
+      path: 'workouts',
+      loadChildren: () =>
+      import('./features/workouts/workouts.routes').then(m => m.WORKOUT_ROUTES),
       }
     ]
   },
@@ -122,11 +128,11 @@ export const routes: Routes = [
       import('./features/admin/admin.routes').then(m => m.adminRoutes)
   },
 
-  {
-  path: 'workouts',
-  loadChildren: () =>
-    import('./features/workouts/workouts.routes').then(m => m.WORKOUT_ROUTES),
-  },
+  // {
+  // path: 'workouts',
+  // loadChildren: () =>
+  //   import('./features/workouts/workouts.routes').then(m => m.WORKOUT_ROUTES),
+  // },
   // Chat feature — protected, no layout (full-screen chat interface)
   // 404
   {
