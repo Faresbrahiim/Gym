@@ -24,5 +24,15 @@ namespace user_service.Controllers
             var summary = await _usersService.GetUserSummaryAsync(userId, cancellationToken);
             return Ok(summary);
         }
+
+        [AllowAnonymous]
+        [HttpGet("{userId:guid}/ai-profile")]
+        public async Task<ActionResult<AiUserProfileDto>> GetAiUserProfile(
+            Guid userId,
+            CancellationToken cancellationToken)
+        {
+            var profile = await _usersService.GetAiUserProfileAsync(userId, cancellationToken);
+            return Ok(profile);
+        }
     }
 }

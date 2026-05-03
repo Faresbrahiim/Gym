@@ -98,4 +98,14 @@ public class UsersService : IUsersService
 
         return UserMapper.ToSummaryDto(user);
     }
+
+    public async Task<AiUserProfileDto> GetAiUserProfileAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetFullById(userId, cancellationToken);
+
+        if (user is null)
+            throw new UserNotFoundException(userId);
+
+        return UserMapper.ToAiUserProfileDto(user);
+    }
 }

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.core.config import settings
@@ -17,7 +17,7 @@ app.add_middleware(
 
 class RecommendRequest(BaseModel):
     question: str
-    user_id: str = "default-user"
+    user_id: str
 
 @app.on_event("startup")
 async def startup():
@@ -29,20 +29,15 @@ def health():
 
 @app.post("/recommend")
 async def recommend(request: RecommendRequest):
-    profil = {
-        "firstName": "Ahmed",
-        "age": 25,
-        "weight_kg": 90,
-        "height_cm": 180,
-        "fitness_goal": "perte de poids",
-        "experience_level": "debutant"
-    }
-    result = await coach_service.generate(
-        user_id=request.user_id,
-        question=request.question,
-        profil=profil
-    )
-    return result
+    try:
+        return await coach_service.generate(
+            user_id=request.user_id,
+            question=request.question,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 @app.get("/history")
 def history():

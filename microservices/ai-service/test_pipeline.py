@@ -17,18 +17,16 @@ async def main():
     # Test pipeline complet
     print("2. Test Coach Service...")
     from app.services.coach_service import coach_service
-    profil = {
-        "firstName": "Ahmed",
-        "age": 25,
-        "weight_kg": 90,
-        "height_cm": 180,
-        "fitness_goal": "perte de poids",
-        "experience_level": "debutant"
-    }
+    user_id = os.getenv("TEST_USER_ID")
+
+    if not user_id:
+        print("TEST_USER_ID not set, skipping coach-service integration test.")
+        print("=== PIPELINE PARTIAL : OK ===")
+        return
+
     result = await coach_service.generate(
-        user_id="test-123",
+        user_id=user_id,
         question="Propose-moi un plan repas pour cette semaine",
-        profil=profil
     )
     print(f"Recommandation : {result['recommendation'][:200]}...")
     print("COACH SERVICE : OK\n")
