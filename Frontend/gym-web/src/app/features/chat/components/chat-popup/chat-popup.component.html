@@ -12,7 +12,7 @@
   }
 
   @if (popup.isOpen()) {
-    <section class="chat-pop-window">
+    <section class="chat-pop-window ">
       <header class="chat-pop-header">
         <div class="chat-pop-title-block">
           <strong class="chat-pop-title">Messages</strong>
@@ -44,15 +44,16 @@
       <div class="chat-pop-body">
         @if (activeConversation()) {
           <app-message-thread
-            class="chat-pop-thread"
-            [messages]="messages()"
-            [currentUserId]="currentUserId"
-            [contact]="getActiveContact()"
-            [isOnline]="isActiveContactOnline()"
-            [typingUserIds]="typingUserIds()"
-            [isLoading]="loadingMessages()"
-            (backClicked)="closeThread()"
-          />
+  class="chat-pop-thread"
+  [messages]="messages()"
+  [currentUserId]="currentUserId"
+  [contact]="getActiveContact()"
+  [isOnline]="isActiveContactOnline()"
+  [typingUserIds]="typingUserIds()"
+  [isLoading]="loadingMessages()"
+  [popupMode]="true"
+  (backClicked)="closeThread()"
+/>
 
           <app-message-input
             (messageSent)="onMessageSent($event)"

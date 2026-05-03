@@ -29,7 +29,7 @@
 </div>
 
 <!-- Messages area -->
-<div class="thread-messages">
+<div class="thread-messages" [class.popup-bg]="popupMode">
 
   <!-- Loading -->
   @if (isLoading) {

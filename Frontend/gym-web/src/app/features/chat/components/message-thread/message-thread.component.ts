@@ -27,23 +27,26 @@ interface DayGroup {
 })
 export class MessageThreadComponent implements OnChanges, AfterViewChecked {
 
-  @Input() messages:      Message[] = [];
-  @Input() currentUserId  = '';
-  @Input() contact:       Contact | null = null;
-  @Input() isOnline       = false;
+  @Input() messages: Message[] = [];
+  @Input() currentUserId = '';
+  @Input() contact: Contact | null = null;
+  @Input() isOnline = false;
   @Input() typingUserIds: string[] = [];
-  @Input() isLoading      = false;
+  @Input() isLoading = false;
+
+  // ✅ NEW FLAG (IMPORTANT)
+  @Input() popupMode = false;
 
   @Output() backClicked = new EventEmitter<void>();
 
   @ViewChild('scrollAnchor') private scrollAnchor!: ElementRef<HTMLElement>;
 
   dayGroups: DayGroup[] = [];
-  private shouldScroll  = false;
+  private shouldScroll = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['messages']) {
-      this.dayGroups   = this.buildDayGroups(this.messages);
+      this.dayGroups = this.buildDayGroups(this.messages);
       this.shouldScroll = true;
     }
     if (changes['typingUserIds']) {
@@ -97,19 +100,24 @@ export class MessageThreadComponent implements OnChanges, AfterViewChecked {
   }
 
   private dayLabel(iso: string): string {
-    const date  = new Date(iso);
+    const date = new Date(iso);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
 
-    if (this.sameDay(date, today))     return 'Today';
+    if (this.sameDay(date, today)) return 'Today';
     if (this.sameDay(date, yesterday)) return 'Yesterday';
-    return date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+
+    return date.toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    });
   }
 
   private sameDay(a: Date, b: Date): boolean {
     return a.getFullYear() === b.getFullYear() &&
-           a.getMonth()    === b.getMonth()    &&
-           a.getDate()     === b.getDate();
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
   }
 }
