@@ -1,0 +1,221 @@
+<div class="detail-page">
+
+  @if (loading) {
+    <div class="loading-wrap">
+      <div class="loading-ring"></div>
+      <p>Loading exercise details...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="error-wrap container">
+      <h4>{{ error }}</h4>
+      <a routerLink="/workouts" class="btn-back-primary">
+        <i class="fas fa-arrow-left"></i> Back to Exercises
+      </a>
+    </div>
+  }
+
+  @if (!loading && !error && exercise) {
+
+    <!-- ── Hero Band ──────────────────────────────────── -->
+    <div class="detail-hero">
+      <div class="container hero-inner">
+        <a routerLink="/workouts" class="back-btn">
+          <i class="fas fa-arrow-left"></i> Exercise Library
+        </a>
+        <div class="hero-category">
+          <i class="fas fa-layer-group"></i>
+          {{ exercise.category ?? exercise.bodyPart }}
+        </div>
+        <h1 class="hero-name">{{ exercise.name }}</h1>
+        <div class="hero-badges">
+          <span class="hero-badge">
+            <i class="fas fa-user"></i> {{ exercise.bodyPart }}
+          </span>
+          <span class="hero-badge">
+            <i class="fas fa-bullseye"></i> {{ exercise.target }}
+          </span>
+          <span class="hero-badge">
+            <i class="fas fa-dumbbell"></i> {{ exercise.equipment }}
+          </span>
+          @if (exercise.difficulty) {
+            <span class="hero-badge">
+              <i class="fas fa-signal"></i> {{ exercise.difficulty }}
+            </span>
+          }
+          @if (exercise.force) {
+            <span class="hero-badge">
+              <i class="fas fa-bolt"></i> {{ exercise.force }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Content ────────────────────────────────────── -->
+    <div class="detail-content">
+      <div class="container">
+        <div class="content-grid">
+
+          <!-- Left: GIF Card -->
+          <div class="gif-card">
+            <div class="gif-wrap">
+              @if (!gifError) {
+                <img
+                  [src]="authenticatedGifUrl"
+                  [alt]="exercise.name"
+                  (error)="gifError = true"
+                />
+              } @else {
+                <div class="gif-fallback">
+                  <i class="fas fa-dumbbell"></i>
+                </div>
+              }
+            </div>
+
+            <!-- Meta strip -->
+            <div class="gif-meta">
+              <div class="gif-meta-item">
+                <div class="gif-meta-label">Mechanic</div>
+                <div class="gif-meta-value">{{ exercise.mechanic ?? '—' }}</div>
+              </div>
+              <div class="gif-meta-item">
+                <div class="gif-meta-label">Difficulty</div>
+                <div class="gif-meta-value">{{ exercise.difficulty ?? '—' }}</div>
+              </div>
+              <div class="gif-meta-item">
+                <div class="gif-meta-label">Force</div>
+                <div class="gif-meta-value">{{ exercise.force ?? '—' }}</div>
+              </div>
+            </div>
+
+            <!-- Secondary muscles -->
+            @if (exercise.secondaryMuscles?.length) {
+              <div class="secondary-muscles-section">
+                <div class="sec-label">Secondary Muscles</div>
+                <div class="sec-tags">
+                  @for (m of exercise.secondaryMuscles; track m) {
+                    <span class="sec-tag">{{ m }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Right Column -->
+          <div class="right-col">
+
+            <!-- Description -->
+            @if (exercise.description) {
+              <div class="info-panel">
+                <div class="panel-header">
+                  <div class="panel-icon"><i class="fas fa-info"></i></div>
+                  <span class="panel-title">About this exercise</span>
+                </div>
+                <div class="panel-body">
+                  <p class="description-text">{{ exercise.description }}</p>
+                </div>
+              </div>
+            }
+
+            <!-- Instructions -->
+            @if (exercise.instructions?.length) {
+              <div class="info-panel">
+                <div class="panel-header">
+                  <div class="panel-icon"><i class="fas fa-list-ol"></i></div>
+                  <span class="panel-title">Step-by-step instructions</span>
+                </div>
+                <div class="panel-body">
+                  <ol class="instruction-list">
+                    @for (step of exercise.instructions; track step; let i = $index) {
+                      <li class="instruction-item">
+                        <span class="step-num">{{ i + 1 }}</span>
+                        <span class="step-text">{{ step }}</span>
+                      </li>
+                    }
+                  </ol>
+                </div>
+              </div>
+            }
+
+            <!-- Calorie Calculator -->
+            <div class="info-panel">
+              <div class="panel-header">
+                <div class="panel-icon"><i class="fas fa-fire"></i></div>
+                <span class="panel-title">Calorie burn estimator</span>
+              </div>
+              <div class="panel-body">
+                <div class="calorie-grid">
+                  <div class="calorie-field">
+                    <label>Your weight (kg)</label>
+                    <input
+                      class="calorie-input"
+                      type="number"
+                      [(ngModel)]="weightKg"
+                      min="30" max="200"
+                    />
+                  </div>
+                  <div class="calorie-field">
+                    <label>Duration (min)</label>
+                    <input
+                      class="calorie-input"
+                      type="number"
+                      [(ngModel)]="minutes"
+                      min="1" max="180"
+                    />
+                  </div>
+                </div>
+                <button class="btn-calc" (click)="calculateCalories()">
+                  <i class="fas fa-calculator"></i> Calculate Calories
+                </button>
+                @if (calorieBurn) {
+                  <div class="calorie-result">
+                    <div>
+                      <div class="calorie-big">
+                        {{ calorieBurn.totalKcal | number:'1.0-0' }}
+                        <span>kcal</span>
+                      </div>
+                    </div>
+                    <div class="calorie-detail">
+                      <strong>{{ calorieBurn.kcalPerMin | number:'1.1-1' }} kcal/min</strong><br>
+                      {{ calorieBurn.minutes }} min · {{ calorieBurn.weightKg }}kg body weight
+                    </div>
+                  </div>
+                } @else {
+                  <p class="calorie-hint">Enter your details above and hit calculate.</p>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Similar Exercises -->
+        @if (similarExercises.length) {
+          <div class="info-panel similar-section" style="margin-top: 28px;">
+            <div class="panel-header">
+              <div class="panel-icon"><i class="fas fa-th-large"></i></div>
+              <span class="panel-title">Similar exercises</span>
+            </div>
+            <div class="panel-body">
+              <div class="similar-grid">
+                @for (sim of similarExercises; track sim.id) {
+                  <a [routerLink]="['/workouts', sim.id]" class="similar-card">
+                    <div class="similar-name">{{ sim.name }}</div>
+                    <div class="similar-meta">{{ sim.target }} · {{ sim.equipment }}</div>
+                    <div class="similar-arrow">
+                      View <i class="fas fa-arrow-right"></i>
+                    </div>
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+
+  }
+</div>

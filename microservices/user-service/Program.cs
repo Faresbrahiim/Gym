@@ -21,7 +21,7 @@ builder.Services.AddDatabase(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddResponseCompression();
 #endregion
 
 var app = builder.Build();
@@ -33,6 +33,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseResponseCompression();
+
 
 app.UseApplicationMiddlewares();
 

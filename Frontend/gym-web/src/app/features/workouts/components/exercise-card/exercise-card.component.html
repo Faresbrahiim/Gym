@@ -1,0 +1,30 @@
+<div class="ex-card">
+
+  <div class="ex-card-gif">
+    <img
+      *ngIf="!gifError"
+      [src]="authenticatedGifUrl"
+      [alt]="exercise.name"
+      (error)="onGifError()"
+      loading="lazy"
+    />
+    <div *ngIf="gifError" class="gif-fallback">
+      <i class="fas fa-dumbbell"></i>
+    </div>
+    <span class="body-part-pill">{{ exercise.bodyPart }}</span>
+  </div>
+
+  <div class="ex-card-body">
+    <div class="ex-card-name">{{ exercise.name }}</div>
+
+    <div class="ex-card-tags">
+      <span class="tag tag-target">{{ exercise.target }}</span>
+      <span class="tag tag-equip">{{ exercise.equipment }}</span>
+    </div>
+
+    <button class="ex-card-btn" (click)="onViewDetails()">
+      View Exercise <i class="fas fa-arrow-right"></i>
+    </button>
+  </div>
+
+</div>

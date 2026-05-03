@@ -7,6 +7,7 @@ import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideHttpClient(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideHttpClient(withInterceptors([authInterceptor]))

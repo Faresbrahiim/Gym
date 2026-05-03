@@ -1,0 +1,290 @@
+<div class="workouts-browse-page">
+  <!-- ── Hero ───────────────────────────────────────────── -->
+  <div class="workout-hero">
+    <div class="container hero-inner">
+      <div class="hero-eyebrow">
+        <span></span> Live Exercise Library
+      </div>
+      <h1 class="hero-title">
+        Train Smarter<br><span>Find Your Exercise</span>
+      </h1>
+      <p class="hero-subtitle">
+        Browse 1,300+ exercises with animations, instructions & calorie estimates.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">1,300+</div>
+          <div class="hero-stat-label">Exercises</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">10</div>
+          <div class="hero-stat-label">Body Parts</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">30+</div>
+          <div class="hero-stat-label">Muscle Groups</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Layout ────────────────────────────────────── -->
+  <div class="container">
+    <div class="main-layout">
+
+      <!-- ── Sidebar ──────────────────────────────────────── -->
+      <aside class="sidebar">
+
+        <!-- Body Map -->
+        <div class="filter-panel">
+          <div class="filter-panel-header">
+            <div class="filter-panel-icon"><i class="fas fa-male"></i></div>
+            <span class="filter-panel-title">Body Part</span>
+          </div>
+          <div class="filter-panel-body">
+            <div class="body-map-wrap">
+              <svg viewBox="0 0 120 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+                <!-- head -->
+                <circle cx="60" cy="16" r="11" fill="#D4EDEA" stroke="#7AB8B4" stroke-width="1"/>
+
+                <!-- neck -->
+                <ellipse class="svg-muscle" [class.svg-active]="selectedBodyPart==='neck'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='neck'" (click)="selectBodyPart('neck')" cx="60" cy="30" rx="7" ry="6" fill="#9FD9D5" stroke="#269089" stroke-width="1"/>
+                <text x="60" y="33" text-anchor="middle" font-size="4.5" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:600">neck</text>
+
+                <!-- shoulders -->
+                <ellipse class="svg-muscle" [class.svg-active]="selectedBodyPart==='shoulders'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='shoulders'" (click)="selectBodyPart('shoulders')" cx="34" cy="52" rx="13" ry="9" fill="#7ABC82" stroke="#4A9A55" stroke-width="1"/>
+                <ellipse class="svg-muscle" [class.svg-active]="selectedBodyPart==='shoulders'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='shoulders'" (click)="selectBodyPart('shoulders')" cx="86" cy="52" rx="13" ry="9" fill="#7ABC82" stroke="#4A9A55" stroke-width="1"/>
+                <text x="21" y="55" text-anchor="middle" font-size="4" fill="#1A5C22" font-family="sans-serif" style="pointer-events:none;font-weight:600">shldr</text>
+                <text x="99" y="55" text-anchor="middle" font-size="4" fill="#1A5C22" font-family="sans-serif" style="pointer-events:none;font-weight:600">shldr</text>
+
+                <!-- chest -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='chest'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='chest'" (click)="selectBodyPart('chest')" x="44" y="43" width="32" height="24" rx="5" fill="#5BC8C4" stroke="#269089" stroke-width="1"/>
+                <text x="60" y="58" text-anchor="middle" font-size="5.5" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:700">chest</text>
+
+                <!-- upper arms -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='upper arms'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='upper arms'" (click)="selectBodyPart('upper arms')" x="20" y="62" width="12" height="30" rx="5" fill="#9FD9D5" stroke="#269089" stroke-width="1"/>
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='upper arms'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='upper arms'" (click)="selectBodyPart('upper arms')" x="88" y="62" width="12" height="30" rx="5" fill="#9FD9D5" stroke="#269089" stroke-width="1"/>
+                <text x="26" y="80" text-anchor="middle" font-size="3.8" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:600">arm</text>
+                <text x="94" y="80" text-anchor="middle" font-size="3.8" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:600">arm</text>
+
+                <!-- waist / abs -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='waist'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='waist'" (click)="selectBodyPart('waist')" x="44" y="69" width="32" height="30" rx="4" fill="#7ABC82" stroke="#4A9A55" stroke-width="1"/>
+                <text x="60" y="87" text-anchor="middle" font-size="5.5" fill="#1A5C22" font-family="sans-serif" style="pointer-events:none;font-weight:700">waist</text>
+
+                <!-- lower arms -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='lower arms'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='lower arms'" (click)="selectBodyPart('lower arms')" x="18" y="94" width="12" height="24" rx="5" fill="#B8E6E3" stroke="#269089" stroke-width="1"/>
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='lower arms'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='lower arms'" (click)="selectBodyPart('lower arms')" x="90" y="94" width="12" height="24" rx="5" fill="#B8E6E3" stroke="#269089" stroke-width="1"/>
+                <text x="24" y="109" text-anchor="middle" font-size="3.5" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:600">fore</text>
+                <text x="96" y="109" text-anchor="middle" font-size="3.5" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:600">fore</text>
+
+                <!-- back -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='back'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='back'" (click)="selectBodyPart('back')" x="44" y="101" width="32" height="24" rx="4" fill="#5BC8C4" stroke="#269089" stroke-width="1"/>
+                <text x="60" y="116" text-anchor="middle" font-size="5.5" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:700">back</text>
+
+                <!-- upper legs -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='upper legs'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='upper legs'" (click)="selectBodyPart('upper legs')" x="44" y="127" width="14" height="40" rx="5" fill="#7ABC82" stroke="#4A9A55" stroke-width="1"/>
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='upper legs'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='upper legs'" (click)="selectBodyPart('upper legs')" x="62" y="127" width="14" height="40" rx="5" fill="#7ABC82" stroke="#4A9A55" stroke-width="1"/>
+                <text x="51" y="150" text-anchor="middle" font-size="4" fill="#1A5C22" font-family="sans-serif" style="pointer-events:none;font-weight:600">thigh</text>
+                <text x="69" y="150" text-anchor="middle" font-size="4" fill="#1A5C22" font-family="sans-serif" style="pointer-events:none;font-weight:600">thigh</text>
+
+                <!-- lower legs -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='lower legs'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='lower legs'" (click)="selectBodyPart('lower legs')" x="44" y="169" width="14" height="36" rx="5" fill="#9FD9D5" stroke="#269089" stroke-width="1"/>
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='lower legs'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='lower legs'" (click)="selectBodyPart('lower legs')" x="62" y="169" width="14" height="36" rx="5" fill="#9FD9D5" stroke="#269089" stroke-width="1"/>
+                <text x="51" y="190" text-anchor="middle" font-size="4" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:600">calf</text>
+                <text x="69" y="190" text-anchor="middle" font-size="4" fill="#085A6C" font-family="sans-serif" style="pointer-events:none;font-weight:600">calf</text>
+
+                <!-- cardio -->
+                <rect class="svg-muscle" [class.svg-active]="selectedBodyPart==='cardio'" [class.svg-dim]="selectedBodyPart && selectedBodyPart!=='cardio'" (click)="selectBodyPart('cardio')" x="44" y="208" width="32" height="16" rx="5" fill="#F08080" stroke="#C0392B" stroke-width="1"/>
+                <text x="60" y="219" text-anchor="middle" font-size="5" fill="#7B1111" font-family="sans-serif" style="pointer-events:none;font-weight:700">cardio</text>
+              </svg>
+            </div>
+            <div class="bp-selected-label">
+              @if (selectedBodyPart) {
+                <span>&#10003; {{ selectedBodyPart | titlecase }}</span>
+              } @else {
+                <span style="color: var(--c-muted); font-size:12px">Tap a muscle group</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Equipment -->
+        <div class="filter-panel">
+          <div class="filter-panel-header">
+            <div class="filter-panel-icon"><i class="fas fa-dumbbell"></i></div>
+            <span class="filter-panel-title">Equipment</span>
+          </div>
+          <div class="filter-panel-body">
+            <select class="styled-select" [(ngModel)]="selectedEquipment" (ngModelChange)="onFilterChange()">
+              <option value="">All Equipment</option>
+              @for (eq of equipmentList; track eq) {
+                <option [value]="eq">{{ eq | titlecase }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Target Muscle -->
+        <div class="filter-panel">
+          <div class="filter-panel-header">
+            <div class="filter-panel-icon"><i class="fas fa-bullseye"></i></div>
+            <span class="filter-panel-title">Target Muscle</span>
+          </div>
+          <div class="filter-panel-body">
+            <select class="styled-select" [(ngModel)]="selectedTarget" (ngModelChange)="onFilterChange()">
+              <option value="">All Muscles</option>
+              @for (t of targets; track t) {
+                <option [value]="t">{{ t | titlecase }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="filter-panel">
+          <div class="filter-panel-header">
+            <div class="filter-panel-icon"><i class="fas fa-search"></i></div>
+            <span class="filter-panel-title">Search</span>
+          </div>
+          <div class="filter-panel-body">
+            <div class="search-wrap">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                class="search-input"
+                type="text"
+                placeholder="e.g. squat, bench press..."
+                [ngModel]="searchName"
+                (ngModelChange)="onSearchInput($event)"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Clear All -->
+        @if (hasActiveFilters) {
+          <button class="btn-clear-all" (click)="clearFilters()">
+            <i class="fas fa-times"></i> Clear All Filters
+          </button>
+        }
+
+      </aside>
+
+      <!-- ── Results ─────────────────────────────────────── -->
+      <div class="results-area">
+
+        <!-- Error -->
+        @if (error) {
+          <div class="error-bar">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+          </div>
+        }
+
+        <!-- Toolbar -->
+        @if (!loading || exercises.length > 0) {
+          <div class="results-toolbar">
+            <div class="results-count">
+              Showing <strong>{{ exercises.length }}</strong> exercise{{ exercises.length !== 1 ? 's' : '' }}
+            </div>
+            <div class="active-filters">
+              @if (selectedBodyPart) {
+                <span class="filter-tag">
+                  <i class="fas fa-male"></i> {{ selectedBodyPart }}
+                  <i class="fas fa-times" (click)="selectBodyPart(selectedBodyPart)"></i>
+                </span>
+              }
+              @if (selectedTarget) {
+                <span class="filter-tag">
+                  <i class="fas fa-bullseye"></i> {{ selectedTarget }}
+                  <i class="fas fa-times" (click)="selectedTarget = ''; onFilterChange()"></i>
+                </span>
+              }
+              @if (selectedEquipment) {
+                <span class="filter-tag">
+                  <i class="fas fa-dumbbell"></i> {{ selectedEquipment }}
+                  <i class="fas fa-times" (click)="selectedEquipment = ''; onFilterChange()"></i>
+                </span>
+              }
+              @if (searchName) {
+                <span class="filter-tag">
+                  <i class="fas fa-search"></i> "{{ searchName }}"
+                  <i class="fas fa-times" (click)="searchName = ''; onFilterChange()"></i>
+                </span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Skeleton Loading -->
+        @if (loading && exercises.length === 0) {
+          <div class="loading-grid">
+            @for (s of [1,2,3,4,5,6]; track s) {
+              <div class="skeleton-card">
+                <div class="skeleton-gif"></div>
+                <div class="skeleton-body">
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line short"></div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Exercise Grid -->
+        @if (exercises.length > 0) {
+          <div class="exercise-grid">
+            @for (exercise of exercises; track exercise.id) {
+              <div class="ex-card" (click)="onViewDetails(exercise.id)">
+                <div class="ex-card-gif">
+                  <img
+                    [src]="getGifUrl(exercise)"
+                    [alt]="exercise.name"
+                    (error)="onGifError($event)"
+                    loading="lazy"
+                  />
+                </div>
+                <div class="ex-card-body">
+                  <div class="ex-card-name">{{ exercise.name }}</div>
+                  <div class="ex-card-tags">
+                    <span class="tag tag-bp">{{ exercise.bodyPart }}</span>
+                    <span class="tag tag-target">{{ exercise.target }}</span>
+                    <span class="tag tag-equip">{{ exercise.equipment }}</span>
+                  </div>
+                  <button class="ex-card-btn">
+                    View Exercise <i class="fas fa-arrow-right"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Empty State -->
+        @if (!loading && exercises.length === 0 && !error) {
+          <div class="empty-state">
+            <div class="empty-icon"><i class="fas fa-search"></i></div>
+            <h5>No exercises found</h5>
+            <p>Try adjusting your filters or search term.</p>
+            <button class="btn-reset" (click)="clearFilters()">Clear Filters</button>
+          </div>
+        }
+
+        <!-- Load More -->
+        @if (!loading && hasMore && exercises.length > 0) {
+          <div class="load-more-wrap">
+            <button class="btn-load-more" (click)="loadMore()">
+              <i class="fas fa-plus"></i> Load More Exercises
+            </button>
+          </div>
+        }
+
+        <!-- Loading More -->
+        @if (loading && exercises.length > 0) {
+          <div class="loading-more">
+            <div class="spinner-sm"></div> Loading more exercises...
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+</div>
