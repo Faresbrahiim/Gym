@@ -26,10 +26,15 @@ namespace user_service.Infrastructure.Repositories
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task Update(CoachProfile profile, CancellationToken cancellationToken = default)
-        {
-            _context.CoachProfiles.Update(profile);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+      public async Task Update(CoachProfile profile, CancellationToken cancellationToken = default)
+    {
+    var tracked = await _context.CoachProfiles
+        .AsTracking()
+        .FirstOrDefaultAsync(p => p.UserId == profile.UserId, cancellationToken);
+
+         if (tracked is null) return;
+        _context.Entry(tracked).CurrentValues.SetValues(profile);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
     }
 }

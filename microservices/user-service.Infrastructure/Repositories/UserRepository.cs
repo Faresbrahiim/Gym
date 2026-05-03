@@ -18,7 +18,6 @@ namespace user_service.Infrastructure.Repositories
         public async Task<User?> GetByEmail(string email, CancellationToken cancellationToken = default)
         {
             return await _context.Users
-                .AsNoTracking()
                 .Include(u => u.Profile)
                 .Include(u => u.ExternalLogins)
                 .Include(u => u.TwoFactor)
@@ -28,7 +27,6 @@ namespace user_service.Infrastructure.Repositories
         public async Task<User?> GetById(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Users
-                //.AsNoTracking()
                 .Include(u => u.Profile)
                 .Include(u => u.ExternalLogins)
                 .Include(u => u.TwoFactor)
@@ -38,7 +36,6 @@ namespace user_service.Infrastructure.Repositories
         public async Task<ExternalLogin?> GetExternalLogin(string provider, string providerUserId, CancellationToken cancellationToken = default)
         {
             return await _context.ExternalLogins
-                .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Provider == provider && e.ProviderUserId == providerUserId, cancellationToken);
         }
 
@@ -64,20 +61,27 @@ namespace user_service.Infrastructure.Repositories
 
         public async Task<User> Update(User user, CancellationToken cancellationToken = default)
         {
-            _context.Users.Update(user);
+            var tracked = await _context.Users
+                .AsTracking()
+                .Include(u => u.Profile)
+                .Include(u => u.ExternalLogins)
+                .Include(u => u.TwoFactor)
+                .FirstOrDefaultAsync(u => u.Id == user.Id, cancellationToken);
+
+            if (tracked is null) return user;
+
+            _context.Entry(tracked).CurrentValues.SetValues(user);
             await _context.SaveChangesAsync(cancellationToken);
-            return user;
+            return tracked;
         }
 
         public async Task<User?> GetByUsername(string username, CancellationToken cancellationToken = default)
         {
             return await _context.Users
-                .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
         }
-        public async Task<User?> GetFullById(
-        Guid userId,
-        CancellationToken cancellationToken = default)
+
+        public async Task<User?> GetFullById(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _context.Users
                 .Include(u => u.Profile)
@@ -89,6 +93,7 @@ namespace user_service.Infrastructure.Repositories
         public async Task UpsertTwoFactor(UserTwoFactor twoFactor, CancellationToken cancellationToken = default)
         {
             var existing = await _context.UserTwoFactors
+                .AsTracking()
                 .FirstOrDefaultAsync(t => t.UserId == twoFactor.UserId, cancellationToken);
 
             if (existing == null)
@@ -108,7 +113,6 @@ namespace user_service.Infrastructure.Repositories
         public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Users
-                .AsNoTracking()
                 .Include(u => u.Profile)
                 .ToListAsync(cancellationToken);
         }
@@ -122,7 +126,6 @@ namespace user_service.Infrastructure.Repositories
             var pattern = $"%{query}%";
 
             var baseQuery = _context.Users
-                .AsNoTracking()
                 .Include(u => u.Profile)
                 .Where(u =>
                     u.Status == UserStatus.ACTIVE &&
@@ -153,7 +156,6 @@ namespace user_service.Infrastructure.Repositories
                 return [];
 
             return await _context.Users
-                .AsNoTracking()
                 .Include(u => u.Profile)
                 .Where(u => ids.Contains(u.Id))
                 .ToListAsync(cancellationToken);

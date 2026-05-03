@@ -30,27 +30,34 @@ namespace user_service.Infrastructure.Repositories
                     t.ExpiresAt > DateTime.UtcNow, cancellationToken);
         }
 
-        public async Task Revoke(RefreshToken token, CancellationToken cancellationToken = default)
+        public async Task Revoke(string tokenHash, CancellationToken cancellationToken = default)
         {
+            var token = await _context.RefreshTokens
+                .AsTracking()
+                .FirstOrDefaultAsync(t =>
+                    t.TokenHash == tokenHash &&
+                    t.RevokedAt == null &&
+                    t.ExpiresAt > DateTime.UtcNow, cancellationToken);
+
+            if (token is null) return;
+
             token.RevokedAt = DateTime.UtcNow;
-            _context.RefreshTokens.Update(token);
             await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task RevokeAllTokens(Guid userId, CancellationToken cancellationToken = default)
         {
             var tokens = await _context.RefreshTokens
+                .AsTracking()
                 .Where(t => t.UserId == userId && t.RevokedAt == null)
                 .ToListAsync(cancellationToken);
 
             foreach (var token in tokens)
-            {
                 token.RevokedAt = DateTime.UtcNow;
-            }
 
-            _context.RefreshTokens.UpdateRange(tokens);
             await _context.SaveChangesAsync(cancellationToken);
         }
+
         public async Task<List<RefreshToken>> GetActiveTokens(Guid userId)
         {
             return await _context.RefreshTokens
@@ -74,6 +81,7 @@ namespace user_service.Infrastructure.Repositories
         public async Task RevokeByUserAgent(Guid userId, string userAgent, CancellationToken cancellationToken = default)
         {
             var tokens = await _context.RefreshTokens
+                .AsTracking()
                 .Where(t =>
                     t.UserId == userId &&
                     t.UserAgent == userAgent &&
@@ -81,14 +89,12 @@ namespace user_service.Infrastructure.Repositories
                     t.ExpiresAt > DateTime.UtcNow)
                 .ToListAsync(cancellationToken);
 
+            if (tokens.Count == 0) return;
+
             foreach (var token in tokens)
                 token.RevokedAt = DateTime.UtcNow;
 
-            if (tokens.Count > 0)
-            {
-                _context.RefreshTokens.UpdateRange(tokens);
-                await _context.SaveChangesAsync(cancellationToken);
-            }
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

@@ -39,6 +39,7 @@ namespace user_service.Infrastructure.Repositories
         public async Task DeleteExpired(CancellationToken cancellationToken = default)
         {
             var expired = await _context.RevokedTokens
+                .AsTracking()
                 .Where(t => t.ExpiresAt <= DateTime.UtcNow)
                 .ToListAsync(cancellationToken);
 
