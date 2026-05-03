@@ -10,11 +10,12 @@ import { StripeService } from '../../../payments/services/stripe.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ErrorService } from '../../../../core/services/error.service';
 import { StripeCardComponent } from '../../../payments/components/stripe-card/stripe-card.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   standalone: true,
   selector: 'app-checkout',
-  imports: [CommonModule, ReactiveFormsModule, StripeCardComponent],
+  imports: [CommonModule, ReactiveFormsModule, StripeCardComponent, PageHeaderComponent],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.css'
 })

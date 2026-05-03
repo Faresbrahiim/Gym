@@ -9,12 +9,13 @@ import { MemberBookingResponse } from '../../models/booking.model';
 import { BookingStatus } from '../../models/booking-status.enum';
 import { BookingStatusBadgeComponent } from '../../components/booking-status-badge/booking-status-badge.component';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
 
 @Component({
   selector: 'app-my-bookings',
   standalone: true,
-  imports: [CommonModule, RouterLink, BookingStatusBadgeComponent, DashboardMenuComponent, PaginationBarComponent],
+  imports: [CommonModule, RouterLink, BookingStatusBadgeComponent, DashboardMenuComponent, PaginationBarComponent, PageHeaderComponent],
   templateUrl: './my-bookings.component.html',
   styleUrl: './my-bookings.component.css'
 })

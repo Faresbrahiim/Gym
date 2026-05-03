@@ -4,11 +4,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../../cart/services/cart.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   standalone: true,
   selector: 'app-product-detail',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PageHeaderComponent],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.css'
 })
@@ -54,5 +55,9 @@ export class ProductDetailComponent implements OnInit {
 
   handleImageError(event: Event): void {
     (event.target as HTMLImageElement).src = '/assets/default-product.svg';
+  }
+
+  get productBreadcrumbs() {
+    return [{label: 'Home', link: '/home'}, {label: 'Shop', link: '/store'}, {label: this.product()?.name ?? ''}];
   }
 }

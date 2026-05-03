@@ -1,16 +1,8 @@
-<div class="breadcrumb breadcrumb-list mb-0">
-  <span class="primary-right-round"></span>
-  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-      <h1 class="text-white">My Bookings</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/bookings/sessions">Sessions</a></li>
-        <li>My Bookings</li>
-      </ul>
-    </div>
-  </div>
-</div>
+<app-page-header
+  title="My Bookings"
+  [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Sessions',link:'/bookings/sessions'},{label:'My Bookings'}]"
+  image="coach-detail-bg.jpg"
+/>
 
 <app-dashboard-menu></app-dashboard-menu>
 

@@ -6,13 +6,14 @@ import { ErrorService } from '../../../../core/services/error.service';
 import { SubscriptionHistoryEntry } from '../../models/subscription-history-entry.model';
 import { SubscriptionStatus } from '../../models/subscription-status.enum';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../components/status-badge/status-badge.component';
 import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
 
 @Component({
   standalone: true,
   selector: 'app-subscription-history',
-  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent, PaginationBarComponent],
+  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent, PaginationBarComponent, PageHeaderComponent],
   templateUrl: './subscription-history.component.html',
   styleUrl: './subscription-history.component.css'
 })

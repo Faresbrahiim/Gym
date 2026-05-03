@@ -1,20 +1,10 @@
-<div class="breadcrumb breadcrumb-list mb-0">
-  <span class="primary-right-round"></span>
-  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-      <h1 class="text-white">My Cart</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/store">Shop</a></li>
-        <li>My Cart</li>
-      </ul>
-    </div>
-    <a routerLink="/store" class="cart-header-btn">
-      <i class="feather-arrow-left"></i>
-      <span>Continue Shopping</span>
-    </a>
-  </div>
-</div>
+<app-page-header
+  title="My Cart"
+  [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Shop',link:'/store'},{label:'My Cart'}]"
+  image="shop.jpg"
+>
+  <a routerLink="/store" class="cart-header-btn"><i class="feather-arrow-left"></i><span>Continue Shopping</span></a>
+</app-page-header>
 
 <div class="content">
   <div class="container">

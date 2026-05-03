@@ -1919,7 +1919,7 @@ Version      : 1.0
   display: inline-block;
   pointer-events: none;
   width: 8px;
-  vertical-align: 2px;
+  vertical-align: 5px;
   margin-left: 10px;
   color: #EAEDF0;
   transform: rotate(45deg);
@@ -3309,12 +3309,26 @@ Version      : 1.0
   border-radius: 70px;
   display: inline-block;
 }
+.hero-section .banner-imgs {
+  position: absolute;
+  bottom: 0;
+  right: 220px;
+  width: 44%;
+  text-align: right;
+  pointer-events: none;
+}
 .hero-section .banner-imgs img {
-  max-width: 420px;
+  display: block;
+  margin-left: auto;
+  height: 700px;
+  width: auto;
 }
 @media (max-width: 1199.98px) {
+  .hero-section .banner-imgs {
+    width: 46%;
+  }
   .hero-section .banner-imgs img {
-    max-width: 100%;
+    height: 580px;
   }
 }
 @media (max-width: 991.98px) {
@@ -3361,7 +3375,7 @@ Version      : 1.0
 }
 .work-section .work-img .work-img-right {
   position: absolute;
-  top: 430px;
+  top: 370px;
   right: 0px;
 }
 .work-section .work-img .work-img-right img {

@@ -6,22 +6,13 @@
 
 <ng-container *ngIf="!isLoading() && order()">
 
-  <div class="breadcrumb breadcrumb-list mb-0">
-    <span class="primary-right-round"></span>
-    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-      <div>
-        <h1 class="text-white">Order #{{ order()!.id | slice:0:8 | uppercase }}</h1>
-        <ul>
-          <li><a routerLink="/home">Home</a></li>
-          <li><a routerLink="/orders">My Orders</a></li>
-          <li>#{{ order()!.id | slice:0:8 | uppercase }}</li>
-        </ul>
-      </div>
-      <span [ngClass]="'order-hero-badge ' + getStatusBadgeClass(order()!.status)">
-        {{ getStatusDisplayLabel(order()!.status) }}
-      </span>
-    </div>
-  </div>
+  <app-page-header
+    [title]="orderHeaderTitle"
+    [breadcrumbs]="orderBreadcrumbs"
+    image="breadcrumb-bg2.jpg"
+  >
+    <span [ngClass]="'order-hero-badge ' + getStatusBadgeClass(order()!.status)">{{ getStatusDisplayLabel(order()!.status) }}</span>
+  </app-page-header>
 
   <div class="content">
     <div class="container">

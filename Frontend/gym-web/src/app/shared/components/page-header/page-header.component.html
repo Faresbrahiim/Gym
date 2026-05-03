@@ -1,0 +1,20 @@
+<section class="breadcrumb breadcrumb-list mb-0" [style.background-image]="backgroundImage" [style.background-position]="position">
+  <span class="primary-right-round"></span>
+  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h1 class="text-white">{{ title }}</h1>
+      <ul>
+        @for (crumb of breadcrumbs; track crumb.label) {
+          <li>
+            @if (crumb.link) {
+              <a [routerLink]="crumb.link">{{ crumb.label }}</a>
+            } @else {
+              {{ crumb.label }}
+            }
+          </li>
+        }
+      </ul>
+    </div>
+    <ng-content />
+  </div>
+</section>

@@ -1,18 +1,9 @@
-<div class="breadcrumb breadcrumb-list mb-0 d-print-none">
-  <span class="primary-right-round"></span>
-  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-      <h1 class="text-white">Receipt</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/payments">Payments</a></li>
-        @if (payment()) {
-          <li>#{{ payment()!.id.substring(0, 8) | uppercase }}</li>
-        }
-      </ul>
-    </div>
-  </div>
-</div>
+<app-page-header
+  class="d-print-none"
+  title="Receipt"
+  [breadcrumbs]="paymentBreadcrumbs"
+  image="breadcrumb-bg2.jpg"
+/>
 
 <div class="d-print-none">
   <app-dashboard-menu></app-dashboard-menu>

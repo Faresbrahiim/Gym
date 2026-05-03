@@ -1,14 +1,8 @@
-<div class="breadcrumb breadcrumb-list mb-0">
-  <span class="primary-right-round"></span>
-  <div class="container">
-    <h1 class="text-white">Checkout</h1>
-    <ul>
-      <li><a routerLink="/home">Home</a></li>
-      <li><a routerLink="/cart">My Cart</a></li>
-      <li>Checkout</li>
-    </ul>
-  </div>
-</div>
+<app-page-header
+  title="Checkout"
+  [breadcrumbs]="[{label:'Home',link:'/home'},{label:'My Cart',link:'/cart'},{label:'Checkout'}]"
+  image="breadcrumb-bg.png"
+/>
 
 <div class="content">
   <div class="container">

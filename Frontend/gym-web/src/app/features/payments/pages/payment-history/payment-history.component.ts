@@ -12,6 +12,7 @@ import { PaymentStatus } from '../../models/payment-status.enum';
 import { PaymentTargetType } from '../../models/payment-target-type.enum';
 import { PaymentStatusBadgeComponent } from '../../components/payment-status-badge/payment-status-badge.component';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
 
 interface EnrichedPayment extends PaymentResponse {
@@ -21,7 +22,7 @@ interface EnrichedPayment extends PaymentResponse {
 @Component({
   selector: 'app-payment-history',
   standalone: true,
-  imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent, PaginationBarComponent],
+  imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent, PaginationBarComponent, PageHeaderComponent],
   templateUrl: './payment-history.component.html',
   styleUrl: './payment-history.component.css'
 })

@@ -15,11 +15,12 @@ import { Plan } from '../../../membership/models/plan.model';
 import { UserMe } from '../../../profile/models/user-me.model';
 import { PaymentStatusBadgeComponent } from '../../components/payment-status-badge/payment-status-badge.component';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-payment-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent],
+  imports: [CommonModule, RouterLink, PaymentStatusBadgeComponent, DashboardMenuComponent, PageHeaderComponent],
   templateUrl: './payment-detail.component.html',
   styleUrl: './payment-detail.component.css'
 })
@@ -86,6 +87,11 @@ export class PaymentDetailComponent implements OnInit {
       this.user.set(data.user);
       this.isLoading.set(false);
     });
+  }
+
+  get paymentBreadcrumbs() {
+    const p = this.payment();
+    return [{label: 'Home', link: '/home'}, {label: 'Payments', link: '/payments'}, ...(p ? [{label: '#' + p.id.substring(0, 8).toUpperCase()}] : [])];
   }
 
   printReceipt(): void {

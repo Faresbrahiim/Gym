@@ -1,15 +1,9 @@
-<div class="breadcrumb breadcrumb-list mb-0">
-  <span class="primary-right-round"></span>
-  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-      <h1 class="text-white">Browse Sessions</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li>Sessions</li>
-      </ul>
-    </div>
-  </div>
-</div>
+<app-page-header
+  title="Browse Sessions"
+  [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Sessions'}]"
+  image="page-header-bg.jpg"
+  position="center 30%"
+/>
 
 <div class="content sessions-page">
   <div class="container sessions-stage">

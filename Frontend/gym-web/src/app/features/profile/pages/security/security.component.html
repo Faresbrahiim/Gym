@@ -1,14 +1,8 @@
-<section class="breadcrumb breadcrumb-list mb-0">
-  <span class="primary-right-round"></span>
-  <div class="container">
-    <h1 class="text-white">Security</h1>
-    <ul>
-      <li><a routerLink="/home">Home</a></li>
-      <li><a routerLink="/profile">Profile</a></li>
-      <li>Security</li>
-    </ul>
-  </div>
-</section>
+<app-page-header
+  title="Security"
+  [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Profile',link:'/profile'},{label:'Security'}]"
+  image="private-bg-01.jpg"
+/>
 
 <app-dashboard-menu />
 

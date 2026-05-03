@@ -6,11 +6,12 @@ import { ProductService } from '../../services/product.service';
 import { CartService } from '../../../cart/services/cart.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { Product } from '../../models/product.model';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   standalone: true,
   selector: 'app-products-list',
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, PageHeaderComponent],
   templateUrl: './products-list.component.html',
   styleUrl: './products-list.component.css'
 })

@@ -10,11 +10,12 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { SessionResponse } from '../../models/session.model';
 import { SessionStatus } from '../../models/session-status.enum';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-coach-sessions',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, DashboardMenuComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, DashboardMenuComponent, PageHeaderComponent],
   templateUrl: './coach-sessions.component.html',
   styleUrl: './coach-sessions.component.css'
 })
