@@ -87,9 +87,10 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/bookings/bookings.routes').then(m => m.bookingsRoutes)
       },
-      
+
       {
       path: 'workouts',
+      canActivate: [authGuard], 
       loadChildren: () =>
       import('./features/workouts/workouts.routes').then(m => m.WORKOUT_ROUTES),
       }
