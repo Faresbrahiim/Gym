@@ -12,11 +12,12 @@ import { Plan } from '../../models/plan.model';
 import { SubscriptionStatus } from '../../models/subscription-status.enum';
 import { ACTIVE_STATUSES } from '../../models/subscription-status.enum';
 import { PlanCardComponent } from '../../components/plan-card/plan-card.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   standalone: true,
   selector: 'app-plans-catalog',
-  imports: [RouterLink, PlanCardComponent],
+  imports: [RouterLink, PlanCardComponent, PageHeaderComponent],
   templateUrl: './plans-catalog.component.html',
   styleUrl: './plans-catalog.component.css'
 })

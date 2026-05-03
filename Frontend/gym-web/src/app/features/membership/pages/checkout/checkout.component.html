@@ -20,17 +20,11 @@
 
 @if (!isLoading() && !errorMessage() && plan()) {
 
-  <div class="breadcrumb breadcrumb-list mb-0">
-    <span class="primary-right-round"></span>
-    <div class="container">
-      <h1 class="text-white">{{ isChangingPlan ? 'Upgrade Membership' : 'Checkout' }}</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/membership/plans">Plans</a></li>
-        <li>{{ isChangingPlan ? 'Upgrade Membership' : 'Checkout' }}</li>
-      </ul>
-    </div>
-  </div>
+  <app-page-header
+    [title]="checkoutTitle"
+    [breadcrumbs]="checkoutBreadcrumbs"
+    image="convenient-bg.jpg"
+  />
 
   <app-dashboard-menu />
 

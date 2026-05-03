@@ -796,6 +796,76 @@ services:
               max_age: 3600
               preflight_continue: false
 
+  # ==============================
+  # AI Service
+  # ==============================
+  - name: ai-service
+    url: http://ai-service:8001
+    routes:
+      - name: ai-health-route
+        paths:
+          - /api/ai/health
+        strip_path: true
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 30
+              hour: 500
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
+      - name: ai-route
+        paths:
+          - /api/ai
+        strip_path: true
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: kid
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 30
+              hour: 500
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - POST
+                - PUT
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
 consumers:
   - username: gym-client
     jwt_secrets:

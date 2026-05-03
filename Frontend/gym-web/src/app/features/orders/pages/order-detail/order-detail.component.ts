@@ -4,12 +4,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription, timer } from 'rxjs';
 import { OrderService } from '../../services/order.service';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   standalone: true,
   selector: 'app-order-detail',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PageHeaderComponent],
   templateUrl: './order-detail.component.html',
   styleUrl: './order-detail.component.css'
 })
@@ -113,6 +114,16 @@ export class OrderDetailComponent implements OnInit {
       default:
         return 'feather-help-circle';
     }
+  }
+
+  get orderHeaderTitle(): string {
+    const o = this.order();
+    return o ? 'Order #' + o.id.substring(0, 8).toUpperCase() : 'Order';
+  }
+
+  get orderBreadcrumbs() {
+    const o = this.order();
+    return [{label: 'Home', link: '/home'}, {label: 'My Orders', link: '/orders'}, ...(o ? [{label: '#' + o.id.substring(0, 8).toUpperCase()}] : [])];
   }
 
   get paymentStateMessage(): string | null {

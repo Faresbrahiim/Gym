@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { OrderService } from '../../services/order.service';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   standalone: true,
   selector: 'app-orders-list',
-  imports: [CommonModule, RouterLink, DashboardMenuComponent],
+  imports: [CommonModule, RouterLink, DashboardMenuComponent, PageHeaderComponent],
   templateUrl: './orders-list.component.html',
   styleUrl: './orders-list.component.css'
 })

@@ -1,15 +1,8 @@
-<div class="breadcrumb breadcrumb-list mb-0">
-  <span class="primary-right-round"></span>
-  <div class="container d-flex align-items-center justify-content-between flex-wrap gap-2">
-    <div>
-      <h1 class="text-white">Orders</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li>Orders</li>
-      </ul>
-    </div>
-  </div>
-</div>
+<app-page-header
+  title="Orders"
+  [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Orders'}]"
+  image="breadcrumb-bg2.jpg"
+/>
 
 <app-dashboard-menu></app-dashboard-menu>
 

@@ -133,6 +133,25 @@ namespace user_service.Application.Mappers
                 ProfilePictureUrl = user.Profile?.ProfilePictureUrl ?? string.Empty,
             };
         }
+
+        public static AiUserProfileDto ToAiUserProfileDto(User user)
+        {
+            var firstName = user.Profile?.FirstName?.Trim();
+
+            return new AiUserProfileDto
+            {
+                Id = user.Id,
+                FirstName = string.IsNullOrWhiteSpace(firstName) ? user.Username : firstName,
+                Gender = user.MemberProfile?.Gender,
+                DateOfBirth = user.MemberProfile?.DateOfBirth,
+                FitnessGoal = user.MemberProfile?.FitnessGoal,
+                ExperienceLevel = user.MemberProfile?.ExperienceLevel is null
+                    ? null
+                    : (int)user.MemberProfile.ExperienceLevel.Value,
+                HeightCm = user.MemberProfile?.HeightCm,
+                WeightKg = user.MemberProfile?.WeightKg,
+            };
+        }
     }
 
 }

@@ -87,6 +87,12 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/bookings/bookings.routes').then(m => m.bookingsRoutes)
       },
+      {
+        path: 'ai-coach',
+        canActivate: [authGuard],
+        loadChildren: () =>
+          import('./features/ai-coach/ai-coach.routes').then(m => m.aiCoachRoutes)
+      },
 
       {
       path: 'workouts',

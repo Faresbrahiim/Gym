@@ -2,6 +2,7 @@ import { Component, OnInit, signal, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SessionService } from '../../services/session.service';
 import { AuthService } from '../../../auth/services/auth.service';
@@ -41,7 +42,7 @@ function parseUserAgent(ua: string | null): ParsedAgent {
 @Component({
   standalone: true,
   selector: 'app-security',
-  imports: [CommonModule, RouterLink, DashboardMenuComponent],
+  imports: [CommonModule, RouterLink, DashboardMenuComponent, PageHeaderComponent],
   templateUrl: './security.component.html',
   styleUrl: './security.component.css'
 })

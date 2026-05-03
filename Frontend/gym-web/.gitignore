@@ -42,3 +42,7 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment files — copy from *.template.ts and fill in your keys
+src/environments/environment.ts
+src/environments/environment.prod.ts

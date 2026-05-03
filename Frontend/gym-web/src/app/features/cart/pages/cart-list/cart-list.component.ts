@@ -4,11 +4,12 @@ import { RouterLink, Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { CartItem } from '../../models/cart.model';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   standalone: true,
   selector: 'app-cart-list',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PageHeaderComponent],
   templateUrl: './cart-list.component.html',
   styleUrl: './cart-list.component.css'
 })

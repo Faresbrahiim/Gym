@@ -13,13 +13,14 @@ import { DashboardMenuComponent } from '../../../../shared/components/dashboard-
 import { StatusBadgeComponent } from '../../components/status-badge/status-badge.component';
 import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
 import { ConfirmModalComponent } from '../../../../shared/components/confirm-modal/confirm-modal.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 const PENDING_POLL_INTERVAL_MS = 3000;
 
 @Component({
   standalone: true,
   selector: 'app-my-membership',
-  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent, LoadingButtonComponent, ConfirmModalComponent],
+  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent, LoadingButtonComponent, ConfirmModalComponent, PageHeaderComponent],
   templateUrl: './my-membership.component.html',
   styleUrl: './my-membership.component.css'
 })

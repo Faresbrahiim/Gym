@@ -6,13 +6,14 @@ import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../../../core/auth/token.service';
 import { UserMe } from '../../models/user-me.model';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 const DEFAULT_AVATAR = '/assets/img/profiles/avatar-01.jpg';
 
 @Component({
   standalone: true,
   selector: 'app-profile-view',
-  imports: [CommonModule, RouterLink, DashboardMenuComponent],
+  imports: [CommonModule, RouterLink, DashboardMenuComponent, PageHeaderComponent],
   templateUrl: './profile-view.component.html',
   styleUrl: './profile-view.component.css'
 })

@@ -7,17 +7,11 @@
 }
 
 @if (!isLoading() && userMe()) {
-  <section class="breadcrumb breadcrumb-list mb-0">
-    <span class="primary-right-round"></span>
-    <div class="container">
-      <h1 class="text-white">Edit Profile</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/profile">My Profile</a></li>
-        <li>Edit Profile</li>
-      </ul>
-    </div>
-  </section>
+  <app-page-header
+    title="Edit Profile"
+    [breadcrumbs]="[{label:'Home',link:'/home'},{label:'My Profile',link:'/profile'},{label:'Edit Profile'}]"
+    image="private-bg-01.jpg"
+  />
 
   <app-dashboard-menu />
 

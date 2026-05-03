@@ -8,6 +8,7 @@ import { MembershipService } from '../../services/membership.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { Subscription } from '../../models/subscription.model';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { StatusBadgeComponent } from '../../components/status-badge/status-badge.component';
 
 const POLL_INTERVAL_MS = 3000;
@@ -17,7 +18,7 @@ const MAX_POLL_ATTEMPTS = Math.ceil(MAX_POLL_DURATION_MS / POLL_INTERVAL_MS);
 @Component({
   standalone: true,
   selector: 'app-status',
-  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent],
+  imports: [RouterLink, DashboardMenuComponent, StatusBadgeComponent, PageHeaderComponent],
   templateUrl: './status.component.html',
   styleUrl: './status.component.css'
 })

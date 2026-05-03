@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, forkJoin, of, take } from 'rxjs';
 
 import { BookingService } from '../../services/booking.service';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ToastService } from '../../../../core/services/toast.service';
 import { SessionResponse } from '../../models/session.model';
 import { SessionStatus } from '../../models/session-status.enum';
@@ -12,7 +13,7 @@ import { SessionStatus } from '../../models/session-status.enum';
 @Component({
   selector: 'app-sessions-browse',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, PageHeaderComponent],
   templateUrl: './sessions-browse.component.html',
   styleUrl: './sessions-browse.component.css'
 })

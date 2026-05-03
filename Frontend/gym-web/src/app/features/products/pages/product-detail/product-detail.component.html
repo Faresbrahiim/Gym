@@ -6,17 +6,11 @@
 
 <ng-container *ngIf="!isLoading() && product()">
 
-  <div class="breadcrumb breadcrumb-list mb-0">
-    <span class="primary-right-round"></span>
-    <div class="container">
-      <h1 class="text-white">{{ product()!.name }}</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/store">Shop</a></li>
-        <li>{{ product()!.name }}</li>
-      </ul>
-    </div>
-  </div>
+  <app-page-header
+    [title]="product()!.name ?? ''"
+    [breadcrumbs]="productBreadcrumbs"
+    image="breadcrumb-bg.png"
+  />
 
   <div class="content">
     <div class="container">

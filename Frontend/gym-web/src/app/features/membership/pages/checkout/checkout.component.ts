@@ -13,11 +13,12 @@ import { Subscription } from '../../models/subscription.model';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { LoadingButtonComponent } from '../../../../shared/components/loading-button/loading-button.component';
 import { StripeCardComponent } from '../../../payments/components/stripe-card/stripe-card.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   standalone: true,
   selector: 'app-checkout',
-  imports: [RouterLink, DashboardMenuComponent, LoadingButtonComponent, StripeCardComponent],
+  imports: [RouterLink, DashboardMenuComponent, LoadingButtonComponent, StripeCardComponent, PageHeaderComponent],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.css'
 })
@@ -88,6 +89,14 @@ export class CheckoutComponent implements OnInit {
 
   get isChangingPlan(): boolean {
     return this.currentActiveSub !== null;
+  }
+
+  get checkoutTitle(): string {
+    return this.isChangingPlan ? 'Upgrade Membership' : 'Checkout';
+  }
+
+  get checkoutBreadcrumbs() {
+    return [{label: 'Home', link: '/home'}, {label: 'Plans', link: '/membership/plans'}, {label: this.isChangingPlan ? 'Upgrade Membership' : 'Checkout'}];
   }
 
   get isFree(): boolean {

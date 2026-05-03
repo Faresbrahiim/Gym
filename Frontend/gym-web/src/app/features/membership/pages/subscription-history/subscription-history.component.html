@@ -19,17 +19,11 @@
 
 @if (!isLoading() && !errorMessage()) {
 
-  <div class="breadcrumb breadcrumb-list mb-0">
-    <span class="primary-right-round"></span>
-    <div class="container">
-      <h1 class="text-white">Subscription History</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li><a routerLink="/membership">My Membership</a></li>
-        <li>History</li>
-      </ul>
-    </div>
-  </div>
+  <app-page-header
+    title="Subscription History"
+    [breadcrumbs]="[{label:'Home',link:'/home'},{label:'My Membership',link:'/membership'},{label:'History'}]"
+    image="convenient-bg.jpg"
+  />
 
   <app-dashboard-menu />
 

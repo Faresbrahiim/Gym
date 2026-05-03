@@ -30,20 +30,19 @@ namespace user_service.Infrastructure.Repositories
                     cancellationToken);
         }
 
-        public async Task MarkUsed(Guid userId, string codeHash, CancellationToken cancellationToken = default)
+        public async Task MarkUsed(RecoveryCode code, CancellationToken cancellationToken = default)
         {
-            var code = await _context.RecoveryCodes
+            var trackedCode = await _context.RecoveryCodes
                 .AsTracking()
                 .FirstOrDefaultAsync(
-                    x => x.UserId == userId &&
-                         x.CodeHash == codeHash &&
+                    x => x.Id == code.Id &&
                          !x.Used,
                     cancellationToken);
 
-            if (code is null) return;
+            if (trackedCode is null) return;
 
-            code.Used = true;
-            code.UsedAt = DateTime.UtcNow;
+            trackedCode.Used = true;
+            trackedCode.UsedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync(cancellationToken);
         }

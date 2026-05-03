@@ -10,11 +10,12 @@ import { CoachBookingResponse } from '../../models/booking.model';
 import { BookingStatus } from '../../models/booking-status.enum';
 import { BookingStatusBadgeComponent } from '../../components/booking-status-badge/booking-status-badge.component';
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-coach-session-bookings',
   standalone: true,
-  imports: [CommonModule, RouterLink, BookingStatusBadgeComponent, DashboardMenuComponent],
+  imports: [CommonModule, RouterLink, BookingStatusBadgeComponent, DashboardMenuComponent, PageHeaderComponent],
   templateUrl: './coach-session-bookings.component.html',
   styleUrl: './coach-session-bookings.component.css'
 })

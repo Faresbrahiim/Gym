@@ -19,16 +19,11 @@
 
 @if (!isLoading() && !errorMessage()) {
 
-  <div class="breadcrumb breadcrumb-list mb-0">
-    <span class="primary-right-round"></span>
-    <div class="container">
-      <h1 class="text-white">Membership Plans</h1>
-      <ul>
-        <li><a routerLink="/home">Home</a></li>
-        <li>Plans</li>
-      </ul>
-    </div>
-  </div>
+  <app-page-header
+    title="Membership Plans"
+    [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Plans'}]"
+    image="convenient-bg.jpg"
+  />
 
   <div class="content">
     <section class="featured-plan">

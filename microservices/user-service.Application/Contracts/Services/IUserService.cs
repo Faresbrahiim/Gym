@@ -15,4 +15,5 @@ public interface IUsersService
         CancellationToken cancellationToken = default);
 
     Task<UserSummaryDto> GetUserSummaryAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<AiUserProfileDto> GetAiUserProfileAsync(Guid userId, CancellationToken cancellationToken = default);
 }
