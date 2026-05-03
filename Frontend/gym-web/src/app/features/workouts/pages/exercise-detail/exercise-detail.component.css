@@ -1,0 +1,60 @@
+.back-link {
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.back-link:hover { color: #ff5722 !important; }
+
+.exercise-gif-wrapper {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f8f9fa;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gif-fallback {
+  width: 100%;
+  min-height: 280px;
+  background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+}
+
+.detail-badge {
+  font-size: 0.8rem;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.badge-body-part { background: #e8f4fd; color: #1a6fa8; }
+.badge-target    { background: #e8fdf0; color: #1a8a44; }
+.badge-equipment { background: #fdf4e8; color: #a85c1a; }
+
+.secondary-muscles-card {
+  background: #f8f9fa;
+  border: 1px solid #e8ecf0;
+}
+
+.instruction-list {
+  padding-left: 1.2rem;
+  line-height: 1.8;
+  color: #555;
+}
+.instruction-list li { margin-bottom: 0.5rem; }
+
+.calorie-card {
+  background: linear-gradient(135deg, #fff5f3 0%, #ffeae6 100%);
+  border: 1px solid #ffd6cc;
+}
+
+.similar-card {
+  background: #f8f9fa;
+  border: 1px solid #e8ecf0;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.similar-card:hover {
+  transform: translateY(-3px);
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}

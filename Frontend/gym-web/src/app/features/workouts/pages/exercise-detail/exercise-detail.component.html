@@ -1,0 +1,191 @@
+<div class="exercise-detail-page container py-5">
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-3 text-muted">Loading exercise details...</p>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error) {
+    <div class="py-5 text-center">
+      <h4 class="text-muted">{{ error }}</h4>
+      <a routerLink="/workouts" class="btn btn-primary mt-3">Back to Exercises</a>
+    </div>
+  }
+
+  <!-- Content -->
+  @if (!loading && !error && exercise) {
+
+    <a routerLink="/workouts" class="back-link mb-4 d-inline-flex align-items-center text-muted">
+      <i class="fas fa-arrow-left me-2"></i>Back to Exercises
+    </a>
+
+    <div class="row g-4 mt-1">
+
+      <!-- Left: GIF + Tags -->
+      <div class="col-12 col-md-5">
+        <div class="exercise-gif-wrapper shadow-sm">
+          @if (!gifError) {
+            <img
+              [src]="authenticatedGifUrl"
+              [alt]="exercise.name"
+              class="w-100"
+              (error)="gifError = true"
+            />
+          } @else {
+            <div class="gif-fallback d-flex align-items-center justify-content-center">
+              <i class="fas fa-dumbbell fa-4x text-muted"></i>
+            </div>
+          }
+        </div>
+
+        <!-- Tags -->
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <span class="detail-badge badge-body-part text-capitalize">
+            <i class="fas fa-user me-1"></i>{{ exercise.bodyPart }}
+          </span>
+          <span class="detail-badge badge-target text-capitalize">
+            <i class="fas fa-bullseye me-1"></i>{{ exercise.target }}
+          </span>
+          <span class="detail-badge badge-equipment text-capitalize">
+            <i class="fas fa-dumbbell me-1"></i>{{ exercise.equipment }}
+          </span>
+        </div>
+
+        <!-- Extra Info -->
+        <div class="mt-3 p-3 rounded secondary-muscles-card">
+          <div class="row g-2 text-center">
+            @if (exercise.difficulty) {
+              <div class="col-4">
+                <small class="text-muted d-block">Difficulty</small>
+                <span class="fw-semibold small text-capitalize">{{ exercise.difficulty }}</span>
+              </div>
+            }
+            @if (exercise.mechanic) {
+              <div class="col-4">
+                <small class="text-muted d-block">Mechanic</small>
+                <span class="fw-semibold small text-capitalize">{{ exercise.mechanic }}</span>
+              </div>
+            }
+            @if (exercise.force) {
+              <div class="col-4">
+                <small class="text-muted d-block">Force</small>
+                <span class="fw-semibold small text-capitalize">{{ exercise.force }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Secondary Muscles -->
+        @if (exercise.secondaryMuscles?.length) {
+          <div class="mt-3 p-3 rounded secondary-muscles-card">
+            <p class="fw-semibold small mb-2 text-muted">Secondary Muscles</p>
+            <div class="d-flex flex-wrap gap-1">
+              @for (m of exercise.secondaryMuscles; track m) {
+                <span class="badge bg-light text-secondary text-capitalize border">{{ m }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Description -->
+        @if (exercise.description) {
+          <div class="mt-3 p-3 rounded secondary-muscles-card">
+            <p class="fw-semibold small mb-1 text-muted">About</p>
+            <p class="small text-secondary mb-0">{{ exercise.description }}</p>
+          </div>
+        }
+      </div>
+
+      <!-- Right: Info -->
+      <div class="col-12 col-md-7">
+        <h2 class="fw-bold text-capitalize mb-1">{{ exercise.name }}</h2>
+        <p class="text-muted mb-4 text-capitalize">{{ exercise.category }}</p>
+
+        <!-- Instructions -->
+        @if (exercise.instructions?.length) {
+          <div class="mb-4">
+            <h5 class="fw-semibold mb-3">
+              <i class="fas fa-list-ol me-2 text-primary"></i>Instructions
+            </h5>
+            <ol class="instruction-list">
+              @for (step of exercise.instructions; track step) {
+                <li class="mb-2">{{ step }}</li>
+              }
+            </ol>
+          </div>
+        }
+
+        <!-- Calorie Burn Calculator -->
+        <div class="calorie-card p-4 rounded-3 mb-4">
+          <h5 class="fw-semibold mb-3">
+            <i class="fas fa-fire me-2 text-danger"></i>Calorie Burn Estimator
+          </h5>
+          <div class="row g-3 align-items-end mb-3">
+            <div class="col-6">
+              <label class="form-label small text-muted">Your Weight (kg)</label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="weightKg"
+                min="30"
+                max="200"
+              />
+            </div>
+            <div class="col-6">
+              <label class="form-label small text-muted">Duration (minutes)</label>
+              <input
+                type="number"
+                class="form-control form-control-sm"
+                [(ngModel)]="minutes"
+                min="1"
+                max="180"
+              />
+            </div>
+          </div>
+          <button class="btn btn-sm btn-primary mb-3" (click)="calculateCalories()">
+            <i class="fas fa-calculator me-1"></i>Calculate
+          </button>
+          @if (calorieBurn) {
+            <div class="calorie-result d-flex align-items-center gap-3">
+              <div class="calorie-number">
+                <span class="display-6 fw-bold text-danger">{{ calorieBurn.totalKcal | number:'1.0-0' }}</span>
+                <span class="text-muted ms-1">kcal</span>
+              </div>
+              <div class="text-muted small">
+                ≈ {{ calorieBurn.kcalPerMin | number:'1.1-1' }} kcal/min
+                for {{ calorieBurn.minutes }} min at {{ calorieBurn.weightKg }}kg
+              </div>
+            </div>
+          } @else {
+            <p class="text-muted small mb-0">Enter your weight and duration then click Calculate.</p>
+          }
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Similar Exercises -->
+    @if (similarExercises.length) {
+      <div class="mt-5">
+        <h4 class="fw-bold mb-4">Similar Exercises</h4>
+        <div class="row row-cols-2 row-cols-md-4 g-3">
+          @for (sim of similarExercises; track sim.id) {
+            <div class="col">
+              <a [routerLink]="['/workouts', sim.id]" class="text-decoration-none">
+                <div class="similar-card p-3 rounded-3 text-center h-100">
+                  <p class="mb-1 fw-semibold small text-dark text-capitalize">{{ sim.name }}</p>
+                  <small class="text-muted text-capitalize">{{ sim.target }} · {{ sim.equipment }}</small>
+                </div>
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  }
+</div>

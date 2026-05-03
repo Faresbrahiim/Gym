@@ -1,0 +1,13 @@
+{
+  "/workout-gifs": {
+    "target": "https://api.workoutxapp.com",
+    "changeOrigin": true,
+    "secure": true,
+    "pathRewrite": {
+      "^/workout-gifs": "/v1/gifs"
+    },
+    "headers": {
+      "X-WorkoutX-Key": "wx_357b65d9e6e0728e09bf1d21286c9407d44308864596cb4619ac2e77"
+    }
+  }
+}
