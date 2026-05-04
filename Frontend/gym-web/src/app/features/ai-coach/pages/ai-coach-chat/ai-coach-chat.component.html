@@ -113,7 +113,9 @@
                 @if (message.role === 'assistant' && message.recommendationId) {
                   <div class="feedback">
                     @if (message.feedbackRating) {
-                      <span class="feedback-saved">Feedback saved · Rated {{ message.feedbackRating }}/5</span>
+                      <span class="feedback-saved">
+                        Feedback saved - {{ message.feedbackRating >= 4 ? 'Marked as helpful' : 'Marked as not helpful' }}
+                      </span>
                     } @else {
                       <span class="feedback-label">Was this recommendation useful?</span>
                       <div class="feedback-actions">
