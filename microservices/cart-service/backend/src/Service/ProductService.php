@@ -33,13 +33,15 @@ class ProductService implements ProductServiceInterface
         ?string $description, 
         string $price, 
         string $status,
+        int $stockQuantity,
         ?UploadedFile $image = null
     ): Product {
         $product = new Product();
         $product->setName($name);
         $product->setDescription($description);
         $product->setPrice($price);
-        $product->setStatus($status);
+        $product->setStockQuantity($stockQuantity);
+        $product->setStatus($this->normalizeStatus($status, $stockQuantity));
         $product->setCreatedAt(new \DateTimeImmutable());
         
         if ($image) {
@@ -79,7 +81,14 @@ class ProductService implements ProductServiceInterface
     }
 
     // Fixed updateProduct method signature
-    public function updateProduct(Uuid $id, string $name, ?string $description, string $price): Product
+    public function updateProduct(
+        Uuid $id,
+        string $name,
+        ?string $description,
+        string $price,
+        string $status,
+        int $stockQuantity
+    ): Product
     {
         $product = $this->productRepository->find($id);
         if (!$product) throw new \Exception("Product not found");
@@ -87,6 +96,8 @@ class ProductService implements ProductServiceInterface
         $product->setName($name);
         $product->setDescription($description);
         $product->setPrice($price);
+        $product->setStockQuantity($stockQuantity);
+        $product->setStatus($this->normalizeStatus($status, $stockQuantity));
         
         $this->productRepository->save($product, true);
         return $product;
@@ -114,7 +125,7 @@ class ProductService implements ProductServiceInterface
             throw new \InvalidArgumentException("Invalid status. Allowed: " . implode(', ', $allowedStatuses));
         }
 
-        $product->setStatus(strtoupper($status));
+        $product->setStatus($this->normalizeStatus(strtoupper($status), $product->getStockQuantity()));
         $this->productRepository->save($product, true);
 
         return $product;
@@ -132,5 +143,20 @@ class ProductService implements ProductServiceInterface
             'data' => $product->getImageData(),
             'mimeType' => $product->getImageMimeType() ?: 'image/jpeg'
         ];
+    }
+
+    private function normalizeStatus(string $status, int $stockQuantity): string
+    {
+        $normalizedStatus = strtoupper($status);
+
+        if ($normalizedStatus === 'ARCHIVED') {
+            return 'ARCHIVED';
+        }
+
+        if ($stockQuantity <= 0) {
+            return 'OUT_OF_STOCK';
+        }
+
+        return 'AVAILABLE';
     }
 }

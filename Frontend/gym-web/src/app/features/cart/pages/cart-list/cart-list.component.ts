@@ -32,7 +32,10 @@ export class CartListComponent implements OnInit {
     this.updatingItemId = item.id;
     this.cartService.updateCartItem(item.id, newQuantity).subscribe({
       next:  () => { this.toastService.success('Cart updated'); this.updatingItemId = null; },
-      error: () => { this.toastService.error('Failed to update cart'); this.updatingItemId = null; }
+      error: (error) => {
+        this.toastService.error(error?.error?.error || 'Failed to update cart');
+        this.updatingItemId = null;
+      }
     });
   }
 
@@ -66,5 +69,27 @@ export class CartListComponent implements OnInit {
 
   trackByItemId(_: number, item: CartItem): string {
     return item.id;
+  }
+
+  onProceedToCheckout(event: Event): void {
+    if (!this.hasStockIssue()) {
+      return;
+    }
+
+    event.preventDefault();
+    this.toastService.error('Resolve out-of-stock items before checkout');
+  }
+
+  isItemOutOfStock(item: CartItem): boolean {
+    return item.productStatus === 'OUT_OF_STOCK' || item.productStockQuantity <= 0;
+  }
+
+  isAtStockLimit(item: CartItem): boolean {
+    return item.productStockQuantity > 0 && item.quantity >= item.productStockQuantity;
+  }
+
+  hasStockIssue(): boolean {
+    const items = this.cart()?.items ?? [];
+    return items.some(item => this.isItemOutOfStock(item) || item.quantity > item.productStockQuantity);
   }
 }

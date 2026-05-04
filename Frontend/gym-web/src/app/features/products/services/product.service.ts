@@ -75,6 +75,7 @@ export class ProductService {
       name:        p.name,
       description: p.description ?? '',
       price:       Number(p.price),
+      stockQuantity: Number(p.stockQuantity ?? 0),
       imagePath:   p.imagePath ?? null,
       status:      p.status,
       createdAt:   p.createdAt,

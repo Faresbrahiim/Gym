@@ -48,6 +48,13 @@
               <span class="pd-price">${{ product()!.price.toFixed(2) }}</span>
             </div>
 
+            <div class="pd-price-row">
+              <div class="stat-icon teal"><i class="feather-package"></i></div>
+              <span class="pd-price">
+                {{ product()!.stockQuantity > 0 ? (product()!.stockQuantity + ' in stock') : 'Out of stock' }}
+              </span>
+            </div>
+
             <!-- Quantity -->
             <div class="pd-qty-section">
               <span class="pd-qty-label">Quantity</span>
@@ -56,17 +63,20 @@
                   <i class="feather-minus"></i>
                 </button>
                 <span class="pd-qty-val">{{ quantity() }}</span>
-                <button class="pd-qty-btn" (click)="increase()">
+                <button class="pd-qty-btn" (click)="increase()" [disabled]="!canPurchase() || isAtStockLimit()">
                   <i class="feather-plus"></i>
                 </button>
               </div>
+              <span class="date-secondary" *ngIf="canPurchase()">
+                {{ product()!.stockQuantity }} available
+              </span>
             </div>
 
             <!-- Actions -->
             <div class="pd-actions">
               <button
                 class="btn-pd-cart"
-                [disabled]="product()!.status !== 'AVAILABLE'"
+                [disabled]="!canPurchase()"
                 (click)="addToCart()">
                 <i class="feather-shopping-cart"></i>
                 Add to Cart

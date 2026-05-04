@@ -12,6 +12,7 @@ class ProductAdminMapper
             name: $data['name'] ?? '',
             description: $data['description'] ?? null,
             price: (string)($data['price'] ?? 0),
+            stockQuantity: (int)($data['stockQuantity'] ?? 0),
             status: $data['status'] ?? 'AVAILABLE',
             image: $data['image'] ?? null  // This will be set from form data
         );

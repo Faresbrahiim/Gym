@@ -49,16 +49,17 @@
               [src]="getImageUrl(product)"
               [alt]="product.name"
               (error)="handleImageError($event)">
-            <span *ngIf="product.status === 'OUT_OF_STOCK'" class="product-badge out">Out of Stock</span>
+            <span *ngIf="product.status === 'OUT_OF_STOCK' || product.stockQuantity <= 0" class="product-badge out">Out of Stock</span>
           </a>
           <div class="product-card-body">
             <a [routerLink]="['/store', product.id]" class="product-name">{{ product.name }}</a>
             <p class="product-desc" *ngIf="product.description">{{ product.description }}</p>
+            <p class="product-desc" *ngIf="product.stockQuantity > 0">{{ product.stockQuantity }} in stock</p>
             <div class="product-footer">
               <span class="product-price">${{ product.price.toFixed(2) }}</span>
               <button
                 class="btn-add-cart"
-                [disabled]="product.status !== 'AVAILABLE'"
+                [disabled]="product.status !== 'AVAILABLE' || product.stockQuantity <= 0"
                 (click)="addToCart(product)">
                 <i class="feather-shopping-cart"></i>
                 Add to Cart

@@ -57,6 +57,8 @@
                         <a [routerLink]="['/store', item.productId]" class="cart-item-name">
                           {{ item.productName }}
                         </a>
+                        <div class="date-secondary" *ngIf="isItemOutOfStock(item)">Out of stock</div>
+                        <div class="date-secondary" *ngIf="!isItemOutOfStock(item)">{{ item.productStockQuantity }} available</div>
                       </div>
                     </div>
                   </td>
@@ -75,11 +77,12 @@
                       <button
                         class="cart-qty-btn"
                         (click)="onQuantityChange(item, item.quantity + 1)"
-                        [disabled]="updatingItemId === item.id">
+                        [disabled]="updatingItemId === item.id || isItemOutOfStock(item) || isAtStockLimit(item)">
                         <i class="feather-plus"></i>
                       </button>
                     </div>
                     <span *ngIf="updatingItemId === item.id" class="spinner-border spinner-border-sm ms-2 text-primary"></span>
+                    <div class="date-secondary mt-1" *ngIf="isAtStockLimit(item)">Maximum available quantity reached</div>
                   </td>
                   <td>
                     <span class="cart-line-total">${{ formatPrice(item.price * item.quantity) }}</span>
@@ -121,10 +124,17 @@
             </div>
           </div>
 
-          <a routerLink="/checkout" class="btn-proceed">
+          <a
+            routerLink="/checkout"
+            class="btn-proceed"
+            [class.disabled]="hasStockIssue()"
+            [attr.aria-disabled]="hasStockIssue()"
+            [tabIndex]="hasStockIssue() ? -1 : 0"
+            (click)="onProceedToCheckout($event)">
             <i class="feather-credit-card"></i>
             Proceed to Checkout
           </a>
+          <div class="date-secondary mt-2" *ngIf="hasStockIssue()">Resolve out-of-stock items before checkout.</div>
         </div>
       </div>
 

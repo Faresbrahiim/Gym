@@ -9,6 +9,7 @@ export interface BackendProduct {
   name: string;
   description: string | null;
   price: string;
+  stockQuantity: number;
   status: string;
   imagePath: string | null;
   createdAt: string;
@@ -19,6 +20,7 @@ export interface CreateProductDto {
   name: string;
   description?: string | null;
   price: string;
+  stockQuantity: number;
   status?: string;
 }
 
@@ -53,6 +55,7 @@ export class ProductAdminService {
     form.append('name', dto.name);
     form.append('description', dto.description || '');
     form.append('price', dto.price);
+    form.append('stockQuantity', String(dto.stockQuantity));
     form.append('status', dto.status || 'AVAILABLE');
     if (imageFile) {
       form.append('image', imageFile);

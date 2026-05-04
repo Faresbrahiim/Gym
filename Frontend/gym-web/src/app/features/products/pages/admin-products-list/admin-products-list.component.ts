@@ -25,8 +25,8 @@ export class AdminProductsListComponent implements OnInit {
   updatingStatusId: string | null = null;
   searchTerm = signal('');
 
-  newProduct: CreateProductDto = { name: '', description: '', price: '', status: 'AVAILABLE' };
-  editForm:   CreateProductDto = { name: '', description: '', price: '', status: 'AVAILABLE' };
+  newProduct: CreateProductDto = { name: '', description: '', price: '', stockQuantity: 0, status: 'OUT_OF_STOCK' };
+  editForm:   CreateProductDto = { name: '', description: '', price: '', stockQuantity: 0, status: 'OUT_OF_STOCK' };
 
   readonly DEFAULT_IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"%3E%3Crect width="50" height="50" fill="%23f0f0f0"/%3E%3Ctext x="25" y="25" font-size="10" text-anchor="middle" dominant-baseline="middle" fill="%23999"%3ENo Image%3C/text%3E%3C/svg%3E';
   readonly filteredProducts = computed(() => {
@@ -89,7 +89,7 @@ export class AdminProductsListComponent implements OnInit {
 
   openCreateModal(): void {
     this.showCreateModal = true;
-    this.newProduct = { name: '', description: '', price: '', status: 'AVAILABLE' };
+    this.newProduct = { name: '', description: '', price: '', stockQuantity: 0, status: 'OUT_OF_STOCK' };
     this.selectedFile = null;
   }
 
@@ -101,6 +101,11 @@ export class AdminProductsListComponent implements OnInit {
   createProduct(): void {
     if (!this.newProduct.name || !this.newProduct.price) {
       this.toastService.error('Name and price are required');
+      return;
+    }
+
+    if (this.newProduct.stockQuantity < 0) {
+      this.toastService.error('Stock quantity cannot be negative');
       return;
     }
     this.productAdminService.createProduct(this.newProduct, this.selectedFile ?? undefined).subscribe({
@@ -116,13 +121,23 @@ export class AdminProductsListComponent implements OnInit {
 
   startEdit(product: BackendProduct): void {
     this.editingProduct = product;
-    this.editForm = { name: product.name, description: product.description || '', price: product.price, status: product.status };
+    this.editForm = {
+      name: product.name,
+      description: product.description || '',
+      price: product.price,
+      stockQuantity: product.stockQuantity,
+      status: product.status
+    };
   }
 
   cancelEdit(): void { this.editingProduct = null; }
 
   saveEdit(): void {
     if (!this.editingProduct) return;
+    if (this.editForm.stockQuantity < 0) {
+      this.toastService.error('Stock quantity cannot be negative');
+      return;
+    }
     this.productAdminService.updateProduct(this.editingProduct.id, this.editForm).subscribe({
       next:  () => {
         this.cancelEdit();
