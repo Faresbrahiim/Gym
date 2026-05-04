@@ -1,7 +1,7 @@
 package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
-import com.gym.membershipservice.application.port.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,9 +17,9 @@ import java.util.UUID;
 @Tag(name = "Subscription History", description = "Endpoints for viewing subscription history")
 public class SubscriptionHistoryController {
 
-    private final SubscriptionHistoryService historyService;
+    private final SubscriptionHistoryQueryService historyService;
 
-    public SubscriptionHistoryController(SubscriptionHistoryService historyService) {
+    public SubscriptionHistoryController(SubscriptionHistoryQueryService historyService) {
         this.historyService = historyService;
     }
 

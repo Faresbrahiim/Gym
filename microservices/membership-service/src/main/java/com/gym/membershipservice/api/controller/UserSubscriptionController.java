@@ -5,8 +5,11 @@ import com.gym.membershipservice.application.dto.Subscription.SubscriptionReques
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.dto.common.BookingEligibilityResponseDTO;
 import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
+import com.gym.membershipservice.application.port.AdminSubscriptionQueryService;
 import com.gym.membershipservice.application.port.MembershipService;
-import com.gym.membershipservice.application.port.SubscriptionService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryQueryService;
+import com.gym.membershipservice.application.port.UserSubscriptionCommandService;
+import com.gym.membershipservice.application.port.UserSubscriptionQueryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,12 +25,21 @@ import java.util.UUID;
 @Tag(name = "userSubscriptions", description = "User subscription operations")
 public class UserSubscriptionController {
 
-    private final SubscriptionService subscriptionService;
+    private final UserSubscriptionQueryService subscriptionQueryService;
+    private final UserSubscriptionCommandService subscriptionCommandService;
+    private final SubscriptionHistoryQueryService subscriptionHistoryQueryService;
+    private final AdminSubscriptionQueryService adminSubscriptionQueryService;
     private final MembershipService membershipService;
 
-    public UserSubscriptionController(SubscriptionService subscriptionService,
+    public UserSubscriptionController(UserSubscriptionQueryService subscriptionQueryService,
+                                      UserSubscriptionCommandService subscriptionCommandService,
+                                      SubscriptionHistoryQueryService subscriptionHistoryQueryService,
+                                      AdminSubscriptionQueryService adminSubscriptionQueryService,
                                       MembershipService membershipService) {
-        this.subscriptionService = subscriptionService;
+        this.subscriptionQueryService = subscriptionQueryService;
+        this.subscriptionCommandService = subscriptionCommandService;
+        this.subscriptionHistoryQueryService = subscriptionHistoryQueryService;
+        this.adminSubscriptionQueryService = adminSubscriptionQueryService;
         this.membershipService = membershipService;
     }
 
@@ -36,14 +48,14 @@ public class UserSubscriptionController {
     public SubscriptionResponseDTO createSubscription(@AuthenticationPrincipal Jwt jwt,
                                                       @Valid @RequestBody SubscriptionRequestDTO dto) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.createSubscription(userId, dto.getPlanId());
+        return subscriptionCommandService.createSubscription(userId, dto.getPlanId());
     }
 
     @PreAuthorize("hasRole('MEMBER')")
     @GetMapping("/me")
     public List<SubscriptionResponseDTO> getMySubscriptions(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.getUserSubscriptions(userId);
+        return subscriptionQueryService.getUserSubscriptions(userId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -60,7 +72,7 @@ public class UserSubscriptionController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.getUserSubscriptionHistory(userId, page, pageSize);
+        return subscriptionHistoryQueryService.getHistoryForUser(userId, page, pageSize);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -68,7 +80,7 @@ public class UserSubscriptionController {
     public SubscriptionResponseDTO getMySubscription(@AuthenticationPrincipal Jwt jwt,
                                                      @PathVariable UUID subscriptionId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.getUserSubscriptionById(userId, subscriptionId);
+        return subscriptionQueryService.getUserSubscriptionById(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -76,14 +88,14 @@ public class UserSubscriptionController {
     public SubscriptionResponseDTO cancelSubscription(@AuthenticationPrincipal Jwt jwt,
                                                       @PathVariable UUID subscriptionId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.cancelSubscription(userId, subscriptionId);
+        return subscriptionCommandService.cancelSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping("/me/free")
     public SubscriptionResponseDTO activateFree(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.createFreeSubscription(userId);
+        return subscriptionCommandService.createFreeSubscription(userId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -91,7 +103,7 @@ public class UserSubscriptionController {
     public SubscriptionResponseDTO requestPause(@AuthenticationPrincipal Jwt jwt,
                                                 @PathVariable UUID subscriptionId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.pauseSubscription(userId, subscriptionId);
+        return subscriptionCommandService.pauseSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -99,7 +111,7 @@ public class UserSubscriptionController {
     public SubscriptionResponseDTO resumeSubscription(@AuthenticationPrincipal Jwt jwt,
                                                       @PathVariable UUID subscriptionId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.resumeSubscription(userId, subscriptionId);
+        return subscriptionCommandService.resumeSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -107,7 +119,7 @@ public class UserSubscriptionController {
     public SubscriptionResponseDTO renewSubscription(@AuthenticationPrincipal Jwt jwt,
                                                      @PathVariable UUID subscriptionId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.renewSubscription(userId, subscriptionId);
+        return subscriptionCommandService.renewSubscription(userId, subscriptionId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -116,7 +128,7 @@ public class UserSubscriptionController {
                                                        @PathVariable UUID subscriptionId,
                                                        @RequestParam UUID newPlanId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.upgradeSubscription(userId, subscriptionId, newPlanId);
+        return subscriptionCommandService.upgradeSubscription(userId, subscriptionId, newPlanId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -125,7 +137,7 @@ public class UserSubscriptionController {
                                                          @PathVariable UUID subscriptionId,
                                                          @RequestParam UUID newPlanId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.downgradeSubscription(userId, subscriptionId, newPlanId);
+        return subscriptionCommandService.downgradeSubscription(userId, subscriptionId, newPlanId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")
@@ -134,18 +146,18 @@ public class UserSubscriptionController {
                                               @PathVariable UUID subscriptionId,
                                               @RequestParam UUID newPlanId) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        return subscriptionService.changePlan(userId, subscriptionId, newPlanId);
+        return subscriptionCommandService.changePlan(userId, subscriptionId, newPlanId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{subscriptionId}")
     public SubscriptionResponseDTO getSubscription(@PathVariable UUID subscriptionId) {
-        return subscriptionService.getSubscriptionById(subscriptionId);
+        return adminSubscriptionQueryService.getSubscriptionById(subscriptionId);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{subscriptionId}/history")
     public List<SubscriptionHistoryResponseDTO> getHistory(@PathVariable UUID subscriptionId) {
-        return subscriptionService.getSubscriptionHistory(subscriptionId);
+        return subscriptionHistoryQueryService.getHistory(subscriptionId);
     }
 }
