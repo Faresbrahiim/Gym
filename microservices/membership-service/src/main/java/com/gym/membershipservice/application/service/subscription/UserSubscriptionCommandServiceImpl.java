@@ -7,9 +7,11 @@ import com.gym.membershipservice.application.dto.Subscription.SubscriptionRespon
 import com.gym.membershipservice.application.dto.kafka.SubscriptionCreatedEvent;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
+import com.gym.membershipservice.application.enums.PlanCapability;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.mapper.SubscriptionMapper;
+import com.gym.membershipservice.application.port.BookingCleanupService;
 import com.gym.membershipservice.application.port.PlanService;
 import com.gym.membershipservice.application.port.SubscriptionHistoryRecorder;
 import com.gym.membershipservice.application.port.UserSubscriptionCommandService;
@@ -28,6 +30,7 @@ public class UserSubscriptionCommandServiceImpl implements UserSubscriptionComma
     private final SubscriptionRepository subscriptionRepository;
     private final PlanRepository planRepository;
     private final SubscriptionHistoryRecorder historyService;
+    private final BookingCleanupService bookingCleanupService;
     private final PlanService planService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final SubscriptionDomainSupport subscriptionDomainSupport;
@@ -38,12 +41,14 @@ public class UserSubscriptionCommandServiceImpl implements UserSubscriptionComma
     public UserSubscriptionCommandServiceImpl(SubscriptionRepository subscriptionRepository,
                                               PlanRepository planRepository,
                                               SubscriptionHistoryRecorder historyService,
+                                              BookingCleanupService bookingCleanupService,
                                               PlanService planService,
                                               KafkaTemplate<String, Object> kafkaTemplate,
                                               SubscriptionDomainSupport subscriptionDomainSupport) {
         this.subscriptionRepository = subscriptionRepository;
         this.planRepository = planRepository;
         this.historyService = historyService;
+        this.bookingCleanupService = bookingCleanupService;
         this.planService = planService;
         this.kafkaTemplate = kafkaTemplate;
         this.subscriptionDomainSupport = subscriptionDomainSupport;
@@ -136,6 +141,7 @@ public class UserSubscriptionCommandServiceImpl implements UserSubscriptionComma
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, previous, SubscriptionStatus.CANCELLED, null, "Cancelled");
+        cancelFutureSessionBookingsIfNeeded(saved);
 
         return SubscriptionMapper.toDTO(saved);
     }
@@ -217,12 +223,23 @@ public class UserSubscriptionCommandServiceImpl implements UserSubscriptionComma
         return SubscriptionMapper.toDTO(saved);
     }
 
+    private void cancelFutureSessionBookingsIfNeeded(Subscription subscription) {
+        if (hasSessionBookingCapability(subscription.getPlan())) {
+            bookingCleanupService.cancelFutureBookings(subscription.getUserId());
+        }
+    }
+
+    private boolean hasSessionBookingCapability(Plan plan) {
+        return plan.getCapabilities() != null && plan.getCapabilities().contains(PlanCapability.SESSION_BOOKING);
+    }
+
     @Override
     @Transactional
     public SubscriptionResponseDTO changePlan(UUID userId, UUID subscriptionId, UUID newPlanId) {
         subscriptionDomainSupport.findOwnedAndAutoExpire(userId, subscriptionId);
         Subscription sub = subscriptionDomainSupport.findAndAutoExpire(subscriptionId);
         subscriptionDomainSupport.ensurePlanStatusAllowsChange(sub);
+        boolean hadSessionBooking = hasSessionBookingCapability(sub.getPlan());
 
         Plan newPlan = planRepository.findById(newPlanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan not found"));
@@ -259,6 +276,10 @@ public class UserSubscriptionCommandServiceImpl implements UserSubscriptionComma
                 activateImmediately
                         ? "Plan changed from " + oldPlanName + " to " + newPlan.getName()
                         : "Plan change requested from " + oldPlanName + " to " + newPlan.getName() + " - awaiting payment");
+
+        if (activateImmediately && hadSessionBooking && !hasSessionBookingCapability(newPlan)) {
+            bookingCleanupService.cancelFutureBookings(saved.getUserId());
+        }
 
         return SubscriptionMapper.toDTO(saved);
     }

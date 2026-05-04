@@ -129,7 +129,7 @@ export class SessionsBrowseComponent implements OnInit {
     }
 
     if (!this.bookingEligible()) {
-      return 'Paid Plan Required';
+      return 'Upgrade to Unlock';
     }
 
     if (session.isFull) {

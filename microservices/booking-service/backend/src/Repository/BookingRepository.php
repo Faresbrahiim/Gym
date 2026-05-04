@@ -29,6 +29,11 @@ class BookingRepository extends ServiceEntityRepository
         }
     }
 
+    public function flush(): void
+    {
+        $this->getEntityManager()->flush();
+    }
+
     public function findActiveBySessionAndUser(Uuid $sessionId, Uuid $userId): ?Booking
     {
         return $this->createQueryBuilder('b')
@@ -51,6 +56,22 @@ class BookingRepository extends ServiceEntityRepository
             ->setParameter('userId', $userId, UuidType::NAME)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /** @return Booking[] */
+    public function findFutureActiveByUser(Uuid $userId, \DateTimeImmutable $now): array
+    {
+        return $this->createQueryBuilder('b')
+            ->addSelect('s')
+            ->innerJoin('b.session', 's')
+            ->where('b.userId = :userId')
+            ->andWhere('b.status IN (:activeStatuses)')
+            ->andWhere('s.startTime > :now')
+            ->setParameter('userId', $userId, UuidType::NAME)
+            ->setParameter('activeStatuses', [BookingStatus::PENDING->value, BookingStatus::ACCEPTED->value])
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
     }
 
     public function countAcceptedBySession(Uuid $sessionId): int
@@ -99,13 +120,15 @@ class BookingRepository extends ServiceEntityRepository
     }
 
     /** @return Booking[] */
-    public function findBySessionPaginated(Uuid $sessionId, int $page, int $pageSize): array
+    public function findBySessionPaginated(Uuid $sessionId, int $page, int $pageSize, \DateTimeImmutable $now): array
     {
         return $this->createQueryBuilder('b')
             ->addSelect('s')
             ->innerJoin('b.session', 's')
             ->where('IDENTITY(b.session) = :sessionId')
+            ->andWhere('s.endTime > :now')
             ->setParameter('sessionId', $sessionId, UuidType::NAME)
+            ->setParameter('now', $now)
             ->orderBy('b.createdAt', 'DESC')
             ->setFirstResult(($page - 1) * $pageSize)
             ->setMaxResults($pageSize)
@@ -113,24 +136,29 @@ class BookingRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function countBySession(Uuid $sessionId): int
+    public function countBySession(Uuid $sessionId, \DateTimeImmutable $now): int
     {
         return (int) $this->createQueryBuilder('b')
             ->select('COUNT(b.id)')
+            ->innerJoin('b.session', 's')
             ->where('IDENTITY(b.session) = :sessionId')
+            ->andWhere('s.endTime > :now')
             ->setParameter('sessionId', $sessionId, UuidType::NAME)
+            ->setParameter('now', $now)
             ->getQuery()
             ->getSingleScalarResult();
     }
 
     /** @return Booking[] */
-    public function findByUserPaginated(Uuid $userId, int $page, int $pageSize): array
+    public function findByUserPaginated(Uuid $userId, int $page, int $pageSize, \DateTimeImmutable $now): array
     {
         return $this->createQueryBuilder('b')
             ->addSelect('s')
             ->innerJoin('b.session', 's')
             ->where('b.userId = :userId')
+            ->andWhere('s.endTime > :now')
             ->setParameter('userId', $userId, UuidType::NAME)
+            ->setParameter('now', $now)
             ->orderBy('b.createdAt', 'DESC')
             ->setFirstResult(($page - 1) * $pageSize)
             ->setMaxResults($pageSize)
@@ -138,12 +166,15 @@ class BookingRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function countByUser(Uuid $userId): int
+    public function countByUser(Uuid $userId, \DateTimeImmutable $now): int
     {
         return (int) $this->createQueryBuilder('b')
             ->select('COUNT(b.id)')
+            ->innerJoin('b.session', 's')
             ->where('b.userId = :userId')
+            ->andWhere('s.endTime > :now')
             ->setParameter('userId', $userId, UuidType::NAME)
+            ->setParameter('now', $now)
             ->getQuery()
             ->getSingleScalarResult();
     }

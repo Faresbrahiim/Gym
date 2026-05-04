@@ -38,7 +38,7 @@
           </div>
 
           <div class="account-deck__utility">
-            @for (item of utilityItems; track item.label) {
+            @for (item of visibleUtilityItems; track item.label) {
               @if (item.disabled) {
                 <span class="utility-chip utility-chip--disabled" aria-disabled="true">
                   <span class="utility-chip__icon-wrap">

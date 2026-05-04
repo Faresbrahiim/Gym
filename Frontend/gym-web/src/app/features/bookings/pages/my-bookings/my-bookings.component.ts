@@ -11,6 +11,7 @@ import { BookingStatusBadgeComponent } from '../../components/booking-status-bad
 import { DashboardMenuComponent } from '../../../../shared/components/dashboard-menu/dashboard-menu.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { PaginationBarComponent } from '../../../../shared/components/pagination-bar/pagination-bar.component';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-my-bookings',
@@ -21,6 +22,7 @@ import { PaginationBarComponent } from '../../../../shared/components/pagination
 })
 export class MyBookingsComponent implements OnInit {
   private readonly bookingService = inject(BookingService);
+  private readonly toastService   = inject(ToastService);
   private readonly destroyRef     = inject(DestroyRef);
 
   bookings      = signal<MemberBookingResponse[]>([]);
@@ -29,6 +31,7 @@ export class MyBookingsComponent implements OnInit {
   currentPage   = signal(1);
   totalItems    = signal(0);
   totalPages    = signal(0);
+  actionInProgress = signal<string | null>(null);
 
   readonly pageSize = 10;
   readonly pendingCount = computed(() =>
@@ -39,6 +42,9 @@ export class MyBookingsComponent implements OnInit {
   );
   readonly declinedCount = computed(() =>
     this.bookings().filter(booking => booking.status === BookingStatus.DECLINED).length
+  );
+  readonly cancelledCount = computed(() =>
+    this.bookings().filter(booking => booking.status === BookingStatus.CANCELLED).length
   );
 
   ngOnInit(): void {
@@ -73,5 +79,38 @@ export class MyBookingsComponent implements OnInit {
     if (page === this.currentPage()) return;
     this.currentPage.set(page);
     this.loadBookings();
+  }
+
+  canCancel(booking: MemberBookingResponse): boolean {
+    if (![BookingStatus.PENDING, BookingStatus.ACCEPTED].includes(booking.status)) {
+      return false;
+    }
+
+    return new Date(booking.startTime).getTime() > Date.now();
+  }
+
+  cancelBooking(bookingId: string): void {
+    if (this.actionInProgress()) return;
+    this.actionInProgress.set(bookingId);
+
+    this.bookingService.cancelMyBooking(bookingId)
+      .pipe(
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+        catchError(err => {
+          const msg = err?.error?.error ?? 'Could not cancel booking.';
+          this.toastService.error(msg);
+          this.actionInProgress.set(null);
+          return of(null);
+        })
+      )
+      .subscribe(updated => {
+        if (!updated) return;
+        this.bookings.update(list =>
+          list.map(booking => booking.id === bookingId ? updated : booking)
+        );
+        this.toastService.success('Booking cancelled.');
+        this.actionInProgress.set(null);
+      });
   }
 }

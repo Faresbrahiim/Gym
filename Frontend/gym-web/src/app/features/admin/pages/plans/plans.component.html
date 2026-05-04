@@ -189,7 +189,7 @@
       <div class="form-row-2">
         <div class="form-group">
           <label class="form-label">Price ($) <span class="required">*</span></label>
-          <input type="number" class="form-ctrl" [(ngModel)]="form.price" min="0" step="0.01" placeholder="0.00" />
+          <input type="number" class="form-ctrl" [(ngModel)]="form.price" (ngModelChange)="onPriceChanged($event)" min="0" step="0.01" placeholder="0.00" />
           <span class="form-hint">Set to 0 for a free plan</span>
         </div>
         <div class="form-group">
@@ -205,6 +205,27 @@
           <span>{{ paidPlanLimitMessage() }}</span>
         </div>
       }
+
+      <div class="form-group">
+        <label class="form-label">Premium Access</label>
+        <div class="capability-grid">
+          @for (capability of capabilityOptions; track capability.value) {
+            <label class="capability-option" [class.capability-option--disabled]="!isPaid(form.price)">
+              <input
+                type="checkbox"
+                [checked]="hasCapability(capability.value)"
+                [disabled]="!isPaid(form.price)"
+                (change)="toggleCapability(capability.value, $any($event.target).checked)"
+              />
+              <span class="capability-option__copy">
+                <strong>{{ capability.label }}</strong>
+                <small>{{ capability.description }}</small>
+              </span>
+            </label>
+          }
+        </div>
+        <span class="form-hint">{{ capabilityHint() }}</span>
+      </div>
 
       <div class="form-group mt-3">
         <div class="d-flex justify-content-between align-items-center mb-2">

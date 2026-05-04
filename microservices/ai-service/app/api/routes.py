@@ -4,7 +4,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.api.dependencies import get_coach_service, get_feedback_service, get_history_service
+from app.api.dependencies import (
+    get_coach_service,
+    get_feedback_service,
+    get_history_service,
+    require_ai_coach_access,
+)
 from app.schemas.feedback import FeedbackRequest, FeedbackResponse
 from app.schemas.recommendations import (
     HealthResponse,
@@ -27,6 +32,7 @@ async def health() -> HealthResponse:
 @router.post("/recommend", response_model=RecommendationResponse)
 async def recommend(
     request: RecommendRequest,
+    _: None = Depends(require_ai_coach_access),
     coach_service: CoachService = Depends(get_coach_service),
 ) -> RecommendationResponse:
     try:
@@ -44,6 +50,7 @@ async def recommend(
 async def history(
     user_id: UUID = Query(...),
     limit: int = Query(20, ge=1, le=100),
+    _: None = Depends(require_ai_coach_access),
     history_service: RecommendationHistoryService = Depends(get_history_service),
 ) -> RecommendationHistoryResponse:
     try:
@@ -56,6 +63,7 @@ async def history(
 async def submit_feedback(
     recommendation_id: UUID,
     request: FeedbackRequest,
+    _: None = Depends(require_ai_coach_access),
     feedback_service: FeedbackService = Depends(get_feedback_service),
 ) -> FeedbackResponse:
     try:

@@ -32,7 +32,7 @@ class AdminPlanControllerTest {
     @BeforeEach
     void setUp() {
         planId = UUID.randomUUID();
-        responseDTO = new PlanResponseDTO(planId, "Gold", "Gold plan", 99.99, 30, "ACTIVE", new java.util.ArrayList<>());
+        responseDTO = new PlanResponseDTO(planId, "Gold", "Gold plan", 99.99, 30, "ACTIVE", new java.util.ArrayList<>(), new java.util.ArrayList<>());
     }
 
     // ── createPlan ──────────────────────────────────
@@ -62,7 +62,7 @@ class AdminPlanControllerTest {
         updateRequest.setPrice(120.0);
         updateRequest.setDurationInDays(60);
 
-        PlanResponseDTO updated = new PlanResponseDTO(planId, "Gold Updated", "desc", 120.0, 60, "ACTIVE", new java.util.ArrayList<>());
+        PlanResponseDTO updated = new PlanResponseDTO(planId, "Gold Updated", "desc", 120.0, 60, "ACTIVE", new java.util.ArrayList<>(), new java.util.ArrayList<>());
         when(service.updatePlan(planId, updateRequest)).thenReturn(updated);
 
         PlanResponseDTO result = controller.updatePlan(planId, updateRequest);
@@ -111,7 +111,7 @@ class AdminPlanControllerTest {
 
     @Test
     void enablePlan_returnsEnabledPlan() {
-        PlanResponseDTO enabled = new PlanResponseDTO(planId, "Gold", "desc", 99.99, 30, "ACTIVE", new java.util.ArrayList<>());
+        PlanResponseDTO enabled = new PlanResponseDTO(planId, "Gold", "desc", 99.99, 30, "ACTIVE", new java.util.ArrayList<>(), new java.util.ArrayList<>());
         when(service.enablePlan(planId)).thenReturn(enabled);
 
         PlanResponseDTO result = controller.enablePlan(planId);

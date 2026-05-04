@@ -17,7 +17,8 @@ public class PlanMapper {
                 plan.getPrice(),
                 plan.getDurationInDays(),
                 plan.getStatus().name(),
-                plan.getFeatures()
+                plan.getFeatures(),
+                plan.getCapabilities().stream().map(Enum::name).toList()
         );
     }
 

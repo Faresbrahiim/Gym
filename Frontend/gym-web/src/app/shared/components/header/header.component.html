@@ -54,12 +54,14 @@
                 <span>Chat</span>
               </a>
             </li>
-            <li routerLinkActive="active">
-              <a routerLink="/ai-coach" class="chat-nav-link">
-                <i class="feather-cpu"></i>
-                <span>AI Coach</span>
-              </a>
-            </li>
+            @if (canUseAiCoach) {
+              <li routerLinkActive="active">
+                <a routerLink="/ai-coach" class="chat-nav-link">
+                  <i class="feather-cpu"></i>
+                  <span>AI Coach</span>
+                </a>
+              </li>
+            }
           }
           <li routerLinkActive="active">
             <a routerLink="/workouts">Workouts</a>

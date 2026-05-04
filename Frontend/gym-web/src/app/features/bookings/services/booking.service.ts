@@ -34,6 +34,10 @@ export class BookingService {
     });
   }
 
+  cancelMyBooking(bookingId: string): Observable<MemberBookingResponse> {
+    return this.apiService.put<MemberBookingResponse>(`/api/me/bookings/${bookingId}/cancel`, {});
+  }
+
   // ── Coach ──────────────────────────────────────────────────────────────────
 
   createSession(request: CreateSessionRequest): Observable<SessionResponse> {

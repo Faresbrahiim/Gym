@@ -64,6 +64,7 @@ services:
                 - "http://localhost:4200"
               methods:
                 - GET
+                - PUT
                 - OPTIONS
               headers:
                 - Authorization
@@ -825,6 +826,7 @@ services:
                 - "http://localhost:4200"
               methods:
                 - GET
+                - PUT
                 - OPTIONS
               headers:
                 - Authorization
@@ -859,6 +861,7 @@ services:
                 - "http://localhost:4200"
               methods:
                 - GET
+                - PUT
                 - OPTIONS
               headers:
                 - Authorization

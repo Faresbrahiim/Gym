@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Contract\Service\Booking\BookingQueryServiceInterface;
+use App\Contract\Service\Booking\CoachBookingModerationServiceInterface;
+use App\Contract\Service\Session\SessionCommandServiceInterface;
+use App\Contract\Service\Session\SessionQueryServiceInterface;
 use App\DTO\Request\CreateSessionRequest;
 use App\Mapper\BookingMapper;
 use App\Mapper\SessionMapper;
 use App\Security\JwtUser;
-use App\Service\BookingService;
-use App\Service\SessionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,8 +25,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class CoachSessionController extends AbstractController
 {
     public function __construct(
-        private readonly SessionService $sessionService,
-        private readonly BookingService $bookingService,
+        private readonly SessionCommandServiceInterface $sessionCommandService,
+        private readonly SessionQueryServiceInterface $sessionQueryService,
+        private readonly BookingQueryServiceInterface $bookingQueryService,
+        private readonly CoachBookingModerationServiceInterface $coachBookingModerationService,
     ) {}
 
     #[Route('/sessions', methods: ['POST'])]
@@ -32,7 +36,7 @@ final class CoachSessionController extends AbstractController
     {
         /** @var JwtUser $user */
         $user    = $this->getUser();
-        $session = $this->sessionService->createSession($dto, $user->getUserId());
+        $session = $this->sessionCommandService->createSession($dto, $user->getUserId());
 
         return $this->json(SessionMapper::toResponse($session), Response::HTTP_CREATED);
     }
@@ -45,7 +49,7 @@ final class CoachSessionController extends AbstractController
         $page     = max(1, (int) $request->query->get('page', 1));
         $pageSize = min(50, max(1, (int) $request->query->get('pageSize', 20)));
 
-        $data = $this->sessionService->getCoachSessions($user->getUserId(), $page, $pageSize);
+        $data = $this->sessionQueryService->getCoachSessions($user->getUserId(), $page, $pageSize);
 
         return $this->json(SessionMapper::toPagedResponse($data['items'], $data['total'], $page, $pageSize, $data['acceptedCounts']));
     }
@@ -58,7 +62,7 @@ final class CoachSessionController extends AbstractController
         $page     = max(1, (int) $request->query->get('page', 1));
         $pageSize = min(50, max(1, (int) $request->query->get('pageSize', 20)));
 
-        $data = $this->bookingService->getSessionBookings($id, $user->getUserId(), $page, $pageSize);
+        $data = $this->bookingQueryService->getSessionBookings($id, $user->getUserId(), $page, $pageSize);
 
         return $this->json(BookingMapper::toPagedCoachResponse($data['items'], $data['total'], $page, $pageSize));
     }
@@ -68,7 +72,7 @@ final class CoachSessionController extends AbstractController
     {
         /** @var JwtUser $user */
         $user    = $this->getUser();
-        $booking = $this->bookingService->acceptBooking($id, $user->getUserId());
+        $booking = $this->coachBookingModerationService->acceptBooking($id, $user->getUserId());
 
         return $this->json(BookingMapper::toCoachResponse($booking));
     }
@@ -78,7 +82,7 @@ final class CoachSessionController extends AbstractController
     {
         /** @var JwtUser $user */
         $user    = $this->getUser();
-        $booking = $this->bookingService->declineBooking($id, $user->getUserId());
+        $booking = $this->coachBookingModerationService->declineBooking($id, $user->getUserId());
 
         return $this->json(BookingMapper::toCoachResponse($booking));
     }

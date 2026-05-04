@@ -6,4 +6,5 @@ export interface Plan {
   durationInDays: number | null;
   status: 'ACTIVE' | 'INACTIVE' | string;
   features?: string[];
+  capabilities?: string[];
 }

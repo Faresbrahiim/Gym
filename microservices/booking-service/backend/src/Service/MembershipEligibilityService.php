@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Contract\Service\MembershipEligibilityServiceInterface;
 use App\DTO\External\BookingEligibilityDto;
 use App\Security\CurrentBearerTokenProvider;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -12,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final class MembershipEligibilityService
+final class MembershipEligibilityService implements MembershipEligibilityServiceInterface
 {
     public function __construct(
         #[Autowire(service: 'membership_service.client')]

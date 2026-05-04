@@ -6,6 +6,7 @@ import { Subscription } from '../models/subscription.model';
 import { SubscriptionHistoryEntry } from '../models/subscription-history-entry.model';
 import { ACTIVE_STATUSES } from '../models/subscription-status.enum';
 import { PagedResponse } from '../../../core/models/paged-response.model';
+import { MembershipEntitlementsService } from './membership-entitlements.service';
 
 @Injectable({ providedIn: 'root' })
 export class MembershipService {
@@ -13,6 +14,7 @@ export class MembershipService {
   private readonly BASE = '/api/subscriptions';
 
   private readonly api = inject(ApiService);
+  private readonly entitlementsService = inject(MembershipEntitlementsService);
 
   // Cached state — pages subscribe here; invalidated after every mutation.
   readonly currentSubscription$ = new BehaviorSubject<Subscription | null>(null);
@@ -106,5 +108,6 @@ export class MembershipService {
   // Call after any mutation to signal that the next read should re-fetch.
   invalidate(): void {
     this.currentSubscription$.next(null);
+    this.entitlementsService.invalidate();
   }
 }

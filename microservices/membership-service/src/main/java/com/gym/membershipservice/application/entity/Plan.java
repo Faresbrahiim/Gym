@@ -1,5 +1,6 @@
 package com.gym.membershipservice.application.entity;
 
+import com.gym.membershipservice.application.enums.PlanCapability;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -30,6 +31,12 @@ public class Plan {
     @Column(name = "feature")
     private List<String> features = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "plan_capabilities", joinColumns = @JoinColumn(name = "plan_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "capability")
+    private List<PlanCapability> capabilities = new ArrayList<>();
+
     @Column(nullable = false)
     private Double price;
 
@@ -55,6 +62,9 @@ public class Plan {
 
     public List<String> getFeatures() { return features; }
     public void setFeatures(List<String> features) { this.features = features; }
+
+    public List<PlanCapability> getCapabilities() { return capabilities; }
+    public void setCapabilities(List<PlanCapability> capabilities) { this.capabilities = capabilities; }
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }

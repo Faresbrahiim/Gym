@@ -5,6 +5,19 @@
       <h1>Session required</h1>
       <p>Please log in again so Coach IA can load your profile context and saved history.</p>
     </section>
+  } @else if (isLoadingEntitlements) {
+    <section class="coach-state">
+      <span class="coach-state__icon">AI</span>
+      <h1>Checking your access</h1>
+      <p>We’re verifying whether your current membership plan includes AI Coach.</p>
+    </section>
+  } @else if (showLockedState) {
+    <section class="coach-state">
+      <span class="coach-state__icon">AI</span>
+      <h1>AI Coach is locked on your current plan</h1>
+      <p>{{ aiCoachReason || 'Your current membership plan does not include AI Coach.' }}</p>
+      <a routerLink="/membership/plans" class="coach-state__cta">View Membership Plans</a>
+    </section>
   } @else {
     <div class="coach-app">
       <aside class="sidebar" [class.sidebar--closed]="!sidebarOpen">

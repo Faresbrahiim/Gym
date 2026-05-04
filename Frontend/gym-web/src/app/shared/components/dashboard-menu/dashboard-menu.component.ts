@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TokenService } from '../../../core/auth/token.service';
+import { MembershipEntitlementsService } from '../../../features/membership/services/membership-entitlements.service';
 
 interface DashboardMenuItem {
   label: string;
@@ -19,8 +20,9 @@ interface DashboardMenuItem {
   templateUrl: './dashboard-menu.component.html',
   styleUrl: './dashboard-menu.component.css'
 })
-export class DashboardMenuComponent {
+export class DashboardMenuComponent implements OnInit {
   private readonly tokenService = inject(TokenService);
+  private readonly membershipEntitlementsService = inject(MembershipEntitlementsService);
 
   private readonly allPrimaryItems: DashboardMenuItem[] = [
     { label: 'Profile', route: '/profile', icon: 'assets/img/icons/profile-icon.svg', exact: true },
@@ -34,9 +36,14 @@ export class DashboardMenuComponent {
 
   readonly utilityItems: DashboardMenuItem[] = [
     { label: 'Dashboard', route: '/home', icon: 'assets/img/icons/dashboard-icon.svg', exact: true },
-    { label: 'Chat', route: '/chat', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' },
-    { label: 'AI Coach', route: '/ai-coach', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' }
+    { label: 'Chat', route: '/chat', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' }
   ];
+
+  ngOnInit(): void {
+    if (this.canAccessMembershipArea) {
+      this.membershipEntitlementsService.load().subscribe({ error: () => undefined });
+    }
+  }
 
   get canAccessMembershipArea(): boolean {
     return this.tokenService.getRole() === 'MEMBER';
@@ -86,5 +93,16 @@ export class DashboardMenuComponent {
     }
 
     return 'Manage your profile, orders, and activity from one place.';
+  }
+
+  get visibleUtilityItems(): DashboardMenuItem[] {
+    if (this.canAccessMembershipArea) {
+      return [
+        ...this.utilityItems,
+        { label: 'AI Coach', route: '/ai-coach', icon: 'assets/img/icons/chat-icon.svg', tone: 'accent' }
+      ];
+    }
+
+    return this.utilityItems;
   }
 }

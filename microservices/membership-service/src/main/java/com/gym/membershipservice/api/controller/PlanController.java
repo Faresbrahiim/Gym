@@ -1,7 +1,7 @@
 package com.gym.membershipservice.api.controller;
 
-import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
+import com.gym.membershipservice.application.port.PlanService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +13,9 @@ import java.util.UUID;
 @Tag(name = "Plans", description = "Public endpoints for gym plans")
 public class PlanController {
 
-    private final PlanServiceImpl service;
+    private final PlanService service;
 
-    public PlanController(PlanServiceImpl service) {
+    public PlanController(PlanService service) {
         this.service = service;
     }
 

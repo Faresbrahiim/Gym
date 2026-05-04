@@ -9,6 +9,7 @@ export interface PlanCreateDTO {
   price: number;
   durationInDays: number | null;
   features?: string[];
+  capabilities?: string[];
 }
 
 export interface PlanUpdateDTO {
@@ -18,6 +19,7 @@ export interface PlanUpdateDTO {
   durationInDays: number | null;
   status: 'ACTIVE' | 'INACTIVE' | null;
   features?: string[];
+  capabilities?: string[];
 }
 
 @Injectable({ providedIn: 'root' })

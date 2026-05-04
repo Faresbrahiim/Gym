@@ -4,6 +4,7 @@ import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistor
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionRequestDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.dto.common.BookingEligibilityResponseDTO;
+import com.gym.membershipservice.application.dto.common.MembershipEntitlementsResponseDTO;
 import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.port.AdminSubscriptionQueryService;
 import com.gym.membershipservice.application.port.MembershipService;
@@ -63,6 +64,13 @@ public class UserSubscriptionController {
     public BookingEligibilityResponseDTO getMyBookingEligibility(@AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return membershipService.getBookingEligibility(userId);
+    }
+
+    @PreAuthorize("hasRole('MEMBER')")
+    @GetMapping("/me/entitlements")
+    public MembershipEntitlementsResponseDTO getMyEntitlements(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return membershipService.getEntitlements(userId);
     }
 
     @PreAuthorize("hasRole('MEMBER')")

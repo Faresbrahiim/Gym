@@ -4,9 +4,11 @@ import com.gym.membershipservice.api.exception.BadRequestException;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
+import com.gym.membershipservice.application.enums.PlanCapability;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.mapper.SubscriptionMapper;
 import com.gym.membershipservice.application.port.AdminSubscriptionCommandService;
+import com.gym.membershipservice.application.port.BookingCleanupService;
 import com.gym.membershipservice.application.port.SubscriptionHistoryRecorder;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.stereotype.Service;
@@ -20,13 +22,16 @@ public class AdminSubscriptionCommandServiceImpl implements AdminSubscriptionCom
 
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionHistoryRecorder historyService;
+    private final BookingCleanupService bookingCleanupService;
     private final SubscriptionDomainSupport subscriptionDomainSupport;
 
     public AdminSubscriptionCommandServiceImpl(SubscriptionRepository subscriptionRepository,
                                                SubscriptionHistoryRecorder historyService,
+                                               BookingCleanupService bookingCleanupService,
                                                SubscriptionDomainSupport subscriptionDomainSupport) {
         this.subscriptionRepository = subscriptionRepository;
         this.historyService = historyService;
+        this.bookingCleanupService = bookingCleanupService;
         this.subscriptionDomainSupport = subscriptionDomainSupport;
     }
 
@@ -53,6 +58,7 @@ public class AdminSubscriptionCommandServiceImpl implements AdminSubscriptionCom
 
         Subscription saved = subscriptionRepository.save(sub);
         historyService.recordChange(saved, previous, SubscriptionStatus.CANCELLED, null, "Cancelled");
+        cancelFutureSessionBookingsIfNeeded(saved);
 
         return SubscriptionMapper.toDTO(saved);
     }
@@ -171,5 +177,12 @@ public class AdminSubscriptionCommandServiceImpl implements AdminSubscriptionCom
         historyService.recordChange(saved, previous, SubscriptionStatus.ACTIVE, null, "Pause rejected");
 
         return SubscriptionMapper.toDTO(saved);
+    }
+
+    private void cancelFutureSessionBookingsIfNeeded(Subscription subscription) {
+        Plan plan = subscription.getPlan();
+        if (plan.getCapabilities() != null && plan.getCapabilities().contains(PlanCapability.SESSION_BOOKING)) {
+            bookingCleanupService.cancelFutureBookings(subscription.getUserId());
+        }
     }
 }
