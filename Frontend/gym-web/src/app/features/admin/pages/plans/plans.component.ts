@@ -24,6 +24,7 @@ interface PlanForm {
   styleUrl: './plans.component.css'
 })
 export class PlansComponent implements OnInit {
+  private static readonly MAX_ACTIVE_PAID_PLANS = 3;
 
   @ViewChild('confirmModal') confirmModal!: ConfirmModalComponent;
 
@@ -50,6 +51,8 @@ export class PlansComponent implements OnInit {
   activeCount   = computed(() => this.plans().filter(p => p.status === 'ACTIVE').length);
   inactiveCount = computed(() => this.plans().filter(p => p.status === 'INACTIVE').length);
   freeCount     = computed(() => this.plans().filter(p => p.price === 0).length);
+  activePaidCount = computed(() => this.plans().filter(p => p.status === 'ACTIVE' && this.isPaid(p.price)).length);
+  paidPlanLimitReached = computed(() => this.activePaidCount() >= PlansComponent.MAX_ACTIVE_PAID_PLANS);
 
   // ── Create / Edit modal ──────────────────────────────────────────────
   showFormModal = signal(false);
@@ -121,6 +124,12 @@ export class PlansComponent implements OnInit {
   saveForm(): void {
     if (!this.form.name.trim()) return;
     const editing = this.editingPlan();
+
+    if (this.wouldExceedPaidPlanLimit(editing)) {
+      this.toastService.info(this.paidPlanLimitMessage());
+      return;
+    }
+
     this.formSaving.set(true);
 
     if (editing) {
@@ -200,6 +209,11 @@ export class PlansComponent implements OnInit {
 
   // ── Actions ──────────────────────────────────────────────────────────
   onToggleEnable(plan: Plan): void {
+    if (plan.status === 'INACTIVE' && this.isPaid(plan.price) && this.paidPlanLimitReached()) {
+      this.toastService.info(this.paidPlanLimitMessage());
+      return;
+    }
+
     const label   = plan.status === 'ACTIVE' ? 'Disable' : 'Enable';
     const message = plan.status === 'ACTIVE'
       ? `Disable the "${plan.name}" plan? Members won't be able to subscribe to it.`
@@ -266,5 +280,32 @@ export class PlansComponent implements OnInit {
     if (days % 365 === 0) return `${days / 365} year${days / 365 > 1 ? 's' : ''}`;
     if (days % 30 === 0)  return `${days / 30} month${days / 30 > 1 ? 's' : ''}`;
     return `${days} day${days > 1 ? 's' : ''}`;
+  }
+
+  paidPlanLimitMessage(): string {
+    return 'You already have 3 active paid plans. Disable or delete one before adding or reactivating another.';
+  }
+
+  shouldShowPaidPlanLimitInForm(): boolean {
+    return this.paidPlanLimitReached() && this.isPaid(this.form.price) && this.wouldExceedPaidPlanLimit(this.editingPlan());
+  }
+
+  private wouldExceedPaidPlanLimit(editing: Plan | null): boolean {
+    const targetStatus = editing?.status ?? 'ACTIVE';
+    const targetIsActivePaid = targetStatus === 'ACTIVE' && this.isPaid(this.form.price);
+    if (!targetIsActivePaid) {
+      return false;
+    }
+
+    const currentIsActivePaid = !!editing && editing.status === 'ACTIVE' && this.isPaid(editing.price);
+    if (currentIsActivePaid) {
+      return false;
+    }
+
+    return this.activePaidCount() >= PlansComponent.MAX_ACTIVE_PAID_PLANS;
+  }
+
+  private isPaid(price: number | null | undefined): boolean {
+    return (price ?? 0) > 0;
   }
 }

@@ -42,14 +42,13 @@ class PlanServiceImplTest {
 
     @Test
     void shouldCreatePlanSuccessfully() {
-        System.out.println("test4"); ;
-
         PlanRequestDTO dto = new PlanRequestDTO();
         dto.setName("Premium");
         dto.setPrice(100.0);
         dto.setDurationInDays(30);
 
         when(repository.existsByName("Premium")).thenReturn(false);
+        when(repository.countByStatusAndPriceGreaterThan(PlanStatus.ACTIVE, 0.0)).thenReturn(2L);
 
         Plan savedPlan = new Plan();
         savedPlan.setId(planId);
@@ -65,7 +64,6 @@ class PlanServiceImplTest {
 
     @Test
     void shouldThrowConflictIfPlanNameExists() {
-        System.out.println("test4"); ;
         PlanRequestDTO dto = new PlanRequestDTO();
         dto.setName("Premium");
         dto.setPrice(100.0);
@@ -79,8 +77,6 @@ class PlanServiceImplTest {
 
     @Test
     void shouldThrowBadRequestIfPriceNegative() {
-        System.out.println("test4"); ;
-
         PlanRequestDTO dto = new PlanRequestDTO();
         dto.setName("Premium");
         dto.setPrice(-10.0);
@@ -90,17 +86,34 @@ class PlanServiceImplTest {
                 () -> planService.createPlan(dto));
     }
 
+    @Test
+    void shouldRejectCreatingFourthActivePaidPlan() {
+        PlanRequestDTO dto = new PlanRequestDTO();
+        dto.setName("Premium");
+        dto.setPrice(100.0);
+        dto.setDurationInDays(30);
+
+        when(repository.existsByName("Premium")).thenReturn(false);
+        when(repository.countByStatusAndPriceGreaterThan(PlanStatus.ACTIVE, 0.0)).thenReturn(3L);
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> planService.createPlan(dto));
+
+        assertTrue(ex.getMessage().contains("3 active paid plans"));
+        verify(repository, never()).save(any(Plan.class));
+    }
+
     // =========================
     // UPDATE PLAN TEST
     // =========================
 
     @Test
     void shouldUpdatePlanSuccessfully() {
-        System.out.println("test4"); ;
-
         Plan existing = new Plan();
         existing.setId(planId);
         existing.setName("Basic");
+        existing.setPrice(120.0);
+        existing.setStatus(PlanStatus.ACTIVE);
 
         when(repository.findById(planId)).thenReturn(Optional.of(existing));
 
@@ -117,5 +130,48 @@ class PlanServiceImplTest {
 
         assertNotNull(result);
         verify(repository).save(existing);
+    }
+
+    @Test
+    void shouldRejectReactivatingPaidPlanWhenThreeActivePaidPlansExist() {
+        Plan existing = new Plan();
+        existing.setId(planId);
+        existing.setName("Silver");
+        existing.setPrice(80.0);
+        existing.setStatus(PlanStatus.INACTIVE);
+
+        when(repository.findById(planId)).thenReturn(Optional.of(existing));
+        when(repository.countByStatusAndPriceGreaterThan(PlanStatus.ACTIVE, 0.0)).thenReturn(3L);
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> planService.enablePlan(planId));
+
+        assertTrue(ex.getMessage().contains("3 active paid plans"));
+        verify(repository, never()).save(any(Plan.class));
+    }
+
+    @Test
+    void shouldRejectUpdatingInactiveFreePlanIntoFourthActivePaidPlan() {
+        Plan existing = new Plan();
+        existing.setId(planId);
+        existing.setName("Trial");
+        existing.setPrice(0.0);
+        existing.setStatus(PlanStatus.INACTIVE);
+
+        when(repository.findById(planId)).thenReturn(Optional.of(existing));
+        when(repository.existsByName("Gold")).thenReturn(false);
+        when(repository.countByStatusAndPriceGreaterThan(PlanStatus.ACTIVE, 0.0)).thenReturn(3L);
+
+        PlanUpdateRequestDTO dto = new PlanUpdateRequestDTO();
+        dto.setName("Gold");
+        dto.setPrice(120.0);
+        dto.setDurationInDays(30);
+        dto.setStatus(PlanStatus.ACTIVE);
+
+        BadRequestException ex = assertThrows(BadRequestException.class,
+                () -> planService.updatePlan(planId, dto));
+
+        assertTrue(ex.getMessage().contains("3 active paid plans"));
+        verify(repository, never()).save(any(Plan.class));
     }
 }

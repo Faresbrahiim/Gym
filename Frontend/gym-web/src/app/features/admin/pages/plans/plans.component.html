@@ -35,6 +35,13 @@
     </button>
   </div>
 
+  @if (paidPlanLimitReached()) {
+    <div class="limit-note" role="status">
+      <i class="feather-info"></i>
+      <span>{{ paidPlanLimitMessage() }}</span>
+    </div>
+  }
+
   <!-- ── Stat grid ─────────────────────────────────────────────── -->
   <div class="stat-grid">
     <div class="stat-card">
@@ -191,6 +198,13 @@
           <span class="form-hint">e.g. 30, 90, 365</span>
         </div>
       </div>
+
+      @if (shouldShowPaidPlanLimitInForm()) {
+        <div class="form-limit-alert">
+          <i class="feather-alert-circle"></i>
+          <span>{{ paidPlanLimitMessage() }}</span>
+        </div>
+      }
 
       <div class="form-group mt-3">
         <div class="d-flex justify-content-between align-items-center mb-2">

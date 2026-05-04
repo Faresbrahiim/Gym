@@ -10,6 +10,25 @@
 .page-title    { font-size: 22px; font-weight: 700; color: #1e2433; margin: 0 0 4px; }
 .page-subtitle { font-size: 13px; color: #7a8a9a; margin: 0; }
 
+.limit-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff8e8;
+  border: 1px solid #f2ddb0;
+  color: #8a6400;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.limit-note i {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
 .btn-primary-admin {
   display: inline-flex;
   align-items: center;
@@ -236,6 +255,24 @@
 }
 .form-ctrl:focus { border-color: #177c82; }
 .form-hint { font-size: 11px; color: #9aabb7; }
+
+.form-limit-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff8e8;
+  border: 1px solid #f2ddb0;
+  color: #8a6400;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-limit-alert i {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
 
 .form-row-2 {
   display: grid;
