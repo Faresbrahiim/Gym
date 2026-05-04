@@ -7,6 +7,44 @@ services:
   - name: membership-service
     url: http://membership-service:8080
     routes:
+      - name: membership-admin-plans-route
+        paths:
+          - /api/plans/admin
+        strip_path: false
+        plugins:
+          - name: jwt
+            config:
+              key_claim_name: kid
+              claims_to_verify:
+                - exp
+
+          - name: rate-limiting
+            config:
+              minute: 60
+              hour: 1000
+              policy: local
+              fault_tolerant: true
+              hide_client_headers: false
+
+          - name: cors
+            config:
+              origins:
+                - "http://localhost:4200"
+              methods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - PATCH
+                - OPTIONS
+              headers:
+                - Authorization
+                - Content-Type
+                - Accept
+              credentials: false
+              max_age: 3600
+              preflight_continue: false
+
       - name: membership-plans-route
         paths:
           - /api/plans
