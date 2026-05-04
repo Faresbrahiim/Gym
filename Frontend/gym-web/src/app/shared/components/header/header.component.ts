@@ -114,7 +114,7 @@ export class HeaderComponent {
   }
 
   get logoSrc(): string {
-    return this.isHome ? 'assets/img/logo.svg' : 'assets/img/logo-black.svg';
+    return this.isHome ? 'assets/img/logo.png' : 'assets/img/logo-black.svg';
   }
 
   toggleMobileMenu(): void {

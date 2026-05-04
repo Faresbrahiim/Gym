@@ -31,6 +31,7 @@
   border-radius: 8px;
   transition: background 0.15s;
   flex-shrink: 0;
+  
 }
 
 .thread-back:hover {
@@ -304,4 +305,12 @@
     align-items: center;
     justify-content: center;
   }
+
+}
+
+.thread-messages.popup-bg {
+  background-image: url('../../../../../assets/img/chat.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
 }
