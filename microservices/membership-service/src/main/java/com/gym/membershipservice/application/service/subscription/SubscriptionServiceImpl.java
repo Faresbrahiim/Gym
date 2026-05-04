@@ -5,7 +5,6 @@ import com.gym.membershipservice.api.exception.ConflictException;
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.application.mapper.SubscriptionMapper;
 import com.gym.membershipservice.application.dto.Subscription.AdminSubscriptionSummaryDTO;
-import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.dto.kafka.SubscriptionCreatedEvent;
@@ -14,9 +13,12 @@ import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.UserMembership;
 import com.gym.membershipservice.application.enums.PlanStatus;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
+import com.gym.membershipservice.application.port.AdminSubscriptionCommandService;
+import com.gym.membershipservice.application.port.AdminSubscriptionQueryService;
 import com.gym.membershipservice.application.port.PlanService;
-import com.gym.membershipservice.application.port.SubscriptionHistoryService;
-import com.gym.membershipservice.application.port.SubscriptionService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryRecorder;
+import com.gym.membershipservice.application.port.UserSubscriptionCommandService;
+import com.gym.membershipservice.application.port.UserSubscriptionQueryService;
 import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.infrastructure.repository.PlanRepository;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
@@ -37,11 +39,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class SubscriptionServiceImpl implements SubscriptionService {
+public class SubscriptionServiceImpl implements
+        UserSubscriptionQueryService,
+        UserSubscriptionCommandService,
+        AdminSubscriptionQueryService,
+        AdminSubscriptionCommandService {
 
     private final SubscriptionRepository subscriptionRepository;
     private final PlanRepository planRepository;
-    private final SubscriptionHistoryService historyService;
+    private final SubscriptionHistoryRecorder historyService;
     private final PlanService planService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final UserMembershipRepository userMembershipRepository;
@@ -51,7 +57,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     public SubscriptionServiceImpl(SubscriptionRepository subscriptionRepository,
                                    PlanRepository planRepository,
-                                   SubscriptionHistoryService historyService,
+                                   SubscriptionHistoryRecorder historyService,
                                    PlanServiceImpl planService,
                                    KafkaTemplate<String, Object> kafkaTemplate,
                                    UserMembershipRepository userMembershipRepository) {
@@ -77,12 +83,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional(readOnly = true)
     public SubscriptionResponseDTO getUserSubscriptionById(UUID userId, UUID subscriptionId) {
         return SubscriptionMapper.toDTO(findOwnedAndAutoExpire(userId, subscriptionId));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public PagedResponseDTO<SubscriptionHistoryResponseDTO> getUserSubscriptionHistory(UUID userId, int page, int pageSize) {
-        return historyService.getHistoryForUser(userId, page, pageSize);
     }
 
     @Override
@@ -281,12 +281,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO pauseSubscription(UUID userId, UUID subscriptionId) {
         findOwnedAndAutoExpire(userId, subscriptionId);
-        return pauseSubscription(subscriptionId);
+        return pauseSubscriptionInternal(subscriptionId);
     }
 
-    @Override
     @Transactional
-    public SubscriptionResponseDTO pauseSubscription(UUID subscriptionId) {
+    private SubscriptionResponseDTO pauseSubscriptionInternal(UUID subscriptionId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.ACTIVE) {
             throw new BadRequestException("Only ACTIVE subscriptions can be paused");
@@ -345,12 +344,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO resumeSubscription(UUID userId, UUID subscriptionId) {
         findOwnedAndAutoExpire(userId, subscriptionId);
-        return resumeSubscription(subscriptionId);
+        return resumeSubscriptionInternal(subscriptionId);
     }
 
-    @Override
     @Transactional
-    public SubscriptionResponseDTO resumeSubscription(UUID subscriptionId) {
+    private SubscriptionResponseDTO resumeSubscriptionInternal(UUID subscriptionId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
         if (sub.getStatus() != SubscriptionStatus.PAUSED) {
             throw new BadRequestException("Only PAUSED subscriptions can be resumed");
@@ -374,12 +372,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO renewSubscription(UUID userId, UUID subscriptionId) {
         findOwnedAndAutoExpire(userId, subscriptionId);
-        return renewSubscription(subscriptionId);
+        return renewSubscriptionInternal(subscriptionId);
     }
 
-    @Override
     @Transactional
-    public SubscriptionResponseDTO renewSubscription(UUID subscriptionId) {
+    private SubscriptionResponseDTO renewSubscriptionInternal(UUID subscriptionId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
         if (sub.getStatus() == SubscriptionStatus.CANCELLED) {
             throw new BadRequestException("Cannot renew cancelled subscription");
@@ -413,12 +410,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO changePlan(UUID userId, UUID subscriptionId, UUID newPlanId) {
         findOwnedAndAutoExpire(userId, subscriptionId);
-        return changePlan(subscriptionId, newPlanId);
+        return changePlanInternal(subscriptionId, newPlanId);
     }
 
-    @Override
     @Transactional
-    public SubscriptionResponseDTO changePlan(UUID subscriptionId, UUID newPlanId) {
+    private SubscriptionResponseDTO changePlanInternal(UUID subscriptionId, UUID newPlanId) {
         Subscription sub = findAndAutoExpire(subscriptionId);
         ensurePlanStatusAllowsChange(sub);
 
@@ -472,12 +468,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO upgradeSubscription(UUID userId, UUID subscriptionId, UUID newPlanId) {
         findOwnedAndAutoExpire(userId, subscriptionId);
-        return upgradeSubscription(subscriptionId, newPlanId);
+        return upgradeSubscriptionInternal(newPlanId);
     }
 
-    @Override
     @Transactional
-    public SubscriptionResponseDTO upgradeSubscription(UUID subscriptionId, UUID newPlanId) {
+    private SubscriptionResponseDTO upgradeSubscriptionInternal(UUID newPlanId) {
         throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
     }
 
@@ -485,12 +480,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Transactional
     public SubscriptionResponseDTO downgradeSubscription(UUID userId, UUID subscriptionId, UUID newPlanId) {
         findOwnedAndAutoExpire(userId, subscriptionId);
-        return downgradeSubscription(subscriptionId, newPlanId);
+        return downgradeSubscriptionInternal(newPlanId);
     }
 
-    @Override
     @Transactional
-    public SubscriptionResponseDTO downgradeSubscription(UUID subscriptionId, UUID newPlanId) {
+    private SubscriptionResponseDTO downgradeSubscriptionInternal(UUID newPlanId) {
         throw new BadRequestException("Self-service plan changes between paid plans are not available right now");
     }
 
@@ -574,15 +568,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 "Subscription frozen until " + freezeEnd);
 
         return SubscriptionMapper.toDTO(saved);
-    }
-
-    // =========================
-    // HISTORY
-    // =========================
-
-    @Override
-    public List<SubscriptionHistoryResponseDTO> getSubscriptionHistory(UUID subscriptionId) {
-        return historyService.getHistory(subscriptionId);
     }
 
     // =========================

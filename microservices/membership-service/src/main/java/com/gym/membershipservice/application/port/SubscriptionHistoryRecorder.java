@@ -6,12 +6,11 @@ import com.gym.membershipservice.application.enums.SubscriptionStatus;
 
 import java.util.UUID;
 
-public interface SubscriptionHistoryService extends SubscriptionHistoryQueryService {
+public interface SubscriptionHistoryRecorder {
 
     SubscriptionHistory recordChange(Subscription subscription,
                                      SubscriptionStatus previousStatus,
                                      SubscriptionStatus newStatus,
                                      UUID changedBy,
                                      String note);
-
 }

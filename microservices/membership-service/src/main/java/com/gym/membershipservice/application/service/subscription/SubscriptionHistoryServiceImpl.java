@@ -6,7 +6,8 @@ import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.entity.SubscriptionHistory;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryQueryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryRecorder;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionHistoryRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-public class SubscriptionHistoryServiceImpl implements SubscriptionHistoryService {
+public class SubscriptionHistoryServiceImpl implements SubscriptionHistoryQueryService, SubscriptionHistoryRecorder {
 
     private final SubscriptionHistoryRepository repository;
 

@@ -4,7 +4,7 @@ import com.gym.membershipservice.application.dto.kafka.PaymentCompletedMessage;
 import com.gym.membershipservice.application.dto.kafka.PaymentFailedMessage;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryRecorder;
 import com.gym.membershipservice.application.port.kafka.PaymentEventHandler;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +20,10 @@ import java.util.UUID;
 public class PaymentEventListenerImpl implements PaymentEventHandler {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final SubscriptionHistoryService historyService;
+    private final SubscriptionHistoryRecorder historyService;
 
     public PaymentEventListenerImpl(SubscriptionRepository subscriptionRepository,
-                                    SubscriptionHistoryService historyService) {
+                                    SubscriptionHistoryRecorder historyService) {
         this.subscriptionRepository = subscriptionRepository;
         this.historyService = historyService;
     }
