@@ -67,6 +67,10 @@
                   <span class="booking-stat-label">Declined</span>
                   <span class="booking-stat-value">{{ declinedCount() }}</span>
                 </div>
+                <div class="booking-stat-card">
+                  <span class="booking-stat-label">Cancelled</span>
+                  <span class="booking-stat-value">{{ cancelledCount() }}</span>
+                </div>
               </div>
 
               <div class="table-responsive">
@@ -78,6 +82,7 @@
                       <th style="min-width:180px;">Date & Time</th>
                       <th style="min-width:120px;">Status</th>
                       <th style="min-width:160px;">Booked On</th>
+                      <th style="min-width:140px;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -102,6 +107,24 @@
                         <td>
                           <div class="date-primary">{{ booking.createdAt | date:'MMM d, yyyy' }}</div>
                           <div class="date-secondary">{{ booking.createdAt | date:'h:mm a' }}</div>
+                        </td>
+                        <td>
+                          @if (canCancel(booking)) {
+                            <button
+                              type="button"
+                              class="btn btn-outline-danger btn-sm"
+                              [disabled]="actionInProgress() === booking.id"
+                              (click)="cancelBooking(booking.id)">
+                              @if (actionInProgress() === booking.id) {
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                              } @else {
+                                <i class="feather-x-circle me-1"></i>
+                              }
+                              Cancel
+                            </button>
+                          } @else {
+                            <span class="text-muted small">No actions</span>
+                          }
                         </td>
                       </tr>
                     }

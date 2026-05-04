@@ -50,6 +50,7 @@ class ProductAdminController extends AbstractController
             $name        = $request->request->get('name');
             $description = $request->request->get('description');
             $price       = $request->request->get('price');
+            $stockQuantity = (int) $request->request->get('stockQuantity', 0);
             $status      = $request->request->get('status', 'AVAILABLE');
             $image       = $request->files->get('image');
 
@@ -62,6 +63,7 @@ class ProductAdminController extends AbstractController
                 description: $description,
                 price: $price,
                 status: $status,
+                stockQuantity: $stockQuantity,
                 image: $image
             );
 
@@ -87,7 +89,9 @@ class ProductAdminController extends AbstractController
                 Uuid::fromString($productId),
                 $data['name'],
                 $data['description'] ?? null,
-                $data['price']
+                $data['price'],
+                $data['status'] ?? 'AVAILABLE',
+                (int) ($data['stockQuantity'] ?? 0)
             );
 
             return $this->json(ProductMapper::mapToResponseDto($product));

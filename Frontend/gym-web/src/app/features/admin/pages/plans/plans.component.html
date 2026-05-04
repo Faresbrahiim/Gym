@@ -35,6 +35,13 @@
     </button>
   </div>
 
+  @if (paidPlanLimitReached()) {
+    <div class="limit-note" role="status">
+      <i class="feather-info"></i>
+      <span>{{ paidPlanLimitMessage() }}</span>
+    </div>
+  }
+
   <!-- ── Stat grid ─────────────────────────────────────────────── -->
   <div class="stat-grid">
     <div class="stat-card">
@@ -182,7 +189,7 @@
       <div class="form-row-2">
         <div class="form-group">
           <label class="form-label">Price ($) <span class="required">*</span></label>
-          <input type="number" class="form-ctrl" [(ngModel)]="form.price" min="0" step="0.01" placeholder="0.00" />
+          <input type="number" class="form-ctrl" [(ngModel)]="form.price" (ngModelChange)="onPriceChanged($event)" min="0" step="0.01" placeholder="0.00" />
           <span class="form-hint">Set to 0 for a free plan</span>
         </div>
         <div class="form-group">
@@ -190,6 +197,34 @@
           <input type="number" class="form-ctrl" [(ngModel)]="form.durationInDays" min="1" step="1" placeholder="Leave empty for unlimited" />
           <span class="form-hint">e.g. 30, 90, 365</span>
         </div>
+      </div>
+
+      @if (shouldShowPaidPlanLimitInForm()) {
+        <div class="form-limit-alert">
+          <i class="feather-alert-circle"></i>
+          <span>{{ paidPlanLimitMessage() }}</span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label class="form-label">Premium Access</label>
+        <div class="capability-grid">
+          @for (capability of capabilityOptions; track capability.value) {
+            <label class="capability-option" [class.capability-option--disabled]="!isPaid(form.price)">
+              <input
+                type="checkbox"
+                [checked]="hasCapability(capability.value)"
+                [disabled]="!isPaid(form.price)"
+                (change)="toggleCapability(capability.value, $any($event.target).checked)"
+              />
+              <span class="capability-option__copy">
+                <strong>{{ capability.label }}</strong>
+                <small>{{ capability.description }}</small>
+              </span>
+            </label>
+          }
+        </div>
+        <span class="form-hint">{{ capabilityHint() }}</span>
       </div>
 
       <div class="form-group mt-3">

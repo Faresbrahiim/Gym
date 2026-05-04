@@ -64,7 +64,11 @@ export class PlansCatalogComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: ({ plans, subs }) => {
-        this.plans.set(plans.filter((p: Plan) => p.price !== null && p.price > 0));
+        this.plans.set(
+          plans
+            .filter((p: Plan) => p.price !== null && p.price > 0)
+            .sort((left, right) => left.price - right.price)
+        );
         const activeSub = subs.find((s: any) => ACTIVE_STATUSES.includes(s.status)) ?? null;
         this.currentPlanId.set(activeSub?.planId ?? null);
         this.currentPlanPrice.set(activeSub?.planPrice ?? null);

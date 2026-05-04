@@ -43,6 +43,25 @@
   margin: 0;
 }
 
+.coach-state__cta {
+  align-items: center;
+  background: linear-gradient(135deg, #177c82 0%, #0f646a 100%);
+  border-radius: 14px;
+  box-shadow: 0 16px 30px rgba(23, 124, 130, 0.18);
+  color: #fff;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-top: 24px;
+  padding: 12px 18px;
+  text-decoration: none;
+}
+
+.coach-state__cta:hover {
+  color: #fff;
+  opacity: 0.9;
+}
+
 .coach-app {
   display: flex;
   height: calc(100dvh - 92px);

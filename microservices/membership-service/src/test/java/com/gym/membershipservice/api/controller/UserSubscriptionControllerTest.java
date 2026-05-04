@@ -5,7 +5,11 @@ import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistor
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionRequestDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.SubscriptionService;
+import com.gym.membershipservice.application.port.AdminSubscriptionQueryService;
+import com.gym.membershipservice.application.port.MembershipService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryQueryService;
+import com.gym.membershipservice.application.port.UserSubscriptionCommandService;
+import com.gym.membershipservice.application.port.UserSubscriptionQueryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,15 +24,29 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class UserSubscriptionControllerTest {
 
     @Mock
-    private SubscriptionService subscriptionService;
+    private UserSubscriptionQueryService subscriptionQueryService;
+
+    @Mock
+    private UserSubscriptionCommandService subscriptionCommandService;
+
+    @Mock
+    private SubscriptionHistoryQueryService subscriptionHistoryQueryService;
+
+    @Mock
+    private AdminSubscriptionQueryService adminSubscriptionQueryService;
+
+    @Mock
+    private MembershipService membershipService;
 
     @InjectMocks
     private UserSubscriptionController controller;
@@ -43,8 +61,8 @@ class UserSubscriptionControllerTest {
 
     @BeforeEach
     void setUp() {
-        userId         = UUID.randomUUID();
-        planId         = UUID.randomUUID();
+        userId = UUID.randomUUID();
+        planId = UUID.randomUUID();
         subscriptionId = UUID.randomUUID();
 
         responseDTO = new SubscriptionResponseDTO(
@@ -57,38 +75,34 @@ class UserSubscriptionControllerTest {
         when(jwt.getSubject()).thenReturn(userId.toString());
     }
 
-    // ── createSubscription ──────────────────────────
-
     @Test
     void createSubscription_returnsCreatedSubscription() {
         SubscriptionRequestDTO request = new SubscriptionRequestDTO();
         request.setPlanId(planId);
 
-        when(subscriptionService.createSubscription(userId, planId)).thenReturn(responseDTO);
+        when(subscriptionCommandService.createSubscription(userId, planId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.createSubscription(jwt, request);
 
         assertThat(result.getUserId()).isEqualTo(userId);
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-        verify(subscriptionService).createSubscription(userId, planId);
+        verify(subscriptionCommandService).createSubscription(userId, planId);
     }
-
-    // ── getMySubscriptions ──────────────────────────
 
     @Test
     void getMySubscriptions_returnsUserSubscriptions() {
-        when(subscriptionService.getUserSubscriptions(userId)).thenReturn(List.of(responseDTO));
+        when(subscriptionQueryService.getUserSubscriptions(userId)).thenReturn(List.of(responseDTO));
 
         List<SubscriptionResponseDTO> result = controller.getMySubscriptions(jwt);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getUserId()).isEqualTo(userId);
-        verify(subscriptionService).getUserSubscriptions(userId);
+        verify(subscriptionQueryService).getUserSubscriptions(userId);
     }
 
     @Test
     void getMySubscriptions_returnsEmptyList_whenNone() {
-        when(subscriptionService.getUserSubscriptions(userId)).thenReturn(List.of());
+        when(subscriptionQueryService.getUserSubscriptions(userId)).thenReturn(List.of());
 
         List<SubscriptionResponseDTO> result = controller.getMySubscriptions(jwt);
 
@@ -97,15 +111,13 @@ class UserSubscriptionControllerTest {
 
     @Test
     void getMySubscription_returnsOwnedSubscription() {
-        when(subscriptionService.getUserSubscriptionById(userId, subscriptionId)).thenReturn(responseDTO);
+        when(subscriptionQueryService.getUserSubscriptionById(userId, subscriptionId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.getMySubscription(jwt, subscriptionId);
 
         assertThat(result.getSubscriptionId()).isEqualTo(subscriptionId);
-        verify(subscriptionService).getUserSubscriptionById(userId, subscriptionId);
+        verify(subscriptionQueryService).getUserSubscriptionById(userId, subscriptionId);
     }
-
-    // ── cancelSubscription ──────────────────────────
 
     @Test
     void cancelSubscription_returnsCancelledSubscription() {
@@ -115,24 +127,22 @@ class UserSubscriptionControllerTest {
                 LocalDateTime.now(), LocalDateTime.now(),
                 null, null
         );
-        when(subscriptionService.cancelSubscription(userId, subscriptionId)).thenReturn(cancelled);
+        when(subscriptionCommandService.cancelSubscription(userId, subscriptionId)).thenReturn(cancelled);
 
         SubscriptionResponseDTO result = controller.cancelSubscription(jwt, subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.CANCELLED);
-        verify(subscriptionService).cancelSubscription(userId, subscriptionId);
+        verify(subscriptionCommandService).cancelSubscription(userId, subscriptionId);
     }
 
     @Test
     void cancelSubscription_throwsException_whenNotFound() {
-        when(subscriptionService.cancelSubscription(userId, subscriptionId))
+        when(subscriptionCommandService.cancelSubscription(userId, subscriptionId))
                 .thenThrow(new ResourceNotFoundException("Subscription not found"));
 
         assertThatThrownBy(() -> controller.cancelSubscription(jwt, subscriptionId))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
-
-    // ── requestPause ────────────────────────────────
 
     @Test
     void requestPause_returnsPauseRequestedSubscription() {
@@ -142,99 +152,85 @@ class UserSubscriptionControllerTest {
                 LocalDateTime.now(), LocalDateTime.now().plusDays(30),
                 null, null
         );
-        when(subscriptionService.pauseSubscription(userId, subscriptionId)).thenReturn(paused);
+        when(subscriptionCommandService.pauseSubscription(userId, subscriptionId)).thenReturn(paused);
 
         SubscriptionResponseDTO result = controller.requestPause(jwt, subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.PAUSE_REQUESTED);
-        verify(subscriptionService).pauseSubscription(userId, subscriptionId);
+        verify(subscriptionCommandService).pauseSubscription(userId, subscriptionId);
     }
-
-    // ── resumeSubscription ──────────────────────────
 
     @Test
     void resumeSubscription_returnsActiveSubscription() {
-        when(subscriptionService.resumeSubscription(userId, subscriptionId)).thenReturn(responseDTO);
+        when(subscriptionCommandService.resumeSubscription(userId, subscriptionId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.resumeSubscription(jwt, subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-        verify(subscriptionService).resumeSubscription(userId, subscriptionId);
+        verify(subscriptionCommandService).resumeSubscription(userId, subscriptionId);
     }
-
-    // ── renewSubscription ───────────────────────────
 
     @Test
     void renewSubscription_returnsRenewedSubscription() {
-        when(subscriptionService.renewSubscription(userId, subscriptionId)).thenReturn(responseDTO);
+        when(subscriptionCommandService.renewSubscription(userId, subscriptionId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.renewSubscription(jwt, subscriptionId);
 
         assertThat(result.getStatus()).isEqualTo(SubscriptionStatus.ACTIVE);
-        verify(subscriptionService).renewSubscription(userId, subscriptionId);
+        verify(subscriptionCommandService).renewSubscription(userId, subscriptionId);
     }
-
-    // ── upgradeSubscription ─────────────────────────
 
     @Test
     void upgradeSubscription_returnsUpgradedSubscription() {
         UUID newPlanId = UUID.randomUUID();
-        when(subscriptionService.upgradeSubscription(userId, subscriptionId, newPlanId)).thenReturn(responseDTO);
+        when(subscriptionCommandService.upgradeSubscription(userId, subscriptionId, newPlanId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.upgradeSubscription(jwt, subscriptionId, newPlanId);
 
         assertThat(result).isNotNull();
-        verify(subscriptionService).upgradeSubscription(userId, subscriptionId, newPlanId);
+        verify(subscriptionCommandService).upgradeSubscription(userId, subscriptionId, newPlanId);
     }
-
-    // ── downgradeSubscription ───────────────────────
 
     @Test
     void downgradeSubscription_returnsDowngradedSubscription() {
         UUID newPlanId = UUID.randomUUID();
-        when(subscriptionService.downgradeSubscription(userId, subscriptionId, newPlanId)).thenReturn(responseDTO);
+        when(subscriptionCommandService.downgradeSubscription(userId, subscriptionId, newPlanId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.downgradeSubscription(jwt, subscriptionId, newPlanId);
 
         assertThat(result).isNotNull();
-        verify(subscriptionService).downgradeSubscription(userId, subscriptionId, newPlanId);
+        verify(subscriptionCommandService).downgradeSubscription(userId, subscriptionId, newPlanId);
     }
-
-    // ── changePlan ──────────────────────────────────
 
     @Test
     void changePlan_returnsSubscriptionWithNewPlan() {
         UUID newPlanId = UUID.randomUUID();
-        when(subscriptionService.changePlan(userId, subscriptionId, newPlanId)).thenReturn(responseDTO);
+        when(subscriptionCommandService.changePlan(userId, subscriptionId, newPlanId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.changePlan(jwt, subscriptionId, newPlanId);
 
         assertThat(result).isNotNull();
-        verify(subscriptionService).changePlan(userId, subscriptionId, newPlanId);
+        verify(subscriptionCommandService).changePlan(userId, subscriptionId, newPlanId);
     }
-
-    // ── getSubscription (ADMIN) ─────────────────────
 
     @Test
     void getSubscription_returnsSubscription() {
-        when(subscriptionService.getSubscriptionById(subscriptionId)).thenReturn(responseDTO);
+        when(adminSubscriptionQueryService.getSubscriptionById(subscriptionId)).thenReturn(responseDTO);
 
         SubscriptionResponseDTO result = controller.getSubscription(subscriptionId);
 
         assertThat(result.getSubscriptionId()).isEqualTo(subscriptionId);
-        verify(subscriptionService).getSubscriptionById(subscriptionId);
+        verify(adminSubscriptionQueryService).getSubscriptionById(subscriptionId);
     }
 
     @Test
     void getSubscription_throwsException_whenNotFound() {
-        when(subscriptionService.getSubscriptionById(subscriptionId))
+        when(adminSubscriptionQueryService.getSubscriptionById(subscriptionId))
                 .thenThrow(new ResourceNotFoundException("Subscription not found"));
 
         assertThatThrownBy(() -> controller.getSubscription(subscriptionId))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
-
-    // ── getHistory (ADMIN) ──────────────────────────
 
     @Test
     void getHistory_returnsSubscriptionHistory() {
@@ -243,13 +239,12 @@ class UserSubscriptionControllerTest {
                 null, SubscriptionStatus.ACTIVE,
                 LocalDateTime.now(), null, "Created"
         );
-        when(subscriptionService.getSubscriptionHistory(subscriptionId))
-                .thenReturn(List.of(history));
+        when(subscriptionHistoryQueryService.getHistory(subscriptionId)).thenReturn(List.of(history));
 
         List<SubscriptionHistoryResponseDTO> result = controller.getHistory(subscriptionId);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getNote()).isEqualTo("Created");
-        verify(subscriptionService).getSubscriptionHistory(subscriptionId);
+        verify(subscriptionHistoryQueryService).getHistory(subscriptionId);
     }
 }

@@ -1,9 +1,9 @@
 package com.gym.membershipservice.api.controller;
 
-import com.gym.membershipservice.application.service.plan.PlanServiceImpl;
 import com.gym.membershipservice.application.dto.Plan.PlanRequestDTO;
 import com.gym.membershipservice.application.dto.Plan.PlanResponseDTO;
 import com.gym.membershipservice.application.dto.Plan.PlanUpdateRequestDTO;
+import com.gym.membershipservice.application.port.PlanService;
 
 import jakarta.validation.Valid;
 
@@ -19,9 +19,9 @@ import java.util.UUID;
 @Tag(name = "Admin Plans", description = "Admin-only plan management")
 public class AdminPlanController {
 
-    private final PlanServiceImpl service;
+    private final PlanService service;
 
-    public AdminPlanController(PlanServiceImpl service) {
+    public AdminPlanController(PlanService service) {
         this.service = service;
     }
 

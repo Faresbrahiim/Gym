@@ -44,6 +44,20 @@ export class PlanCardComponent {
     return this.plan.price.toFixed(2);
   }
 
+  get includedCapabilities(): string[] {
+    const capabilities = this.plan.capabilities ?? [];
+    const labels: string[] = [];
+
+    if (capabilities.includes('SESSION_BOOKING')) {
+      labels.push('Coach session booking included');
+    }
+    if (capabilities.includes('AI_COACH')) {
+      labels.push('AI Coach included');
+    }
+
+    return labels;
+  }
+
   onSelect(): void {
     if (!this.isCurrentPlan && !this.isSelectionBlocked) {
       this.select.emit(this.plan.id);

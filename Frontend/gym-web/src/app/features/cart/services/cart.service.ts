@@ -100,6 +100,7 @@ export class CartService {
       productName:        item.productName ?? `Product #${item.productId}`,
       price:              Number(item.price),
       quantity:           Number(item.quantity),
+      productStockQuantity: Number(item.productStockQuantity ?? 0),
       productImage:       item.productImage ?? null,
       productDescription: item.productDescription ?? null,
       productStatus:      item.productStatus ?? null,

@@ -1,9 +1,11 @@
 import { AfterViewChecked, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ErrorService } from '../../../../core/services/error.service';
 import { TokenService } from '../../../../core/auth/token.service';
+import { MembershipEntitlementsService } from '../../../membership/services/membership-entitlements.service';
 import { AiCoachFeedbackRequest } from '../../models/ai-coach-feedback-request.model';
 import { AiCoachHistoryEntry } from '../../models/ai-coach-history-entry.model';
 import { AiCoachRecommendation } from '../../models/ai-coach-recommendation.model';
@@ -25,7 +27,7 @@ interface AiCoachMessage {
 @Component({
   standalone: true,
   selector: 'app-ai-coach-chat',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './ai-coach-chat.component.html',
   styleUrl: './ai-coach-chat.component.css'
 })
@@ -37,14 +39,18 @@ export class AiCoachChatComponent implements OnInit, AfterViewChecked {
   userInput = '';
   isSending = false;
   isLoadingHistory = true;
+  isLoadingEntitlements = true;
   sidebarOpen = true;
   activeHistoryId: string | null = null;
   historyError: string | null = null;
   missingUserId = false;
+  aiCoachAllowed = true;
+  aiCoachReason: string | null = null;
 
   private readonly aiCoachService = inject(AiCoachService);
   private readonly tokenService = inject(TokenService);
   private readonly errorService = inject(ErrorService);
+  private readonly entitlementsService = inject(MembershipEntitlementsService);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
@@ -53,10 +59,11 @@ export class AiCoachChatComponent implements OnInit, AfterViewChecked {
     if (!this.currentUserId) {
       this.missingUserId = true;
       this.isLoadingHistory = false;
+      this.isLoadingEntitlements = false;
       return;
     }
 
-    this.loadHistory();
+    this.loadEntitlements();
   }
 
   ngAfterViewChecked(): void {
@@ -65,6 +72,10 @@ export class AiCoachChatComponent implements OnInit, AfterViewChecked {
 
   get hasMessages(): boolean {
     return this.messages.length > 0;
+  }
+
+  get showLockedState(): boolean {
+    return !this.isLoadingEntitlements && !this.aiCoachAllowed;
   }
 
   get currentUserId(): string | null {
@@ -92,6 +103,33 @@ export class AiCoachChatComponent implements OnInit, AfterViewChecked {
     });
   }
 
+  loadEntitlements(): void {
+    this.isLoadingEntitlements = true;
+
+    this.entitlementsService.load().pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: entitlements => {
+        this.aiCoachAllowed = !!entitlements.aiCoachAllowed;
+        this.aiCoachReason = entitlements.aiCoachReason;
+        this.isLoadingEntitlements = false;
+
+        if (this.aiCoachAllowed) {
+          this.loadHistory();
+          return;
+        }
+
+        this.isLoadingHistory = false;
+      },
+      error: err => {
+        this.aiCoachAllowed = false;
+        this.aiCoachReason = this.errorService.extractMessage(err);
+        this.isLoadingEntitlements = false;
+        this.isLoadingHistory = false;
+      }
+    });
+  }
+
   onEnter(event: Event): void {
     const keyboardEvent = event as KeyboardEvent;
 
@@ -109,7 +147,7 @@ export class AiCoachChatComponent implements OnInit, AfterViewChecked {
     const question = this.userInput.trim();
     const userId = this.currentUserId;
 
-    if (!question || this.isSending || !userId) return;
+    if (!question || this.isSending || !userId || !this.aiCoachAllowed) return;
 
     this.messages = [...this.messages, { role: 'user', text: question }];
     this.userInput = '';

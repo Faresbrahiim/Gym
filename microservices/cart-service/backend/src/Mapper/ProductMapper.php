@@ -14,8 +14,10 @@ class ProductMapper
             'name' => $product->getName(),
             'description' => $product->getDescription(),
             'price' => (float)$product->getPrice(),
+            'stockQuantity' => $product->getStockQuantity(),
             'status' => $product->getStatus(),
             'createdAt' => $product->getCreatedAt()->format('c'),
+            'updatedAt' => $product->getUpdatedAt()?->format('c'),
             'imagePath' => $product->getImageData() ? "/store/products/{$product->getId()->toRfc4122()}/image" : null,
         ];
     }

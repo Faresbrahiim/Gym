@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Annotated
+
+from fastapi import Depends, Header, HTTPException
 
 from app.repositories.feedback_repository import FeedbackRepository
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.services.coach_service import CoachService
 from app.services.feedback_service import FeedbackService
 from app.services.history_service import RecommendationHistoryService
+from app.services.membership_entitlement_service import MembershipEntitlementService
 from app.services.user_profile_service import UserProfileService
 from app.services.intent_service import IntentService
 from app.services.llm_service import LLMService
@@ -22,6 +26,11 @@ def get_recommendation_repository() -> RecommendationRepository:
 @lru_cache
 def get_feedback_repository() -> FeedbackRepository:
     return FeedbackRepository()
+
+
+@lru_cache
+def get_membership_entitlement_service() -> MembershipEntitlementService:
+    return MembershipEntitlementService()
 
 
 @lru_cache
@@ -72,3 +81,15 @@ def get_feedback_service() -> FeedbackService:
         recommendation_store=get_recommendation_repository(),
         feedback_store=get_feedback_repository(),
     )
+
+
+async def require_ai_coach_access(
+    authorization: Annotated[str | None, Header()] = None,
+    entitlement_service: MembershipEntitlementService = Depends(get_membership_entitlement_service),
+) -> None:
+    try:
+        await entitlement_service.ensure_ai_coach_access(authorization)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc

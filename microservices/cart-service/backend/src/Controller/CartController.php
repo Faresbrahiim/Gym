@@ -56,7 +56,9 @@ class CartController extends AbstractController
             $this->cartService->updateItemQuantity(Uuid::fromString($itemId), $data['quantity']);
             return $this->json(['message' => 'Quantity updated']);
         } catch (\InvalidArgumentException $e) {
-            return $this->json(['error' => 'Invalid ID format'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (\Exception $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
     }
 

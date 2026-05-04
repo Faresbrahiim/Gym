@@ -48,9 +48,14 @@ export class ProductsListComponent implements OnInit {
   }
 
   addToCart(product: Product): void {
+    if (product.status !== 'AVAILABLE' || product.stockQuantity <= 0) {
+      this.toastService.error('This product is out of stock');
+      return;
+    }
+
     this.cartService.addToCart(product.id, 1).subscribe({
       next:  () => this.toastService.success(`${product.name} added to cart`),
-      error: () => this.toastService.error('Failed to add to cart'),
+      error: (error) => this.toastService.error(error?.error?.error || 'Failed to add to cart'),
     });
   }
 

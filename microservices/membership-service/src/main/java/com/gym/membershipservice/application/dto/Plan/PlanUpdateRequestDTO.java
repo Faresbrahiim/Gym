@@ -12,6 +12,7 @@ public class PlanUpdateRequestDTO {
     private Integer durationInDays;
     private PlanStatus status;
     private List<String> features;
+    private List<String> capabilities;
 
     public String getName() {
         return name;
@@ -55,4 +56,7 @@ public class PlanUpdateRequestDTO {
 
     public List<String> getFeatures() { return features; }
     public void setFeatures(List<String> features) { this.features = features; }
+
+    public List<String> getCapabilities() { return capabilities; }
+    public void setCapabilities(List<String> capabilities) { this.capabilities = capabilities; }
 }

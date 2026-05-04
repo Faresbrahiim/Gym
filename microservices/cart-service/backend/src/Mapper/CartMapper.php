@@ -22,10 +22,10 @@ class CartMapper
                 productName: $product->getName(),
                 price: (float)$product->getPrice(),
                 quantity: $item->getQuantity(),
-                // Add these additional fields
                 productImage: $product->getImagePath(),
                 productDescription: $product->getDescription(),
-                productStatus: $product->getStatus()
+                productStatus: $product->getStatus(),
+                productStockQuantity: $product->getStockQuantity()
             );
             
             $total += $price * $item->getQuantity();

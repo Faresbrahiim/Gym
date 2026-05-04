@@ -12,4 +12,5 @@ public interface PlanRepository extends JpaRepository<Plan, UUID> {
     List<Plan> findByStatus(PlanStatus status);
     Optional<Plan> findByStatusAndName(PlanStatus status, String name);
     boolean existsByName(String name);
+    long countByStatusAndPriceGreaterThan(PlanStatus status, Double price);
 }

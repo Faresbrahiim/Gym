@@ -3600,14 +3600,14 @@ Version      : 1.0
 }
 .featured-venues:before {
   content: "";
-  background-image: url(../img/icons/cock-icon.svg);
+  background-image: url(../img/setion-bg-image-1.png);
   background-repeat: no-repeat;
   background-size: cover;
-  width: 123px;
-  height: 123px;
+  width: 180px;
+  height: 180px;
   position: absolute;
   bottom: 240px;
-  left: 7%;
+  left: 3%;
 }
 @media (max-width: 767.98px) {
   .featured-venues:before {

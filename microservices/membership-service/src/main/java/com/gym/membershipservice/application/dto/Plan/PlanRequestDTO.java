@@ -21,6 +21,7 @@ public class PlanRequestDTO {
     private Integer durationInDays;
 
     private List<String> features;
+    private List<String> capabilities;
 
     // Getters & Setters
 
@@ -38,4 +39,7 @@ public class PlanRequestDTO {
 
     public List<String> getFeatures() { return features; }
     public void setFeatures(List<String> features) { this.features = features; }
+
+    public List<String> getCapabilities() { return capabilities; }
+    public void setCapabilities(List<String> capabilities) { this.capabilities = capabilities; }
 }

@@ -9,3 +9,12 @@ services:
         exclude:
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Contract\Service\MembershipEligibilityServiceInterface: '@App\Service\MembershipEligibilityService'
+    App\Contract\Service\UserSummaryServiceInterface: '@App\Service\UserSummaryService'
+    App\Contract\Service\Booking\MemberBookingCommandServiceInterface: '@App\Service\Booking\MemberBookingCommandService'
+    App\Contract\Service\Booking\CoachBookingModerationServiceInterface: '@App\Service\Booking\CoachBookingModerationService'
+    App\Contract\Service\Booking\BookingCleanupServiceInterface: '@App\Service\Booking\BookingCleanupService'
+    App\Contract\Service\Booking\BookingQueryServiceInterface: '@App\Service\Booking\BookingQueryService'
+    App\Contract\Service\Session\SessionCommandServiceInterface: '@App\Service\Session\SessionCommandService'
+    App\Contract\Service\Session\SessionQueryServiceInterface: '@App\Service\Session\SessionQueryService'

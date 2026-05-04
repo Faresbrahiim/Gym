@@ -2,7 +2,7 @@ package com.gym.membershipservice.infrastructure.scheduler;
 
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryRecorder;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,11 +16,11 @@ import java.util.List;
 public class SubscriptionScheduler {
 
     private final SubscriptionRepository subscriptionRepository;
-    private final SubscriptionHistoryService historyService;
+    private final SubscriptionHistoryRecorder historyService;
     private final long pendingPaymentTimeoutMinutes;
 
     public SubscriptionScheduler(SubscriptionRepository subscriptionRepository,
-                                 SubscriptionHistoryService historyService,
+                                 SubscriptionHistoryRecorder historyService,
                                  @org.springframework.beans.factory.annotation.Value("${membership.pending-payment-timeout-minutes:10}") long pendingPaymentTimeoutMinutes) {
         this.subscriptionRepository = subscriptionRepository;
         this.historyService = historyService;

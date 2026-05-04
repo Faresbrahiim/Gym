@@ -17,6 +17,9 @@ class ProductRequestDto
         #[Assert\PositiveOrZero]
         public readonly string $price,
 
+        #[Assert\PositiveOrZero]
+        public readonly int $stockQuantity = 0,
+
         #[Assert\Choice(['AVAILABLE', 'OUT_OF_STOCK', 'DISCONTINUED'])]
         public readonly string $status = 'AVAILABLE',
         public readonly ?string $imagePath = null

@@ -12,10 +12,11 @@ public class PlanResponseDTO {
     private Integer durationInDays;
     private String status;
     private List<String> features;
+    private List<String> capabilities;
 
 
     public PlanResponseDTO(UUID id, String name, String description,
-                           Double price, Integer durationInDays, String status, List<String> features) {
+                           Double price, Integer durationInDays, String status, List<String> features, List<String> capabilities) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -23,6 +24,7 @@ public class PlanResponseDTO {
         this.durationInDays = durationInDays;
         this.status = status;
         this.features = features;
+        this.capabilities = capabilities;
     }
 
     public UUID getId() { return id; }
@@ -32,4 +34,5 @@ public class PlanResponseDTO {
     public Integer getDurationInDays() { return durationInDays; }
     public String getStatus() { return status; }
     public List<String> getFeatures() { return features; }
+    public List<String> getCapabilities() { return capabilities; }
 }

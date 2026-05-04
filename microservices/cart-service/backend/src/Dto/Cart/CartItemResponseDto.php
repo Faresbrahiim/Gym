@@ -13,5 +13,6 @@ class CartItemResponseDto
         public readonly ?string $productImage = null,
         public readonly ?string $productDescription = null,
         public readonly ?string $productStatus = null,
+        public readonly int $productStockQuantity = 0,
     ) {}
 }

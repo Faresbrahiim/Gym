@@ -41,13 +41,6 @@
               <a routerLink="/bookings/sessions">Sessions</a>
             </li>
           }
-          <li class="has-submenu">
-            <a href="javascript:void(0);">Coaches <i class="fas fa-chevron-down"></i></a>
-            <ul class="submenu">
-              <li><a href="javascript:void(0);">Coaches Grid</a></li>
-              <li><a href="javascript:void(0);">Coaches List</a></li>
-            </ul>
-          </li>
           <li routerLinkActive="active">
             <a routerLink="/people">People</a>
           </li>
@@ -61,14 +54,15 @@
                 <span>Chat</span>
               </a>
             </li>
+            @if (canUseAiCoach) {
+              <li routerLinkActive="active">
+                <a routerLink="/ai-coach" class="chat-nav-link">
+                  <i class="feather-cpu"></i>
+                  <span>AI Coach</span>
+                </a>
+              </li>
+            }
           }
-          <li class="has-submenu">
-            <a href="javascript:void(0);">User <i class="fas fa-chevron-down"></i></a>
-            <ul class="submenu">
-              <li routerLinkActive="active"><a routerLink="/home">User Dashboard</a></li>
-              <li routerLinkActive="active"><a routerLink="/profile">My Profile</a></li>
-            </ul>
-          </li>
           <li routerLinkActive="active">
             <a routerLink="/workouts">Workouts</a>
           </li>

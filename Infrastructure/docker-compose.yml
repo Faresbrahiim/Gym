@@ -100,6 +100,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${MEMBERSHIP_DB_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      BOOKING_SERVICE_URL: ${BOOKING_SERVICE_URL}
       PAYMENT_DEV_MODE: "false"
     depends_on:
       membership-db:
@@ -350,6 +351,7 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:${AI_DB_PASSWORD}@ai-db:5432/coach_ia_db
       GROQ_API_KEY: ${GROQ_API_KEY}
       USER_SERVICE_URL: http://gym-user-service:8080
+      MEMBERSHIP_SERVICE_URL: http://membership-service:8080
       INTERNAL_TOKEN: ${AI_INTERNAL_TOKEN}
       SQL_ECHO: "false"
       ALLOWED_ORIGINS: http://localhost:4200

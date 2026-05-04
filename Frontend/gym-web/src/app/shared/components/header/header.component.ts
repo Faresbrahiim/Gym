@@ -1,7 +1,7 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, of, Subscription, switchMap, tap, catchError, timer } from 'rxjs';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { debounceTime, distinctUntilChanged, of, Subscription, switchMap, tap, catchError, timer, filter } from 'rxjs';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { TokenService } from '../../../core/auth/token.service';
 import { CurrentUserService } from '../../../core/services/current-user.service';
@@ -10,6 +10,7 @@ import { NotificationCenterService } from '../../../core/services/notification-c
 import { PeopleService } from '../../../features/people/services/people.service';
 import { UserSearchResult } from '../../../features/people/models/user-search-result.model';
 import { CartService } from '../../../features/cart/services/cart.service';
+import { MembershipEntitlementsService } from '../../../features/membership/services/membership-entitlements.service';
 
 const NOTIFICATION_COUNT_REFRESH_MS = 5000;
 
@@ -29,6 +30,7 @@ export class HeaderComponent {
   private readonly router            = inject(Router);
   private readonly peopleService     = inject(PeopleService);
   private readonly cartService       = inject(CartService);
+  private readonly membershipEntitlementsService = inject(MembershipEntitlementsService);
   private readonly elementRef        = inject(ElementRef<HTMLElement>);
   private readonly subs              = new Subscription();
 
@@ -61,6 +63,18 @@ export class HeaderComponent {
     this.bindPeopleSearch();
 
     if (!this.isAuthenticated) return;
+    if (this.canAccessMembershipArea) {
+      this.subs.add(this.membershipEntitlementsService.load().subscribe({ error: () => undefined }));
+      this.subs.add(
+        this.router.events.pipe(
+          filter(event => event instanceof NavigationEnd),
+          switchMap(() => this.canAccessMembershipArea && !this.membershipEntitlementsService.loaded()
+            ? this.membershipEntitlementsService.load()
+            : of(null)
+          )
+        ).subscribe({ error: () => undefined })
+      );
+    }
     const accessToken = this.tokenService.getAccessToken();
     if (accessToken) {
       this.notificationCenter.connectRealtime(accessToken);
@@ -104,6 +118,10 @@ export class HeaderComponent {
     return this.userRole === 'MEMBER';
   }
 
+  get canUseAiCoach(): boolean {
+    return this.userRole === 'MEMBER';
+  }
+
   get isHome(): boolean {
     const url = this.router.url;
     return url === '/home' || url === '/';
@@ -114,7 +132,7 @@ export class HeaderComponent {
   }
 
   get logoSrc(): string {
-    return this.isHome ? 'assets/img/logo.svg' : 'assets/img/logo-black.svg';
+    return 'assets/img/logo-black.svg';
   }
 
   toggleMobileMenu(): void {

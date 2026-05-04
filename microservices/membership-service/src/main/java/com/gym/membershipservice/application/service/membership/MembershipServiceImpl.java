@@ -3,7 +3,7 @@ package com.gym.membershipservice.application.service.membership;
 import com.gym.membershipservice.api.exception.ResourceNotFoundException;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.dto.common.BookingEligibilityResponseDTO;
-import com.gym.membershipservice.application.entity.Plan;
+import com.gym.membershipservice.application.dto.common.MembershipEntitlementsResponseDTO;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
 import com.gym.membershipservice.application.port.MembershipService;
@@ -17,9 +17,14 @@ import java.util.UUID;
 public class MembershipServiceImpl implements MembershipService {
 
     private final SubscriptionRepository subscriptionRepository;
+    private final MembershipEntitlementResolver entitlementResolver;
 
-    public MembershipServiceImpl(SubscriptionRepository subscriptionRepository) {
+    public MembershipServiceImpl(
+            SubscriptionRepository subscriptionRepository,
+            MembershipEntitlementResolver entitlementResolver
+    ) {
         this.subscriptionRepository = subscriptionRepository;
+        this.entitlementResolver = entitlementResolver;
     }
 
     @Override
@@ -36,7 +41,7 @@ public class MembershipServiceImpl implements MembershipService {
                 .findTopByUserIdOrderByStartDateDesc(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("No subscription found for user: " + userId));
 
-        Plan plan = sub.getPlan(); // Plan info
+        var plan = sub.getPlan();
 
         return new SubscriptionResponseDTO(
                 sub.getId(),
@@ -55,13 +60,21 @@ public class MembershipServiceImpl implements MembershipService {
 
     @Override
     public List<String> getPermissions(UUID userId) {
-        Subscription sub = subscriptionRepository
-                .findTopByUserIdOrderByStartDateDesc(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("No subscription found for user: " + userId));
+        MembershipEntitlementsResponseDTO entitlements = getEntitlements(userId);
 
-        if (sub.getStatus() != SubscriptionStatus.ACTIVE) return List.of();
+        if (getUserStatus(userId) != SubscriptionStatus.ACTIVE) {
+            return List.of();
+        }
 
-        return List.of("ACCESS_GYM", "BOOK_CLASSES");
+        java.util.ArrayList<String> permissions = new java.util.ArrayList<>(List.of("ACCESS_GYM", "BOOK_CLASSES"));
+        if (entitlements.sessionBookingAllowed()) {
+            permissions.add("BOOK_SESSION");
+        }
+        if (entitlements.aiCoachAllowed()) {
+            permissions.add("USE_AI_COACH");
+        }
+
+        return permissions;
     }
 
     @Override
@@ -69,37 +82,23 @@ public class MembershipServiceImpl implements MembershipService {
         return switch (action) {
             case "ENTER_GYM" -> hasActiveSubscription(userId);
             case "BOOK_SESSION" -> getBookingEligibility(userId).allowed();
+            case "USE_AI_COACH" -> getEntitlements(userId).aiCoachAllowed();
             default -> false;
         };
     }
 
     @Override
     public BookingEligibilityResponseDTO getBookingEligibility(UUID userId) {
-        return subscriptionRepository
+        return entitlementResolver.toBookingEligibility(getEntitlements(userId));
+    }
+
+    @Override
+    public MembershipEntitlementsResponseDTO getEntitlements(UUID userId) {
+        Subscription subscription = subscriptionRepository
                 .findTopByUserIdOrderByStartDateDesc(userId)
-                .map(subscription -> {
-                    if (subscription.getStatus() != SubscriptionStatus.ACTIVE) {
-                        return new BookingEligibilityResponseDTO(
-                                false,
-                                "Coach session booking is available only with an active paid membership."
-                        );
-                    }
+                .orElse(null);
 
-                    Double price = subscription.getPlan() != null ? subscription.getPlan().getPrice() : null;
-                    boolean paidPlan = price != null && price > 0;
-                    if (!paidPlan) {
-                        return new BookingEligibilityResponseDTO(
-                                false,
-                                "Your current membership plan does not include coach session booking."
-                        );
-                    }
-
-                    return new BookingEligibilityResponseDTO(true, null);
-                })
-                .orElseGet(() -> new BookingEligibilityResponseDTO(
-                        false,
-                        "You need an active paid membership to book coach sessions."
-                ));
+        return entitlementResolver.resolve(subscription);
     }
 
     private boolean hasActiveSubscription(UUID userId) {

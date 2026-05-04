@@ -30,7 +30,14 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  increase(): void { this.quantity.update(q => q + 1); }
+  increase(): void {
+    const product = this.product();
+    if (!product) {
+      return;
+    }
+
+    this.quantity.update(current => Math.min(current + 1, Math.max(product.stockQuantity, 1)));
+  }
 
   decrease(): void {
     if (this.quantity() > 1) {
@@ -41,9 +48,15 @@ export class ProductDetailComponent implements OnInit {
   addToCart(): void {
     const p = this.product();
     if (!p) return;
+
+    if (!this.canPurchase()) {
+      this.toastService.error('This product is out of stock');
+      return;
+    }
+
     this.cartService.addToCart(p.id, this.quantity()).subscribe({
       next:  () => this.toastService.success(`${p.name} added to cart`),
-      error: () => this.toastService.error('Failed to add to cart'),
+      error: (error) => this.toastService.error(error?.error?.error || 'Failed to add to cart'),
     });
   }
 
@@ -59,5 +72,15 @@ export class ProductDetailComponent implements OnInit {
 
   get productBreadcrumbs() {
     return [{label: 'Home', link: '/home'}, {label: 'Shop', link: '/store'}, {label: this.product()?.name ?? ''}];
+  }
+
+  canPurchase(): boolean {
+    const product = this.product();
+    return !!product && product.status === 'AVAILABLE' && product.stockQuantity > 0;
+  }
+
+  isAtStockLimit(): boolean {
+    const product = this.product();
+    return !!product && this.quantity() >= product.stockQuantity;
   }
 }

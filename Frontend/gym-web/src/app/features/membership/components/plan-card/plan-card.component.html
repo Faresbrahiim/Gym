@@ -22,8 +22,17 @@
       }
       @if (plan.features && plan.features.length > 0) {
         <ul>
+          @for (capability of includedCapabilities; track capability) {
+            <li class="active"><i class="feather-check-circle"></i>{{ capability }}</li>
+          }
           @for (feature of plan.features; track feature) {
             <li class="active"><i class="feather-check-circle"></i>{{ feature }}</li>
+          }
+        </ul>
+      } @else if (includedCapabilities.length > 0) {
+        <ul>
+          @for (capability of includedCapabilities; track capability) {
+            <li class="active"><i class="feather-check-circle"></i>{{ capability }}</li>
           }
         </ul>
       }

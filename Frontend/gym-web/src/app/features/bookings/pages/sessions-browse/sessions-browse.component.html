@@ -76,8 +76,8 @@
           <div class="status-notice warning mb-4">
             <i class="feather-lock"></i>
             <div>
-              <p class="notice-title">Booking unavailable on your current plan</p>
-              <p class="notice-text">{{ bookingEligibilityReason() || 'Coach session booking requires an active paid membership.' }}</p>
+              <p class="notice-title">Sessions are locked on your current plan</p>
+              <p class="notice-text">{{ bookingEligibilityReason() || 'Your current membership plan does not include coach session booking.' }}</p>
             </div>
             <a routerLink="/membership/plans" class="btn btn-primary">View Plans</a>
           </div>

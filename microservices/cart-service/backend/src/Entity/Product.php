@@ -30,6 +30,9 @@ class Product
     #[ORM\Column(length: 20)]
     private ?string $status = null;
 
+    #[ORM\Column(type: Types::INTEGER)]
+    private int $stockQuantity = 0;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imagePath = null;
 
@@ -65,6 +68,7 @@ class Product
     public function setName(string $name): static
     {
         $this->name = $name;
+        $this->touch();
         return $this;
     }
 
@@ -76,6 +80,7 @@ class Product
     public function setDescription(?string $description): static
     {
         $this->description = $description;
+        $this->touch();
         return $this;
     }
 
@@ -87,6 +92,7 @@ class Product
     public function setPrice(string $price): static
     {
         $this->price = $price;
+        $this->touch();
         return $this;
     }
 
@@ -98,6 +104,24 @@ class Product
     public function setStatus(string $status): static
     {
         $this->status = $status;
+        $this->touch();
+        return $this;
+    }
+
+    public function getStockQuantity(): int
+    {
+        return $this->stockQuantity;
+    }
+
+    public function setStockQuantity(int $stockQuantity): static
+    {
+        if ($stockQuantity < 0) {
+            throw new \InvalidArgumentException('Stock quantity cannot be negative.');
+        }
+
+        $this->stockQuantity = $stockQuantity;
+        $this->touch();
+
         return $this;
     }
 
@@ -130,6 +154,7 @@ class Product
     public function setImagePath(?string $imagePath): static
     {
         $this->imagePath = $imagePath;
+        $this->touch();
         return $this;
     }
 
@@ -141,6 +166,7 @@ class Product
     public function setImageData(?string $imageData): self
     {
         $this->imageData = $imageData;
+        $this->touch();
         return $this;
     }
 
@@ -152,6 +178,12 @@ class Product
     public function setImageMimeType(?string $imageMimeType): self
     {
         $this->imageMimeType = $imageMimeType;
+        $this->touch();
         return $this;
+    }
+
+    private function touch(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }

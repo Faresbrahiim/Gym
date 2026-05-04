@@ -4,7 +4,8 @@ import com.gym.membershipservice.application.dto.kafka.UserRegisteredEvent;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.UserMembership;
 import com.gym.membershipservice.application.port.PlanService;
-import com.gym.membershipservice.application.port.SubscriptionService;
+import com.gym.membershipservice.application.port.UserSubscriptionCommandService;
+import com.gym.membershipservice.application.port.UserSubscriptionQueryService;
 import com.gym.membershipservice.application.port.kafka.UserRegistrationHandler;
 import com.gym.membershipservice.infrastructure.repository.UserMembershipRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +18,17 @@ import java.util.UUID;
 @Component
 public class UserRegistrationListenerImpl implements UserRegistrationHandler {
 
-    private final SubscriptionService subscriptionService;
+    private final UserSubscriptionQueryService subscriptionQueryService;
+    private final UserSubscriptionCommandService subscriptionCommandService;
     private final PlanService planService;
     private final UserMembershipRepository userMembershipRepository;
 
-    public UserRegistrationListenerImpl(SubscriptionService subscriptionService,
+    public UserRegistrationListenerImpl(UserSubscriptionQueryService subscriptionQueryService,
+                                        UserSubscriptionCommandService subscriptionCommandService,
                                         PlanService planService,
                                         UserMembershipRepository userMembershipRepository) {
-        this.subscriptionService      = subscriptionService;
+        this.subscriptionQueryService = subscriptionQueryService;
+        this.subscriptionCommandService = subscriptionCommandService;
         this.planService              = planService;
         this.userMembershipRepository = userMembershipRepository;
     }
@@ -67,7 +71,7 @@ public class UserRegistrationListenerImpl implements UserRegistrationHandler {
         }
 
         Plan freePlan = planService.getFreePlan();
-        subscriptionService.createSubscription(userId, freePlan.getId());
+        subscriptionCommandService.createSubscription(userId, freePlan.getId());
 
         log.info("✅ Created free subscription for user {}", userId);
     }
@@ -76,6 +80,6 @@ public class UserRegistrationListenerImpl implements UserRegistrationHandler {
      * Checks if the user already has a subscription to avoid duplicates.
      */
     private boolean hasExistingSubscription(UUID userId) {
-        return !subscriptionService.getUserSubscriptions(userId).isEmpty();
+        return !subscriptionQueryService.getUserSubscriptions(userId).isEmpty();
     }
 }

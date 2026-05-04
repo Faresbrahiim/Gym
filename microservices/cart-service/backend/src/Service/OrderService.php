@@ -14,6 +14,9 @@ class OrderService implements OrderServiceInterface
     private const STATUS_PAYMENT_FAILED = 'PAYMENT_FAILED';
     private const STATUS_PAYMENT_EXPIRED = 'PAYMENT_EXPIRED';
     private const STATUS_CANCELLED = 'CANCELLED';
+    private const STATUS_AVAILABLE = 'AVAILABLE';
+    private const STATUS_OUT_OF_STOCK = 'OUT_OF_STOCK';
+    private const STATUS_ARCHIVED = 'ARCHIVED';
 
     public function __construct(
         private readonly OrderRepository $orderRepository,
@@ -35,6 +38,18 @@ class OrderService implements OrderServiceInterface
 
         foreach ($cart->getItems() as $cartItem) {
             $product = $cartItem->getProduct();
+
+            if ($product->getStatus() === 'ARCHIVED') {
+                throw new \RuntimeException(sprintf('Product "%s" is no longer available.', $product->getName()));
+            }
+
+            if ($product->getStockQuantity() < $cartItem->getQuantity()) {
+                throw new \RuntimeException(sprintf(
+                    'Only %d item(s) left in stock for "%s".',
+                    $product->getStockQuantity(),
+                    $product->getName()
+                ));
+            }
             
             $orderItem = new OrderItem();
             $orderItem->setOrder($order);
@@ -44,6 +59,9 @@ class OrderService implements OrderServiceInterface
 
             $order->addOrderItem($orderItem);
             $total += (float)$product->getPrice() * $cartItem->getQuantity();
+
+            $product->setStockQuantity($product->getStockQuantity() - $cartItem->getQuantity());
+            $product->setStatus($product->getStockQuantity() <= 0 ? self::STATUS_OUT_OF_STOCK : self::STATUS_AVAILABLE);
             
             $this->orderRepository->getEntityManager()->persist($orderItem);
         }
@@ -74,6 +92,7 @@ class OrderService implements OrderServiceInterface
     {
         $order = $this->getOrder($orderId);
         if ($order && $order->getStatus() === self::STATUS_PENDING_PAYMENT) {
+            $this->restoreStockForOrder($order);
             $order->setStatus(self::STATUS_CANCELLED);
             $this->orderRepository->save($order, true);
         }
@@ -83,6 +102,7 @@ class OrderService implements OrderServiceInterface
     {
         $order = $this->getUserOrder($userId, $orderId);
         if ($order && $order->getStatus() === self::STATUS_PENDING_PAYMENT) {
+            $this->restoreStockForOrder($order);
             $order->setStatus(self::STATUS_CANCELLED);
             $this->orderRepository->save($order, true);
         }
@@ -115,12 +135,12 @@ class OrderService implements OrderServiceInterface
 
     public function markPaymentFailed(Uuid $orderId): ?Order
     {
-        return $this->transitionPaymentState($orderId, self::STATUS_PENDING_PAYMENT, self::STATUS_PAYMENT_FAILED);
+        return $this->transitionPaymentState($orderId, self::STATUS_PENDING_PAYMENT, self::STATUS_PAYMENT_FAILED, true);
     }
 
     public function markPaymentExpired(Uuid $orderId): ?Order
     {
-        return $this->transitionPaymentState($orderId, self::STATUS_PENDING_PAYMENT, self::STATUS_PAYMENT_EXPIRED);
+        return $this->transitionPaymentState($orderId, self::STATUS_PENDING_PAYMENT, self::STATUS_PAYMENT_EXPIRED, true);
     }
 
     public function getAllOrders(): array
@@ -133,13 +153,22 @@ class OrderService implements OrderServiceInterface
         $order = $this->orderRepository->find($orderId);
         if (!$order) throw new \Exception("Order lost in woods.");
 
+        if ($newStatus === self::STATUS_CANCELLED && $order->getStatus() === self::STATUS_PENDING_PAYMENT) {
+            $this->restoreStockForOrder($order);
+        }
+
         $order->setStatus(strtoupper($newStatus));
         $this->orderRepository->save($order, true);
 
         return $order;
     }
 
-    private function transitionPaymentState(Uuid $orderId, string $fromStatus, string $toStatus): ?Order
+    private function transitionPaymentState(
+        Uuid $orderId,
+        string $fromStatus,
+        string $toStatus,
+        bool $restoreStock = false
+    ): ?Order
     {
         $order = $this->getOrder($orderId);
 
@@ -151,9 +180,25 @@ class OrderService implements OrderServiceInterface
             return $order;
         }
 
+        if ($restoreStock) {
+            $this->restoreStockForOrder($order);
+        }
+
         $order->setStatus($toStatus);
         $this->orderRepository->save($order, true);
 
         return $order;
+    }
+
+    private function restoreStockForOrder(Order $order): void
+    {
+        foreach ($order->getOrderItems() as $orderItem) {
+            $product = $orderItem->getProduct();
+            $product->setStockQuantity($product->getStockQuantity() + $orderItem->getQuantity());
+
+            if ($product->getStatus() !== self::STATUS_ARCHIVED && $product->getStockQuantity() > 0) {
+                $product->setStatus(self::STATUS_AVAILABLE);
+            }
+        }
     }
 }

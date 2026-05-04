@@ -8,6 +8,7 @@ class ProductAdminRequestDto
         public readonly string $name,
         public readonly ?string $description,
         public readonly string $price,
+        public readonly int $stockQuantity,
         public readonly string $status,
         public readonly ?UploadedFile $image = null  
     ) {}

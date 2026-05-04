@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Contract\Service\UserSummaryServiceInterface;
 use App\DTO\External\UserSummaryDto;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +13,7 @@ use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-final class UserSummaryService
+final class UserSummaryService implements UserSummaryServiceInterface
 {
     public function __construct(
         #[Autowire(service: 'user_service.client')]

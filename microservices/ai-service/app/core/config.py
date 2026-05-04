@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     GROQ_API_KEY: str = ""
     USER_SERVICE_URL: str = ""
+    MEMBERSHIP_SERVICE_URL: str = ""
     INTERNAL_TOKEN: str = ""
     SQL_ECHO: bool = False
     ALLOWED_ORIGINS: str = "http://localhost:4200"
