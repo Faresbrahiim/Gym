@@ -3,7 +3,7 @@ package com.gym.membershipservice.infrastructure.scheduler;
 import com.gym.membershipservice.application.entity.Plan;
 import com.gym.membershipservice.application.entity.Subscription;
 import com.gym.membershipservice.application.enums.SubscriptionStatus;
-import com.gym.membershipservice.application.port.SubscriptionHistoryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryRecorder;
 import com.gym.membershipservice.infrastructure.repository.SubscriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionSchedulerTest {
@@ -25,7 +29,7 @@ class SubscriptionSchedulerTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    private SubscriptionHistoryService historyService;
+    private SubscriptionHistoryRecorder historyService;
 
     private SubscriptionScheduler scheduler;
 
