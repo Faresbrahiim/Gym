@@ -1,18 +1,30 @@
 package com.gym.membershipservice.application.dto.Plan;
 
 import com.gym.membershipservice.application.enums.PlanStatus;
-
+import jakarta.validation.constraints.*;
 import java.util.List;
 
 public class PlanUpdateRequestDTO {
 
+    @Size(min = 2, max = 100)
     private String name;
+
+    @Size(max = 500)
     private String description;
+
+    @Positive
     private Double price;
+
+    @Min(1)
     private Integer durationInDays;
+
     private PlanStatus status;
-    private List<String> features;
-    private List<String> capabilities;
+
+    @Size(min = 1)
+    private List<@NotBlank String> features;
+
+    @Size(min = 1)
+    private List<@NotBlank String> capabilities;
 
     public String getName() {
         return name;
