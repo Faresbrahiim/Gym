@@ -1,0 +1,16 @@
+# -------------------------------------------------------
+# notification-service build context: microservices/notification-service
+# Needs: pom.xml, src/
+# -------------------------------------------------------
+
+# Maven build artifacts
+target/
+
+# Git & IDE
+.git/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
