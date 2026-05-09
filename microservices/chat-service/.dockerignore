@@ -1,0 +1,30 @@
+# -------------------------------------------------------
+# chat-service build context: microservices/chat-service
+# Needs: package.json, package-lock.json, src/
+# -------------------------------------------------------
+
+# Node.js dependencies — reinstalled inside container by npm install
+# IMPORTANT: without this, COPY . . overwrites the container's npm install
+# with local node_modules that may contain platform-specific binaries
+node_modules/
+
+# Dev & debug artifacts
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Local env files — injected via docker-compose environment
+.env
+.env.local
+
+# Git & IDE
+.git/
+.idea/
+.vscode/
+
+# Dev notes — not needed in image
+todo
+
+# OS
+.DS_Store
+Thumbs.db

@@ -13,18 +13,7 @@ namespace user_service.Application.Contracts.Services
         Task ResetPassword(ResetPasswordDto dto, CancellationToken cancellationToken = default);
 
         Task ResendInvitationAsync(string email, CancellationToken cancellationToken = default);
-
-        Task<LoginResponse> RefreshToken(string refreshToken, CancellationToken cancellationToken);
-
         Task ResendEmailVerificationAsync(string email, CancellationToken cancellationToken = default);
-
-        Task Logout(string refreshToken);
-
-        Task LogoutAll(Guid userId);
-
-        Task<List<SessionDto>> GetActiveSessions(Guid userId);
-
-        Task RevokeSession(Guid userId, Guid tokenId);
 
         Task<LoginResponse> VerifyTwoFactorLogin(Guid userId, string code, CancellationToken cancellationToken = default);
     }

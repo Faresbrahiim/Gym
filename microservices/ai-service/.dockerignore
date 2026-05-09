@@ -1,0 +1,32 @@
+# -------------------------------------------------------
+# ai-service build context: microservices/ai-service
+# Needs: requirements.txt, main.py, app/
+# -------------------------------------------------------
+
+# Python cache — recreated automatically at runtime
+__pycache__/
+*.pyc
+*.pyo
+
+# Local virtual environment — packages installed via pip inside container
+.venv/
+venv/
+
+# Test & dev artifacts
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Local env files — injected via docker-compose environment
+.env
+.env.local
+
+# Git & IDE
+.git/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,17 +1,14 @@
 # -------------------------------------------------------
-# cart-service build context: microservices/cart-service/backend
-# Needs: composer.json, composer.lock, symfony.lock, src/, config/, docker/
+# booking-service build context: microservices/booking-service/backend
+# Needs: composer.json, composer.lock, src/, config/, docker/, bin/
 # -------------------------------------------------------
 
 # PHP dependencies — reinstalled inside container by composer install
+# IMPORTANT: local vendor may contain Windows binaries; container needs Linux ones
 vendor/
 
 # Symfony runtime cache & logs — generated at container startup
 var/
-
-# Public generated dirs — not source files
-public/bundles/
-public/uploads/
 
 # Local env files — injected via docker-compose environment
 .env

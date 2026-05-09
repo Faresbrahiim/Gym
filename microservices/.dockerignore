@@ -1,0 +1,45 @@
+# -------------------------------------------------------
+# user-service build context: ../microservices
+# This file covers ALL service subdirectories in this root
+# -------------------------------------------------------
+
+# Rust — largest offender (presence-service/target = 1.4 GB)
+presence-service/target/
+
+# Java/Maven build artifacts
+membership-service/target/
+payment-service/target/
+notification-service/target/
+
+# .NET build artifacts
+**/obj/
+**/bin/
+
+# PHP dependencies (reinstalled inside container)
+**/vendor/
+**/var/
+
+# Node.js dependencies (reinstalled inside container)
+**/node_modules/
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.venv/
+**/venv/
+**/.pytest_cache/
+
+# Git & IDE
+**/.git/
+**/.idea/
+**/.vscode/
+
+# Local env files — never bake secrets into the image
+**/.env
+**/.env.local
+**/.env.*.local
+
+# OS
+**/Thumbs.db
+**/.DS_Store
