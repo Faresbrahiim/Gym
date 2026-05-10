@@ -1,0 +1,16 @@
+# -------------------------------------------------------
+# membership-service build context: microservices/membership-service
+# Needs: pom.xml, src/
+# -------------------------------------------------------
+
+# Maven build artifacts — 88 MB on disk
+target/
+
+# Git & IDE
+.git/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

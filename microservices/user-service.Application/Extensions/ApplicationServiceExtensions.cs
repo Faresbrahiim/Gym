@@ -11,6 +11,7 @@ public static class ApplicationServiceExtensions
     {
         services.AddScoped<IAdminService,              AdminService>();
         services.AddScoped<IAuthService,               AuthService>();
+        services.AddScoped<ISessionService,            SessionService>();
         services.AddScoped<IFileAuditService,          FileAuditService>();
         services.AddScoped<IGoogleAuthValidator,       GoogleAuthValidator>();
         services.AddScoped<IPasswordCredentialService, PasswordCredentialService>();

@@ -1,0 +1,16 @@
+# -------------------------------------------------------
+# presence-service build context: microservices/presence-service
+# Needs: Cargo.toml, Cargo.lock, src/
+# -------------------------------------------------------
+
+# Rust compiled artifacts — 1.4 GB on disk
+target/
+
+# Git & IDE
+.git/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

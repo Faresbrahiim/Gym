@@ -1,4 +1,4 @@
-﻿using Google.Apis.Auth.OAuth2.Requests;
+using Google.Apis.Auth.OAuth2.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -14,17 +14,20 @@ namespace user_service.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ISessionService _sessionService;
         private readonly IPasswordCredentialService _passwordCredentialService;
         private readonly ITwoFactorService _twoFactorService;
 
-        public AuthController(IAuthService authService
-            , IPasswordCredentialService passwordCredentialService
-            , ITwoFactorService twoFactorService)
+        public AuthController(
+            IAuthService authService,
+            ISessionService sessionService,
+            IPasswordCredentialService passwordCredentialService,
+            ITwoFactorService twoFactorService)
         {
             _authService = authService;
+            _sessionService = sessionService;
             _passwordCredentialService = passwordCredentialService;
             _twoFactorService = twoFactorService;
-
         }
 
         [HttpPost("register")]
@@ -52,7 +55,6 @@ namespace user_service.Controllers
 
         [HttpPost("login/google")]
         [Audit("LoginWithGoogle")]
-
         public async Task<IActionResult> LoginGoogle([FromBody] GoogleLoginRequest request)
         {
             if (!ModelState.IsValid)
@@ -64,7 +66,6 @@ namespace user_service.Controllers
 
         [HttpPost("password/request-reset")]
         [Audit("reuest-user-password")]
-
         public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetDto dto)
         {
             if (!ModelState.IsValid)
@@ -76,7 +77,6 @@ namespace user_service.Controllers
 
         [HttpPost("password/reset")]
         [Audit("reset-password")]
-
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             if (!ModelState.IsValid)
@@ -84,6 +84,79 @@ namespace user_service.Controllers
 
             await _authService.ResetPassword(dto);
             return Ok(new { message = "Password updated successfully." });
+        }
+
+        [HttpPost("accept-invitation")]
+        public async Task<IActionResult> AcceptInvitation(
+            [FromBody] AcceptInvitationDto dto,
+            CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
+            await _passwordCredentialService.AcceptInvitationAsync(
+                dto.Token,
+                dto.Password,
+                cancellationToken);
+
+            return Ok(new { message = "Account activated successfully" });
+        }
+
+        // Intentionally vague to prevent email enumeration attacks
+        [HttpPost("resend-invitation")]
+        public async Task<IActionResult> ResendInvitation([FromBody] ResendInvitationDto invitationDto, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
+            await _authService.ResendInvitationAsync(invitationDto.Email, cancellationToken);
+
+            return Ok(new { message = "If the invitation exists, a new email has been sent." });
+        }
+
+        [HttpPost("verify-email")]
+        public async Task<IActionResult> VerifyEmail(
+            [FromBody] VerifyEmailDto dto,
+            CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
+            await _passwordCredentialService.VerifyEmailAsync(dto.Token, cancellationToken);
+
+            return Ok(new { message = "Email verified successfully." });
+        }
+
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerification(
+            [FromBody] ResendVerificationDto dto,
+            CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return UnprocessableEntity(ModelState);
+
+            await _authService.ResendEmailVerificationAsync(dto.Email, cancellationToken);
+
+            return Ok(new { message = "If the account exists, a verification email has been sent." });
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                return BadRequest(new { message = "Refresh token is required" });
+
+            var response = await _sessionService.RefreshToken(request.RefreshToken, cancellationToken);
+
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+        {
+            await _sessionService.Logout(request.RefreshToken);
+            return Ok(new { message = "Logged out successfully" });
         }
 
         [Authorize]
@@ -95,95 +168,9 @@ namespace user_service.Controllers
 
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized(new { message = "Invalid token" });
-            // it will logged out by deleting the refresh token from database, so the access token will be expired after 15 minutes and user need to login again to get new access token
-            await _authService.LogoutAll(userId);
 
-            return Ok(new { message = "Logged out successfully" });
-        }
+            await _sessionService.LogoutAll(userId);
 
-        [HttpPost("accept-invitation")]
-        public async Task<IActionResult> AcceptInvitation(
-        [FromBody] AcceptInvitationDto dto,
-        CancellationToken cancellationToken
-        )
-        {
-            if (!ModelState.IsValid)
-                return UnprocessableEntity(ModelState);
-
-            var user = await _passwordCredentialService.AcceptInvitationAsync(
-                dto.Token,
-                dto.Password,
-                cancellationToken);
-
-            return Ok(new { message = "Account activated successfully" });
-        }
-
-        // This endpoint is intentionally vague to prevent email enumeration attacks
-        [HttpPost("resend-invitation")]
-        public async Task<IActionResult> resendinvitation([FromBody] ResendInvitationDto invitationDto, CancellationToken cancellationToken)
-        {
-            if (!ModelState.IsValid)
-                return UnprocessableEntity(ModelState);
-
-            await _authService.ResendInvitationAsync(invitationDto.Email, cancellationToken);
-
-            return Ok(new
-            {
-                message = "If the invitation exists, a new email has been sent."
-            });
-        }
-        
-        [HttpPost("verify-email")]
-        public async Task<IActionResult> VerifyEmail(
-        [FromBody] VerifyEmailDto dto,
-        CancellationToken cancellationToken
-            )
-        {
-            if (!ModelState.IsValid)
-                return UnprocessableEntity(ModelState);
-
-            await _passwordCredentialService.VerifyEmailAsync(
-                dto.Token,
-                cancellationToken);
-
-            return Ok(new
-            {
-                message = "Email verified successfully."
-            });
-        }
-        [HttpPost("refresh")]
-
-        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(request.RefreshToken))
-                return BadRequest(new { message = "Refresh token is required" });
-
-            var response = await _authService.RefreshToken(request.RefreshToken, cancellationToken);
-
-            return Ok(response);
-        }
-
-
-        [HttpPost("resend-verification")]
-        public async Task<IActionResult> ResendVerification(
-        [FromBody] ResendVerificationDto dto,
-        CancellationToken cancellationToken)
-        {
-            if (!ModelState.IsValid)
-                return UnprocessableEntity(ModelState);
-
-            await _authService.ResendEmailVerificationAsync(dto.Email, cancellationToken);
-
-            return Ok(new
-            {
-                message = "If the account exists, a verification email has been sent."
-            });
-        }
-        [Authorize]
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
-        {
-            await _authService.Logout(request.RefreshToken);
             return Ok(new { message = "Logged out successfully" });
         }
 
@@ -196,7 +183,7 @@ namespace user_service.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
 
-            var sessions = await _authService.GetActiveSessions(userId);
+            var sessions = await _sessionService.GetActiveSessions(userId);
 
             return Ok(sessions);
         }
@@ -210,7 +197,7 @@ namespace user_service.Controllers
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
 
-            await _authService.RevokeSession(userId, tokenId);
+            await _sessionService.RevokeSession(userId, tokenId);
 
             return Ok(new { message = "Session revoked." });
         }

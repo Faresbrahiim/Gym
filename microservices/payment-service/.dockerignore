@@ -1,0 +1,16 @@
+# -------------------------------------------------------
+# payment-service build context: microservices/payment-service
+# Needs: pom.xml, src/
+# -------------------------------------------------------
+
+# Maven build artifacts
+target/
+
+# Git & IDE
+.git/
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
