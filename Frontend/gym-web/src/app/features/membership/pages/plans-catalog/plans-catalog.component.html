@@ -22,7 +22,8 @@
   <app-page-header
     title="Membership Plans"
     [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Plans'}]"
-    image="convenient-bg.jpg"
+    image="membership.webp"
+    position="center -160px"
   />
 
   <div class="content">
@@ -59,7 +60,7 @@
                   <app-plan-card
                     [plan]="plan"
                     [iconIndex]="i"
-                    [highlighted]="i === 1"
+                    [highlighted]="i === plans().length - 1"
                     [currentPlanId]="currentPlanId()"
                     [blockedReason]="getSelectionBlockedReason(plan)"
                     (select)="onSelectPlan($event)"

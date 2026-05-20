@@ -1,16 +1,117 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TokenService } from '../../core/auth/token.service';
 
 declare var AOS: any;
 declare var Swiper: any;
+
+interface HeroAction {
+  label: string;
+  route: string;
+}
+
+const GUEST_ACTIONS: HeroAction[] = [
+  {
+    label: 'Get Started',
+    route: '/register',
+  },
+  {
+    label: 'View Plans',
+    route: '/membership/plans',
+  },
+  {
+    label: 'Explore Store',
+    route: '/store',
+  }
+];
+
+const MEMBER_ACTIONS: HeroAction[] = [
+  {
+    label: 'My Membership',
+    route: '/membership',
+  },
+  {
+    label: 'Book Session',
+    route: '/bookings/sessions',
+  },
+  {
+    label: 'Open Chat',
+    route: '/chat',
+  },
+  {
+    label: 'AI Coach',
+    route: '/ai-coach',
+  }
+];
+
+const COACH_ACTIONS: HeroAction[] = [
+  {
+    label: 'My Sessions',
+    route: '/bookings/coach',
+  },
+  {
+    label: 'Messages',
+    route: '/chat',
+  },
+  {
+    label: 'My Profile',
+    route: '/profile',
+  },
+  {
+    label: 'Security',
+    route: '/profile/security',
+  }
+];
+
+const ADMIN_ACTIONS: HeroAction[] = [
+  {
+    label: 'Dashboard',
+    route: '/admin/dashboard',
+  },
+  {
+    label: 'Users',
+    route: '/admin/users/invite',
+  },
+  {
+    label: 'Plans',
+    route: '/admin/plans',
+  },
+  {
+    label: 'Products',
+    route: '/admin/products',
+  }
+];
 
 @Component({
   standalone: true,
   selector: 'app-home',
   imports: [RouterLink],
-  templateUrl: './home.component.html'
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.css'
 })
 export class HomeComponent implements AfterViewInit {
+  private readonly tokenService = inject(TokenService);
+
+  protected get heroActions(): HeroAction[] {
+    if (!this.tokenService.isAuthenticated()) {
+      return GUEST_ACTIONS;
+    }
+
+    switch (this.tokenService.getRole()) {
+      case 'MEMBER':
+        return MEMBER_ACTIONS;
+      case 'COACH':
+        return COACH_ACTIONS;
+      case 'ADMIN':
+        return ADMIN_ACTIONS;
+      default:
+        return GUEST_ACTIONS;
+    }
+  }
+
+  protected get heroActionTitle(): string {
+    return 'Quick actions';
+  }
 
   toggleFavourite(event: Event): void {
     (event.currentTarget as HTMLElement).classList.toggle('selected');

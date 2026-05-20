@@ -1,8 +1,5 @@
 <!-- Hero Section -->
 <section class="hero-section">
-  <div class="banner-cock-one">
-    <img src="assets/img/icons/banner-cock1.svg" alt="Banner" loading="eager" fetchpriority="low" decoding="async">
-  </div>
   <div class="banner-shapes">
     <div class="banner-dot-one">
       <span></span>
@@ -20,37 +17,18 @@
       <div class="row align-items-center w-100">
         <div class="col-lg-7 col-md-10 mx-auto">
           <div class="section-search">
-            <h4>World Class Badminton Coaching &amp; Premium Courts</h4>
-            <h1>Choose Your <span>Coaches</span> and Start Your Training</h1>
-            <p class="sub-info">Unleash Your Athletic Potential with Expert Coaching, State-of-the-Art Facilities, and Personalized Training Programs.</p>
-            <div class="search-box">
-              <form>
-                <div class="search-input line">
-                  <div class="form-group mb-0">
-                    <label>Search for</label>
-                    <select class="select">
-                      <option>Courts</option>
-                      <option>Coaches</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="search-input">
-                  <div class="form-group mb-0">
-                    <label>Where</label>
-                    <select class="form-control select">
-                      <option value="">Choose Location</option>
-                      <option>Germany</option>
-                      <option>Russia</option>
-                      <option>France</option>
-                      <option>UK</option>
-                      <option>Colombia</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="search-btn">
-                  <button class="btn" type="submit"><i class="feather-search"></i><span class="search-text">Search</span></button>
-                </div>
-              </form>
+            <h4>The Fitness Platform That Keeps Everything in Sync</h4>
+            <h1>Manage <span>Memberships</span>, Coaching, and Progress</h1>
+            <p class="sub-info">From memberships and coach sessions to payments, chat, and AI-powered guidance, every part of your experience works together.</p>
+            <div class="hero-action-links">
+              <span class="hero-action-title">{{ heroActionTitle }}</span>
+              <nav class="hero-action-list" aria-label="Quick actions">
+                @for (action of heroActions; track action.label) {
+                  <a class="hero-action-link" [routerLink]="action.route">
+                    {{ action.label }}
+                  </a>
+                }
+              </nav>
             </div>
           </div>
         </div>

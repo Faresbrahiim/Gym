@@ -1,7 +1,8 @@
-<app-page-header
+﻿<app-page-header
   title="Shop"
   [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Shop'}]"
-  image="breadcrumb-bg.png"
+  image="shop.jpg"
+  position="center -80px"
 >
   <a routerLink="/cart" class="cart-header-btn"><i class="feather-shopping-cart"></i><span>My Cart</span></a>
 </app-page-header>
@@ -53,10 +54,10 @@
           </a>
           <div class="product-card-body">
             <a [routerLink]="['/store', product.id]" class="product-name">{{ product.name }}</a>
-            <p class="product-desc" *ngIf="product.description">{{ product.description }}</p>
-            <p class="product-desc" *ngIf="product.stockQuantity > 0">{{ product.stockQuantity }} in stock</p>
+            <p class="product-desc" *ngIf="product.description" [title]="product.description">{{ product.description }}</p>
+            <p class="product-stock" *ngIf="product.stockQuantity > 0">{{ product.stockQuantity }} in stock</p>
             <div class="product-footer">
-              <span class="product-price">${{ product.price.toFixed(2) }}</span>
+              <span class="product-price">{{ product.price.toFixed(2) }} DH</span>
               <button
                 class="btn-add-cart"
                 [disabled]="product.status !== 'AVAILABLE' || product.stockQuantity <= 0"

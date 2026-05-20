@@ -108,7 +108,7 @@ export class CheckoutComponent implements OnInit {
     const p = this.plan();
     if (!p) return '';
     if (this.isFree) return 'Free';
-    return `$${p.price.toFixed(2)}`;
+    return `${p.price.toFixed(2)} MAD`;
   }
 
   get durationLabel(): string {

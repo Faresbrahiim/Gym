@@ -307,10 +307,3 @@
   }
 
 }
-
-.thread-messages.popup-bg {
-  background-image: url('../../../../../assets/img/chat.png');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-}

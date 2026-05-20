@@ -132,7 +132,7 @@ export class HeaderComponent {
   }
 
   get logoSrc(): string {
-    return 'assets/img/logo-black.svg';
+    return 'assets/img/logo.svg';
   }
 
   toggleMobileMenu(): void {

@@ -10,8 +10,8 @@ vendor/
 # Symfony runtime cache & logs — generated at container startup
 var/
 
-# Local env files — injected via docker-compose environment
-.env
+# Local env overrides — injected via docker-compose environment
+# .env is kept so Symfony's bootEnv() can find the file (required even in prod)
 .env.local
 .env.*.local
 

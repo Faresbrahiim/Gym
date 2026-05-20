@@ -1,7 +1,7 @@
-<app-page-header
+﻿<app-page-header
   title="Checkout"
   [breadcrumbs]="[{label:'Home',link:'/home'},{label:'My Cart',link:'/cart'},{label:'Checkout'}]"
-  image="breadcrumb-bg.png"
+  image="img38.jpg"
 />
 
 <div class="content">
@@ -130,7 +130,7 @@
             <div *ngIf="cart()">
               <div *ngFor="let item of cart()!.items" class="review-line">
                 <span>{{ getProductName(item) }} <span class="review-qty">×{{ item.quantity }}</span></span>
-                <span class="review-line-total">${{ (item.price * item.quantity).toFixed(2) }}</span>
+                <span class="review-line-total">{{ (item.price * item.quantity).toFixed(2) }} DH</span>
               </div>
             </div>
           </div>
@@ -169,7 +169,7 @@
           <div class="summary-items" *ngIf="cart()">
             <div *ngFor="let item of cart()!.items" class="summary-item">
               <span class="summary-item-name">{{ getProductName(item) }} <span class="text-muted">×{{ item.quantity }}</span></span>
-              <span class="summary-item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+              <span class="summary-item-price">{{ (item.price * item.quantity).toFixed(2) }} DH</span>
             </div>
           </div>
 
@@ -178,7 +178,7 @@
           <div class="summary-row-list">
             <div class="summary-row-item">
               <span>Subtotal</span>
-              <span>${{ cart() ? cart()!.totalPrice.toFixed(2) : '0.00' }}</span>
+              <span>{{ cart() ? cart()!.totalPrice.toFixed(2) : '0.00' }} DH</span>
             </div>
             <div class="summary-row-item">
               <span>Shipping</span>
@@ -186,12 +186,12 @@
             </div>
             <div class="summary-row-item">
               <span>Tax (10%)</span>
-              <span>${{ getTaxAmount().toFixed(2) }}</span>
+              <span>{{ getTaxAmount().toFixed(2) }} DH</span>
             </div>
             <div class="summary-divider"></div>
             <div class="summary-row-item total">
               <span>Total</span>
-              <span>${{ getTotalAmount().toFixed(2) }}</span>
+              <span>{{ getTotalAmount().toFixed(2) }} DH</span>
             </div>
           </div>
         </div>
