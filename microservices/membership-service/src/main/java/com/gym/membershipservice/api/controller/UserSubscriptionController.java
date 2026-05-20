@@ -156,16 +156,16 @@ public class UserSubscriptionController {
         UUID userId = UUID.fromString(jwt.getSubject());
         return subscriptionCommandService.changePlan(userId, subscriptionId, newPlanId);
     }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{subscriptionId}")
-    public SubscriptionResponseDTO getSubscription(@PathVariable UUID subscriptionId) {
-        return adminSubscriptionQueryService.getSubscriptionById(subscriptionId);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/{subscriptionId}/history")
-    public List<SubscriptionHistoryResponseDTO> getHistory(@PathVariable UUID subscriptionId) {
-        return subscriptionHistoryQueryService.getHistory(subscriptionId);
-    }
+//
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @GetMapping("/{subscriptionId}")
+//    public SubscriptionResponseDTO getSubscription(@PathVariable UUID subscriptionId) {
+//        return adminSubscriptionQueryService.getSubscriptionById(subscriptionId);
+//    }
+//
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @GetMapping("/{subscriptionId}/history")
+//    public List<SubscriptionHistoryResponseDTO> getHistory(@PathVariable UUID subscriptionId) {
+//        return subscriptionHistoryQueryService.getHistory(subscriptionId);
+//    }
 }

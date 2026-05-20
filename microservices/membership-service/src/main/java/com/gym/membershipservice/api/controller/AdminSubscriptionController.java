@@ -1,10 +1,12 @@
 package com.gym.membershipservice.api.controller;
 
 import com.gym.membershipservice.application.dto.Subscription.AdminSubscriptionSummaryDTO;
+import com.gym.membershipservice.application.dto.Subscription.SubscriptionHistoryResponseDTO;
 import com.gym.membershipservice.application.dto.Subscription.SubscriptionResponseDTO;
 import com.gym.membershipservice.application.dto.common.PagedResponseDTO;
 import com.gym.membershipservice.application.port.AdminSubscriptionCommandService;
 import com.gym.membershipservice.application.port.AdminSubscriptionQueryService;
+import com.gym.membershipservice.application.port.SubscriptionHistoryQueryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +23,16 @@ public class AdminSubscriptionController {
 
     private final AdminSubscriptionQueryService subscriptionQueryService;
     private final AdminSubscriptionCommandService subscriptionCommandService;
+    private final SubscriptionHistoryQueryService subscriptionHistoryQueryService;
 
-    public AdminSubscriptionController(AdminSubscriptionQueryService subscriptionQueryService,
-                                       AdminSubscriptionCommandService subscriptionCommandService) {
+    public AdminSubscriptionController(
+            AdminSubscriptionQueryService subscriptionQueryService,
+            AdminSubscriptionCommandService subscriptionCommandService,
+            SubscriptionHistoryQueryService subscriptionHistoryQueryService
+    ) {
         this.subscriptionQueryService = subscriptionQueryService;
         this.subscriptionCommandService = subscriptionCommandService;
+        this.subscriptionHistoryQueryService = subscriptionHistoryQueryService;
     }
 
     @GetMapping
@@ -47,6 +54,24 @@ public class AdminSubscriptionController {
     public List<SubscriptionResponseDTO> getUserSubscriptions(@PathVariable UUID userId) {
         return subscriptionQueryService.getUserSubscriptions(userId);
     }
+
+    // =========================
+    // MOVED FROM USER CONTROLLER
+    // =========================
+
+    @GetMapping("/{subscriptionId}")
+    public SubscriptionResponseDTO getSubscription(@PathVariable UUID subscriptionId) {
+        return subscriptionQueryService.getSubscriptionById(subscriptionId);
+    }
+
+    @GetMapping("/{subscriptionId}/history")
+    public List<SubscriptionHistoryResponseDTO> getHistory(@PathVariable UUID subscriptionId) {
+        return subscriptionHistoryQueryService.getHistory(subscriptionId);
+    }
+
+    // =========================
+    // COMMANDS
+    // =========================
 
     @PostMapping("/{subscriptionId}/cancel")
     public SubscriptionResponseDTO cancel(@PathVariable UUID subscriptionId) {
