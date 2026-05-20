@@ -1,4 +1,4 @@
-<div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+﻿<div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
   <div class="spinner-border text-primary" role="status">
     <span class="visually-hidden">Loading…</span>
   </div>
@@ -9,7 +9,7 @@
   <app-page-header
     [title]="orderHeaderTitle"
     [breadcrumbs]="orderBreadcrumbs"
-    image="breadcrumb-bg2.jpg"
+    image="img38.jpg"
   >
     <span [ngClass]="'order-hero-badge ' + getStatusBadgeClass(order()!.status)">{{ getStatusDisplayLabel(order()!.status) }}</span>
   </app-page-header>
@@ -52,8 +52,8 @@
                   <tr *ngFor="let item of order()!.items">
                     <td class="fw-600">{{ item.productName }}</td>
                     <td class="text-muted">{{ item.quantity }}</td>
-                    <td class="text-muted">${{ item.price.toFixed(2) }}</td>
-                    <td class="text-end fw-700 text-teal">${{ (item.quantity * item.price).toFixed(2) }}</td>
+                    <td class="text-muted">{{ item.price.toFixed(2) }} DH</td>
+                    <td class="text-end fw-700 text-teal">{{ (item.quantity * item.price).toFixed(2) }} DH</td>
                   </tr>
                 </tbody>
               </table>
@@ -97,7 +97,7 @@
             <div class="summary-row-list">
               <div class="summary-row-item">
                 <span>Subtotal</span>
-                <span>${{ order()!.totalPrice.toFixed(2) }}</span>
+                <span>{{ order()!.totalPrice.toFixed(2) }} DH</span>
               </div>
               <div class="summary-row-item">
                 <span>Shipping</span>
@@ -105,12 +105,12 @@
               </div>
               <div class="summary-row-item">
                 <span>Tax (10%)</span>
-                <span>${{ (order()!.totalPrice * 0.1).toFixed(2) }}</span>
+                <span>{{ (order()!.totalPrice * 0.1).toFixed(2) }} DH</span>
               </div>
               <div class="summary-divider"></div>
               <div class="summary-row-item total">
                 <span>Total Paid</span>
-                <span>${{ (order()!.totalPrice * 1.1).toFixed(2) }}</span>
+                <span>{{ (order()!.totalPrice * 1.1).toFixed(2) }} DH</span>
               </div>
             </div>
 

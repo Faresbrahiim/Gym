@@ -1,4 +1,4 @@
-<app-page-header
+﻿<app-page-header
   title="My Cart"
   [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Shop',link:'/store'},{label:'My Cart'}]"
   image="shop.jpg"
@@ -63,7 +63,7 @@
                     </div>
                   </td>
                   <td>
-                    <span class="cart-unit-price">${{ formatPrice(item.price) }}</span>
+                    <span class="cart-unit-price">{{ formatPrice(item.price) }} DH</span>
                   </td>
                   <td>
                     <div class="cart-qty-selector">
@@ -85,7 +85,7 @@
                     <div class="date-secondary mt-1" *ngIf="isAtStockLimit(item)">Maximum available quantity reached</div>
                   </td>
                   <td>
-                    <span class="cart-line-total">${{ formatPrice(item.price * item.quantity) }}</span>
+                    <span class="cart-line-total">{{ formatPrice(item.price * item.quantity) }} DH</span>
                   </td>
                   <td>
                     <button class="btn-remove-item" (click)="onRemoveItem(item)" title="Remove">
@@ -107,7 +107,7 @@
           <div class="summary-row-list">
             <div class="summary-row-item">
               <span>Subtotal</span>
-              <span>${{ formatPrice(cart()!.totalPrice) }}</span>
+              <span>{{ formatPrice(cart()!.totalPrice) }} DH</span>
             </div>
             <div class="summary-row-item">
               <span>Shipping</span>
@@ -115,12 +115,12 @@
             </div>
             <div class="summary-row-item">
               <span>Tax (10%)</span>
-              <span>${{ formatPrice(cart()!.totalPrice * 0.1) }}</span>
+              <span>{{ formatPrice(cart()!.totalPrice * 0.1) }} DH</span>
             </div>
             <div class="summary-divider"></div>
             <div class="summary-row-item total">
               <span>Total</span>
-              <span>${{ formatPrice(cart()!.totalPrice * 1.1) }}</span>
+              <span>{{ formatPrice(cart()!.totalPrice * 1.1) }} DH</span>
             </div>
           </div>
 

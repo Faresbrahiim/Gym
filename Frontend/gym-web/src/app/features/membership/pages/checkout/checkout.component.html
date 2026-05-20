@@ -23,7 +23,7 @@
   <app-page-header
     [title]="checkoutTitle"
     [breadcrumbs]="checkoutBreadcrumbs"
-    image="convenient-bg.jpg"
+    image="img38.jpg"
   />
 
   <app-dashboard-menu />
@@ -48,7 +48,7 @@
                   @if (isFree) {
                     <span class="price-free-tag">Free</span>
                   } @else {
-                    <span class="price-sup">$</span><span class="price-main">{{ plan()!.price!.toFixed(2) }}</span>
+                    <span class="price-main">{{ plan()!.price!.toFixed(2) }}</span><span class="price-sup"> MAD</span>
                   }
                 </div>
                 <p class="plan-hero-duration">

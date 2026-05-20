@@ -2,7 +2,7 @@
   class="d-print-none"
   title="Receipt"
   [breadcrumbs]="paymentBreadcrumbs"
-  image="breadcrumb-bg2.jpg"
+  image="img38.jpg"
 />
 
 <div class="d-print-none">
@@ -96,7 +96,7 @@
                       <span class="fw-bold">{{ plan()?.name }}</span>
                       <small class="d-block text-muted">{{ plan()?.durationInDays ? plan()!.durationInDays + ' Days' : 'Unlimited' }} Subscription</small>
                     </td>
-                    <td class="text-end fw-bold">{{ payment()!.amount | number:'1.2-2' }} {{ payment()!.currency }}</td>
+                    <td class="text-end fw-bold">{{ payment()!.amount | number:'1.2-2' }} MAD</td>
                   </tr>
                 </tbody>
               </table>
@@ -104,11 +104,11 @@
 
             <!-- Totals -->
             <div class="dull-bg total-wrap p-4 rounded mb-4 text-end">
-              <p class="mb-2 d-flex justify-content-between"><span>Subtotal:</span> <span>{{ payment()!.amount | number:'1.2-2' }} {{ payment()!.currency }}</span></p>
-              <p class="mb-2 d-flex justify-content-between"><span>Tax:</span> <span>$0.00</span></p>
+              <p class="mb-2 d-flex justify-content-between"><span>Subtotal:</span> <span>{{ payment()!.amount | number:'1.2-2' }} MAD</span></p>
+              <p class="mb-2 d-flex justify-content-between"><span>Tax:</span> <span>0.00 MAD</span></p>
               <h4 class="mb-0 d-flex justify-content-between mt-3 pt-3 border-top">
                 <span>Total Paid:</span> 
-                <span>{{ payment()!.amount | number:'1.2-2' }} {{ payment()!.currency }}</span>
+                <span>{{ payment()!.amount | number:'1.2-2' }} MAD</span>
               </h4>
             </div>
 

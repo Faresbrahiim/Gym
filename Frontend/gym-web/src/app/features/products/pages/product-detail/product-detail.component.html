@@ -1,4 +1,4 @@
-<div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
+﻿<div *ngIf="isLoading()" class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
   <div class="spinner-border text-primary" role="status">
     <span class="visually-hidden">Loading…</span>
   </div>
@@ -9,7 +9,7 @@
   <app-page-header
     [title]="product()!.name ?? ''"
     [breadcrumbs]="productBreadcrumbs"
-    image="breadcrumb-bg.png"
+    image="img38.jpg"
   />
 
   <div class="content">
@@ -45,7 +45,7 @@
             <!-- Price stat -->
             <div class="pd-price-row">
               <div class="stat-icon teal"><i class="feather-tag"></i></div>
-              <span class="pd-price">${{ product()!.price.toFixed(2) }}</span>
+              <span class="pd-price">{{ product()!.price.toFixed(2) }} DH</span>
             </div>
 
             <div class="pd-price-row">

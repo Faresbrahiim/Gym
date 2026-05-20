@@ -1,7 +1,7 @@
-<app-page-header
+﻿<app-page-header
   title="Orders"
   [breadcrumbs]="[{label:'Home',link:'/home'},{label:'Orders'}]"
-  image="breadcrumb-bg2.jpg"
+  image="img38.jpg"
 />
 
 <app-dashboard-menu></app-dashboard-menu>
@@ -76,7 +76,7 @@
                           <span class="text-muted">{{ order.items.length }} item{{ order.items.length !== 1 ? 's' : '' }}</span>
                         </td>
                         <td>
-                          <span class="amount-text">${{ order.totalPrice.toFixed(2) }}</span>
+                          <span class="amount-text">{{ order.totalPrice.toFixed(2) }} DH</span>
                         </td>
                         <td>
                           <span [ngClass]="'order-badge ' + getStatusBadgeClass(order.status)">

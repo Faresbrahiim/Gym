@@ -1,4 +1,4 @@
-@if (isLoading()) {
+﻿@if (isLoading()) {
   <div class="d-flex justify-content-center align-items-center" style="min-height:60vh;">
     <div class="spinner-border" style="color:#177c82;" role="status">
       <span class="visually-hidden">Loading...</span>
@@ -105,7 +105,7 @@
                 </div>
               </td>
               <td>
-                <span class="price-tag">${{ formatPrice(product.price) }}</span>
+                <span class="price-tag">{{ formatPrice(product.price) }} DH</span>
               </td>
               <td>
                 <div class="d-flex flex-column">

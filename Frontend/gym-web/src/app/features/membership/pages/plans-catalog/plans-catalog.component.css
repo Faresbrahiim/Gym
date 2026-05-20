@@ -1,1 +1,4 @@
 
+:host .section-heading h2::after {
+  display: none;
+}

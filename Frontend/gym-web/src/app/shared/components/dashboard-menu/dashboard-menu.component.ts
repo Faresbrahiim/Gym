@@ -26,7 +26,7 @@ export class DashboardMenuComponent implements OnInit {
 
   private readonly allPrimaryItems: DashboardMenuItem[] = [
     { label: 'Profile', route: '/profile', icon: 'assets/img/icons/profile-icon.svg', exact: true },
-    { label: 'Security', route: '/profile/security', icon: 'assets/img/icons/sessions.svg' },
+    { label: 'Security', route: '/profile/security', icon: 'assets/img/icons/security-icon.svg' },
     { label: 'My Bookings', route: '/bookings/my', icon: 'assets/img/icons/booking-icon.svg', exact: false },
     { label: 'Membership', route: '/membership', icon: 'assets/img/icons/wallet-icon.svg', exact: true },
     { label: 'History', route: '/membership/history', icon: 'assets/img/icons/booking-icon.svg', exact: true },

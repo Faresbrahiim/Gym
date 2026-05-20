@@ -1,6 +1,5 @@
 <div class="price-card flex-fill">
   <div class="price-head" [class.expert-price]="highlighted">
-    <img [src]="iconSrc" alt="Plan icon">
     <h3>{{ plan.name }}</h3>
     @if (highlighted) {
       <span>Recommended</span>
@@ -11,7 +10,7 @@
       @if (plan.price === 0) {
         <h2><span>Free</span></h2>
       } @else {
-        <h2><sup>$</sup><span>{{ formattedPrice }}</span></h2>
+        <h2><span>{{ formattedPrice }}</span><sup>MAD</sup></h2>
       }
       <span>{{ durationLabel }}</span>
     </div>

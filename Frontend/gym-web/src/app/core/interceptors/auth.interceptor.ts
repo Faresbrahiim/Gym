@@ -67,7 +67,9 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
 
       if (!refreshToken) {
         tokenService.clearTokens();
-        router.navigate(['/login']);
+        if (token) {
+          router.navigate(['/login']);
+        }
         return throwError(() => error);
       }
 
